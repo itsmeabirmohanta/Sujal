@@ -1,0 +1,7 @@
+- [Rover ROS2 Project](project_rover_ros2.md) — 6-wheel rocker-bogie rover for ROBOFEST Gujarat 6.0 IGVC, Fusion 360 to ROS2 Humble pipeline
+- [Vivado / Xilinx Setup](vivado-xilinx-setup.md) — install path, FlexLM host ID fa704b41, active license location
+- [Solid Fuel Rocketry 2026](project-solid-fuel-rocketry-2026.md) — WSW 2026 competition avionics; rule change: teams now write their own firmware
+- [CanSat Board 1 rev7](project-cansat-board1-rev7.md) — VRITRA Ø110mm flight computer PCB; DRC failures were missing footprint courtyards, not capacity
+- [CanSat Board 2](project-cansat-board2.md) — environmental board guide + verified placement; DS3231 proven not to fit; stack-top & DS3231-home decisions open
+- [CanSat zero-board build](project-cansat-zeroboard.md) — perfboard flight build, now 4 boards (1 MAIN, 2 BACKUP+SENSOR+SD, 4 POWER, 5 PARACHUTE); build ref kicad_single; radio 866.50/865.25 SF9 0x99
+- [CanSat FINAL build 2026-10-27](project-cansat-final-build.md) — 3 etched PCBs fly; drone drop 1 km + guided glide; read VRITRA_ZeroBoard_Memory/05 first

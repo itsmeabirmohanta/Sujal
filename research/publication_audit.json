@@ -1,0 +1,9 @@
+{
+  "source_files_verified": 812,
+  "source_hash_mismatches": [],
+  "credential_pattern_hits": [],
+  "credential_scan_scope": "Common recognizable credential patterns in supplied files and one nested ZIP/container level; not proof of absence of all secrets.",
+  "original_zip_bytes": 118603766,
+  "original_zip_sha256": "ac95163c11d3cffb4e3bf93ac576da3ea3b312c53c8d59daa6347dbe225a4a1d",
+  "publication_consent": "User explicitly selected public full archive including chats and notes on 2026-10-28."
+}

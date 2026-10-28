@@ -1,0 +1,16 @@
+- [CanSat handoff doc](cansat-handoff-doc.md) — HANDOFF.md at the repo root is the entry point; read its "load-bearing facts" before touching firmware.
+- [Guidelines PDF + mandated fields](cansat-guidelines-mandated-fields.md) — the 14 mandated telemetry fields and the row-13 trap that makes roll & pitch mandatory; check here before cutting anything from the wire.
+- [CanSat RF plan is assigned](cansat-rf-plan-is-assigned.md) — 867.00/865.75 MHz SF10 +14 dBm come from allocation row 025; user wants strict compliance even on the bench.
+- [No local C++ toolchain](cansat-no-local-toolchain.md) — firmware here cannot be compiled, only structurally checked; never call a firmware edit "working".
+- [CanSat plate resonance](cansat-plate-resonance.md) — the Ø110 mm plates are exactly 1λ circumference at 867 MHz; aluminium would make five resonant parasitic loops.
+- [CanSat Fusion model is messy](cansat-fusion-model-messy.md) — duplicate plates, an off-axis parachute bay wall, all-default Steel; tidy it before any re-export.
+- [Teensy SPI1 MISO mux trap](teensy-spi1-miso-mux.md) — the LR1121 -707 was a floating pin 1, not a bad joint; setMISO() must precede SPI1.begin().
+- [Sensor bring-up traps](cansat-sensor-bringup-traps.md) — the 64-byte UART buffer starves GNSS, and a wedged ICM-20948 needs a blind DEVICE_RESET before probing.
+- [GNSS module is AG3335M not Teseo](cansat-gnss-module.md) — L89 confirmed Airoha AG3335M; speaks PAIR; $PMTK353 does NOT enable NavIC, $PAIR066 does.
+- [CanSat antenna and link margin](cansat-antenna-and-link-margin.md) — fly the RadioMaster on LORA_ANT, not the duck; 30 dB losses mean wrong port/PA, not a bad antenna; link margin done by hand, not in the sketch.
+- [CanSat beacon is an I2S speaker](cansat-beacon-buzzer-wiring.md) — SM400204-1 + MAX98357A, so tone()/digitalWrite() are both silence; must use SAI2 (SAI1 collides with GNSS + BUS_V), and it falls ~13 dB short of the mandated 92 dB(A) at 1 m.
+- [Carbon shell blocks RF](cansat-carbon-shell-blocks-rf.md) — the PDR's 1.5 mm CFRP body is ~76 dB of shielding at 867 MHz; RF windows can't fix it because λ/2 is bigger than the shell.
+- [STEP files aren't simulatable](cansat-step-files-not-simulatable.md) — rf structure.step is STALE vs Fusion (rods 150 vs 210 mm, no shell); the real shell is 3 mm but 51% open, so er_eff = 1.83.
+- [HFSS 867 MHz solved](cansat-hfss-867-solved.md) — done & converged: +2.57 dBi peak, 99.7% eff, S21 −49.3 dB (no GNSS-blank rule needed); both shell models agree to 0.04 dB. Don't quote modelled S11.
+- [Windows dev toolchain layout](windows-dev-toolchain-layout.md) — VS Code portable in D:\Software\VS Code, but GCC must live at D:\Software\MinGW64; spaces break linking.
+- [HFSS project name collision](cansat-hfss-project-collision.md) — AEDT auto-names Project<N>; that collision destroyed the solution twice. Use VritraCansatRf/VritraRealShell, full paths, back up .aedtresults, solve via batch.

@@ -1,0 +1,591 @@
+"""Zero-board (perfboard) placement + hole-grid router + renderer.
+
+Board: 120 x 150 mm double-sided perfboard, 2.54 mm pitch, 47 x 59 holes.
+Hole C1 R1 = bottom-left hole seen from the COMPONENT side; C counts right,
+R counts up (up = toward the parachute bay).
+
+Traces run on the BOTTOM (solder side) from hole to hole, orthogonal only:
+a run of solder bridges or a bare tinned wire laid on the holes. A net that
+cannot be routed on the bottom gets a TOP jumper (insulated wire) instead.
+Pin geometry for modules is read from the team's own KiCad footprints
+(VRITRA_footprints.pretty), so hole offsets are the measured ones.
+"""
+from __future__ import annotations
+
+import heapq
+import math
+import os
+import re
+from dataclasses import dataclass, field
+
+PITCH = 2.54
+BOARD_W, BOARD_H = 120.0, 150.0
+NC, NR = 47, 59
+X0 = (BOARD_W - (NC - 1) * PITCH) / 2
+Y0 = (BOARD_H - (NR - 1) * PITCH) / 2
+FP_LIB = r"C:\Users\kalbh\Documents\KiCad\cansat final pcb\Board 1\VRITRA_footprints.pretty"
+SHELL_R = 59.0          # 120 mm inner diameter, 1 mm clearance
+ROD_EDGE = 42.5         # rods Ø8 at r=47 -> keep 4.5 mm off their centre
+
+
+def set_board(w: float, h: float, x0: float | None = None, y0: float | None = None) -> None:
+    """Re-size the grid for another board (etched PCB). Holes stay on 2.54 mm;
+    x0 / y0 pin the first hole so a board can be shortened without moving parts."""
+    global BOARD_W, BOARD_H, NC, NR, X0, Y0
+    BOARD_W, BOARD_H = w, h
+    NC = int((w - 2.0) / PITCH) + 1 if x0 is None else int((w - x0 - 1.0) / PITCH) + 1
+    NR = int((h - 2.0) / PITCH) + 1 if y0 is None else int((h - y0 - 1.0) / PITCH) + 1
+    X0 = (w - (NC - 1) * PITCH) / 2 if x0 is None else x0
+    Y0 = (h - (NR - 1) * PITCH) / 2 if y0 is None else y0
+
+
+def hx(c: int) -> float:
+    return X0 + (c - 1) * PITCH
+
+
+def hy(r: int) -> float:
+    return Y0 + (r - 1) * PITCH
+
+
+def _rot(u: float, v: float, rot: int) -> tuple[float, float]:
+    """Rotate a board-up vector (u right, v up) CCW by rot degrees."""
+    return {0: (u, v), 90: (-v, u), 180: (-u, -v), 270: (v, -u)}[rot]
+
+
+@dataclass
+class Part:
+    ref: str
+    label: str
+    pins: dict            # pad id -> (c, r)
+    names: dict           # pad id -> pin name
+    body: tuple           # (x0, y0, x1, y1) mm, component-side view
+    height: float         # tallest point above the board, mm
+    color: str
+    note: str = ""
+    dashed: bool = False
+    fit_check: bool = True
+
+
+@dataclass
+class Net:
+    name: str
+    pins: list            # [(ref, pad), ...]
+    kind: str = "trace"   # trace | wire (thick insulated wire, not routed)
+
+
+@dataclass
+class Board:
+    key: str
+    title: str
+    keep_x: tuple         # usable x range (mm) after trimming
+    plane_y: float | None # board plane offset from can axis (None = no fit check)
+    face_out: bool = True
+    parts: dict = field(default_factory=dict)
+    nets: list = field(default_factory=list)
+    notes: list = field(default_factory=list)
+    keepout: list = field(default_factory=list)   # (x0,y0,x1,y1,label) top-side clear zones
+
+
+# ---------------------------------------------------------------------------
+# footprints
+# ---------------------------------------------------------------------------
+def load_fp(name: str):
+    s = open(os.path.join(FP_LIB, name + ".kicad_mod"), encoding="utf-8").read()
+    pads = [(m.group(1), float(m.group(3)), float(m.group(4)))
+            for m in re.finditer(r'\(pad\s+"([^"]*)"\s+(thru_hole)\s+\w+\s*\(at\s+([-\d.]+)\s+([-\d.]+)', s)
+            if m.group(1)]
+    crt = []
+    for m in re.finditer(r'\((fp_rect|fp_line|fp_poly)(.*?)\(layer\s+"?F\.CrtYd"?\)', s, re.S):
+        crt += [(float(a), float(b)) for a, b in re.findall(r'\((?:start|end|xy)\s+([-\d.]+)\s+([-\d.]+)\)', m.group(2))]
+    return pads, crt
+
+
+def place_fp(b: Board, ref, fp, anchor_pad, c, r, rot, label, names, height, color, note="", pins_used=None):
+    pads, crt = load_fp(fp)
+    ax_, ay_ = next((x, y) for p, x, y in pads if p == anchor_pad)
+    pins = {}
+    for p, x, y in pads:
+        if pins_used is not None and p not in pins_used:
+            continue
+        gu, gv = round((x - ax_) / PITCH), round(-(y - ay_) / PITCH)
+        dc, dr = _rot(gu, gv, rot)
+        pins[p] = (c + int(dc), r + int(dr))
+    cx, cy = hx(c), hy(r)
+    pts = [_rot(x - ax_, -(y - ay_), rot) for x, y in crt]
+    body = (cx + min(p[0] for p in pts), cy + min(p[1] for p in pts),
+            cx + max(p[0] for p in pts), cy + max(p[1] for p in pts))
+    b.parts[ref] = Part(ref, label, pins, {k: names.get(k, k) for k in pins}, body, height, color, note)
+    return b.parts[ref]
+
+
+def place_row(b: Board, ref, c, r, names, label, direction="right", height=8.5, color="#d9b3ff",
+              body_pad=(1.3, 1.3), note="", fit_check=True, jst=False):
+    """Single-row header / connector. names in pin-1-first order."""
+    dc, dr = {"right": (1, 0), "left": (-1, 0), "up": (0, 1), "down": (0, -1)}[direction]
+    pins, nm = {}, {}
+    for i, n in enumerate(names):
+        pins[str(i + 1)] = (c + dc * i, r + dr * i)
+        nm[str(i + 1)] = n
+    xs = [hx(p[0]) for p in pins.values()]
+    ys = [hy(p[1]) for p in pins.values()]
+    if jst:
+        # JST-XH vertical (B#B-XH-A): 2.5 mm pitch (fits 2.54 holes up to 5 pins),
+        # housing reaches 2.45 mm past the end pins and is 5.75 mm deep.
+        if not 2 <= len(names) <= 5:
+            raise ValueError(f"{ref}: JST connectors here are 2..5 pins, got {len(names)}")
+        along, across = 2.45, 2.9
+        body_pad = (along, across) if direction in ("right", "left") else (across, along)
+        height = 7.0
+    body = (min(xs) - body_pad[0], min(ys) - body_pad[1], max(xs) + body_pad[0], max(ys) + body_pad[1])
+    b.parts[ref] = Part(ref, label, pins, nm, body, height, color, note, fit_check=fit_check)
+    b.parts[ref].jst = jst
+    return b.parts[ref]
+
+
+def place_2pin(b: Board, ref, c1, r1, c2, r2, label, kind="R", height=None):
+    color = {"R": "#f2e6c9", "C": "#cfe2f3", "CP": "#9fc5e8", "LED_G": "#2ecc40", "LED_R": "#ff4136",
+             "D": "#cccccc"}[kind]
+    h = height if height is not None else {"R": 2.5, "C": 5.0, "CP": 9.0, "LED_G": 6.0, "LED_R": 6.0,
+                                           "D": 2.5}[kind]
+    x1, y1, x2, y2 = hx(c1), hy(r1), hx(c2), hy(r2)
+    pad = 1.2
+    body = (min(x1, x2) - pad, min(y1, y2) - pad, max(x1, x2) + pad, max(y1, y2) + pad)
+    polar = kind.startswith("LED") or kind == "D"
+    names = {"1": "A" if polar else ("+" if kind == "CP" else "1"), "2": "K" if polar else ("-" if kind == "CP" else "2")}
+    b.parts[ref] = Part(ref, label, {"1": (c1, r1), "2": (c2, r2)}, names, body, h, color)
+    return b.parts[ref]
+
+
+def place_box(b: Board, ref, x0, y0, x1, y1, label, color, height=10.0, note="", dashed=False, pins=None, names=None):
+    b.parts[ref] = Part(ref, label, pins or {}, names or {}, (x0, y0, x1, y1), height, color, note, dashed,
+                        fit_check=not dashed)
+    return b.parts[ref]
+
+
+# ---------------------------------------------------------------------------
+# checks
+# ---------------------------------------------------------------------------
+def fit_check(b: Board) -> list[str]:
+    """Shell-curvature + rod + keep-zone check for every placed part."""
+    msgs = []
+    k0, k1 = b.keep_x
+    for p in b.parts.values():
+        if not p.fit_check:
+            continue
+        x0, y0, x1, y1 = p.body
+        if x0 < k0 - 0.01 or x1 > k1 + 0.01 or y0 < 0 or y1 > BOARD_H:
+            msgs.append(f"{p.ref}: body {x0:.1f}..{x1:.1f} x {y0:.1f}..{y1:.1f} leaves the keep zone {k0}..{k1}")
+        if b.plane_y is None:
+            continue
+        tip = abs(b.plane_y) + 0.8 + p.height
+        half = math.sqrt(max(SHELL_R ** 2 - tip ** 2, 0))
+        ext = max(abs(x0 - 60), abs(x1 - 60))
+        if ext > half:
+            msgs.append(f"{p.ref}: {p.height:.0f} mm tall reaches |x|={ext:.1f} but the shell allows {half:.1f} at that height")
+        if b.plane_y != 0 and tip > ROD_EDGE:
+            msgs.append(f"{p.ref}: tip {tip:.1f} mm from axis hits the rod at r=47")
+    if b.plane_y == 0 and (60 - k0 > ROD_EDGE or k1 - 60 > ROD_EDGE):
+        msgs.append("board edge reaches the x=±47 rods")
+    # pin holes must be unique
+    seen = {}
+    for p in b.parts.values():
+        for pad, h in p.pins.items():
+            if h in seen:
+                msgs.append(f"hole C{h[0]} R{h[1]} used by {seen[h]} and {p.ref}.{pad}")
+            seen[h] = f"{p.ref}.{pad}"
+    # bodies of owned parts must not overlap
+    owned = [p for p in b.parts.values() if not p.dashed]
+    for i, a in enumerate(owned):
+        for q in owned[i + 1:]:
+            ax0, ay0, ax1, ay1 = a.body
+            bx0, by0, bx1, by1 = q.body
+            if ax0 < bx1 - 0.3 and bx0 < ax1 - 0.3 and ay0 < by1 - 0.3 and by0 < ay1 - 0.3:
+                msgs.append(f"bodies overlap: {a.ref} and {q.ref}")
+    return msgs
+
+
+# ---------------------------------------------------------------------------
+# router
+# ---------------------------------------------------------------------------
+DIRS = ((1, 0), (-1, 0), (0, 1), (0, -1))
+
+
+def usable(b: Board, c: int, r: int) -> bool:
+    x, y = hx(c), hy(r)
+    k0, k1 = getattr(b, "copper_x", b.keep_x)      # copper margin is from the board edge, not the body zone
+    return k0 + EDGE <= x <= k1 - EDGE and EDGE <= y <= BOARD_H - EDGE
+
+
+EDGE = 3.0             # mm kept clear on every edge for the 3D-printed slot mount
+HOP_COST = 9.0         # one short insulated wire hopping over a foreign trace
+TURN_COST = 0.9
+ITERATIONS = 40
+
+
+def route(b: Board):
+    """Negotiated-congestion (PathFinder-style) router on the hole grid.
+
+    Every hole belongs to at most one net. A path may 'hop' two holes in a
+    straight line over a foreign trace hole (never over a pin) — that hop is an
+    insulated wire on the solder side. Nets are ripped up and re-routed with
+    growing penalties on shared holes until no hole is shared; a final pass
+    with hard blocking resolves any remainder with hops / long jumpers."""
+    pin_owner = {}
+    for n in b.nets:
+        for ref, pad in n.pins:
+            h = b.parts[ref].pins[pad]
+            if h in pin_owner and pin_owner[h] != n.name:
+                raise ValueError(f"pin {ref}.{pad} is in two nets: {pin_owner[h]} and {n.name}")
+            pin_owner[h] = n.name
+    for p in b.parts.values():     # unconnected pins still block their hole
+        for pad, h in p.pins.items():
+            pin_owner.setdefault(h, f"NC:{p.ref}.{pad}")
+    pin_holes = set(pin_owner)
+
+    trace_nets = sorted((n for n in b.nets if n.kind == "trace"),
+                        key=lambda n: (n.name in POWER_LAST, _hpwl(b, n)))
+    hist = {}
+    usage = {}                     # hole -> set of nets (routed holes, excl. pins)
+
+    def hole_cost(q, net, pres, hard):
+        o = pin_owner.get(q)
+        if o is not None and o != net:
+            return None
+        users = usage.get(q, set()) - {net}
+        if users and hard:
+            return None
+        return (1.0 + hist.get(q, 0.0)) * (1.0 + pres * len(users))
+
+    def dijkstra(net, sources, target, pres, hard):
+        pq, best, prev = [], {}, {}
+        for s in sources:
+            heapq.heappush(pq, (0.0, s, -1))
+            best[(s, -1)] = 0.0
+        while pq:
+            cost, cur, d = heapq.heappop(pq)
+            if cur == target:
+                path, st = [cur], (cur, d)
+                while st in prev:
+                    st = prev[st]
+                    path.append(st[0])
+                return path[::-1]
+            if cost > best.get((cur, d), 1e18):
+                continue
+            c, r = cur
+            for nd, (dc, dr) in enumerate(DIRS):
+                for step, extra in ((1, 0.0), (2, HOP_COST)):
+                    q = (c + dc * step, r + dr * step)
+                    if not (1 <= q[0] <= NC and 1 <= q[1] <= NR) or not usable(b, *q):
+                        continue
+                    if step == 2:
+                        mid = (c + dc, r + dr)
+                        if mid in pin_holes or not (usage.get(mid, set()) - {net}):
+                            continue          # hop only over a foreign trace
+                    hc = hole_cost(q, net, pres, hard)
+                    if hc is None:
+                        continue
+                    ncost = cost + hc + extra + (TURN_COST if d not in (-1, nd) else 0.0)
+                    if ncost < best.get((q, nd), 1e18):
+                        best[(q, nd)] = ncost
+                        prev[(q, nd)] = (cur, d)
+                        heapq.heappush(pq, (ncost, q, nd))
+        return None
+
+    def route_net(n, pres, hard):
+        holes = [b.parts[ref].pins[pad] for ref, pad in n.pins]
+        tree, remaining = {holes[0]}, list(dict.fromkeys(holes[1:]))
+        segs, jumpers = [], []
+        while remaining:
+            remaining.sort(key=lambda h: min(abs(h[0] - t[0]) + abs(h[1] - t[1]) for t in tree))
+            tgt = remaining.pop(0)
+            if tgt in tree:
+                continue
+            path = dijkstra(n.name, tree, tgt, pres, hard)
+            if path is None:
+                near = min(tree, key=lambda t: abs(tgt[0] - t[0]) + abs(tgt[1] - t[1]))
+                jumpers.append((near, tgt))
+                tree.add(tgt)
+                continue
+            for h in path:
+                if h not in pin_holes:
+                    usage.setdefault(h, set()).add(n.name)
+            segs.append(path)
+            tree.update(path)
+        return {"segs": segs, "jumpers": jumpers}
+
+    def rip(name):
+        for s in usage.values():
+            s.discard(name)
+
+    results, pres = {}, 0.5
+    for it in range(ITERATIONS):
+        for n in trace_nets:
+            rip(n.name)
+            results[n.name] = route_net(n, pres, hard=False)
+        shared = [q for q, s in usage.items() if len(s) > 1]
+        if not shared:
+            break
+        for q in shared:
+            hist[q] = hist.get(q, 0.0) + 0.6
+        pres *= 1.5
+    # legalise: any net still sharing a hole is re-routed with hard blocking
+    for n in trace_nets:
+        if any(len(usage.get(h, set())) > 1 for p in results[n.name]["segs"] for h in p):
+            rip(n.name)
+            results[n.name] = route_net(n, pres, hard=True)
+    # split hop steps out of the paths into explicit short wires
+    for name, res in results.items():
+        segs, hops = [], []
+        for path in res["segs"]:
+            cur = [path[0]]
+            for a, c in zip(path, path[1:]):
+                if abs(a[0] - c[0]) + abs(a[1] - c[1]) == 2:
+                    if len(cur) > 1:
+                        segs.append(cur)
+                    hops.append((a, c))
+                    cur = [c]
+                else:
+                    cur.append(c)
+            if len(cur) > 1:
+                segs.append(cur)
+        res["segs"], res["hops"] = segs, hops
+    occ = dict(pin_owner)
+    for q, s in usage.items():
+        for name in s:
+            occ[q] = name if q not in occ or occ[q] == name else "CONFLICT"
+    for n in b.nets:
+        if n.kind == "wire":
+            results[n.name] = {"segs": [], "hops": [], "jumpers": _wire_chain(b, n), "wire": True}
+    return results, occ
+
+
+def _wire_chain(b: Board, n: Net):
+    """Minimum spanning tree (Manhattan length) over the pins of an insulated
+    power wire net: each edge is one short wire soldered pin to pin."""
+    holes = list(dict.fromkeys(b.parts[ref].pins[pad] for ref, pad in n.pins))
+    tree, left, edges = {holes[0]}, set(holes[1:]), []
+    while left:
+        a, c = min(((t, h) for t in tree for h in left),
+                   key=lambda e: abs(e[0][0] - e[1][0]) + abs(e[0][1] - e[1][1]))
+        edges.append((a, c))
+        tree.add(c)
+        left.discard(c)
+    return edges
+
+
+POWER_LAST = {"GND", "+3V3_A", "+3V3_B", "+5V_LOGIC", "+5V", "+8V_STEER", "+5V_SERVO"}
+
+
+def _hpwl(b, n):
+    hs = [b.parts[ref].pins[pad] for ref, pad in n.pins]
+    return (max(h[0] for h in hs) - min(h[0] for h in hs)) + (max(h[1] for h in hs) - min(h[1] for h in hs))
+
+
+def verify(b: Board, results, occ) -> list[str]:
+    """Union-find over every routed hole: each net must be one piece, and no
+    hole may carry two nets."""
+    msgs = []
+    for n in b.nets:
+        parent = {}
+
+        def find(x):
+            parent.setdefault(x, x)
+            while parent[x] != x:
+                parent[x] = parent[parent[x]]
+                x = parent[x]
+            return x
+
+        def union(a, c):
+            parent[find(a)] = find(c)
+
+        res = results[n.name]
+        for path in res["segs"]:
+            for a, c in zip(path, path[1:]):
+                if abs(a[0] - c[0]) + abs(a[1] - c[1]) != 1:
+                    msgs.append(f"{n.name}: non-adjacent step {a}->{c}")
+                if occ.get(a) != n.name or occ.get(c) != n.name:
+                    msgs.append(f"{n.name}: path hole owned by another net")
+                union(a, c)
+        for a, c in res["jumpers"] + res.get("hops", []):
+            union(a, c)
+        holes = [b.parts[ref].pins[pad] for ref, pad in n.pins]
+        roots = {find(h) for h in holes}
+        if len(roots) != 1:
+            msgs.append(f"{n.name}: NOT fully connected ({len(roots)} pieces)")
+    return msgs
+
+
+# ---------------------------------------------------------------------------
+# rendering
+# ---------------------------------------------------------------------------
+PALETTE = ["#1f77b4", "#2ca02c", "#9467bd", "#8c564b", "#e377c2", "#17becf", "#bcbd22",
+           "#ff7f0e", "#7f7f7f", "#393b79", "#637939", "#8c6d31", "#843c39", "#7b4173",
+           "#3182bd", "#31a354", "#756bb1", "#e6550d", "#636363", "#6baed6"]
+FIXED = {"GND": "#000000", "+3V3_A": "#e69500", "+3V3_B": "#e69500", "+5V_LOGIC": "#d62728",
+         "+5V": "#d62728", "+8V_STEER": "#6a0dad", "+5V_SERVO": "#c2185b", "VBAT": "#b71c1c"}
+
+
+def net_colors(b: Board):
+    cols, i = {}, 0
+    for n in b.nets:
+        if n.name in FIXED:
+            cols[n.name] = FIXED[n.name]
+        else:
+            cols[n.name] = PALETTE[i % len(PALETTE)]
+            i += 1
+    return cols
+
+
+def _sheet(title, sub):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots(figsize=(11.5, 13.2), dpi=240)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.set_xlim(-24, BOARD_W + 24)
+    ax.set_ylim(-16, BOARD_H + 8)
+    ax.set_title(title, fontsize=10.5, fontweight="bold", loc="left")
+    ax.text(-20, -9, sub, fontsize=6.0, va="top", wrap=True)
+    return fig, ax, plt
+
+
+def _board_bg(ax, b: Board, mirror: bool):
+    from matplotlib.patches import Rectangle
+    X = (lambda x: BOARD_W - x) if mirror else (lambda x: x)
+    ax.add_patch(Rectangle((0, 0), BOARD_W, BOARD_H, fc="#cfe3cf" if not mirror else "#e8d9b8",
+                           ec="k", lw=1.4, zorder=0))
+    k0, k1 = b.keep_x
+    for a0, a1 in ((0, k0), (k1, BOARD_W)):
+        if a1 - a0 > 0.1:
+            xa, xb = sorted((X(a0), X(a1)))
+            ax.add_patch(Rectangle((xa, 0), xb - xa, BOARD_H, fc="#ffdddd", ec="red", hatch="///",
+                                   lw=0.6, alpha=0.6, zorder=1))
+            ax.text((xa + xb) / 2, BOARD_H / 2, f"TRIM {a1 - a0:.0f} mm", rotation=90, color="red",
+                    fontsize=6, ha="center", va="center", fontweight="bold", zorder=2)
+    xs = [X(hx(c)) for c in range(1, NC + 1)]
+    ys = [hy(r) for r in range(1, NR + 1)]
+    ax.scatter([x for x in xs for _ in ys], [y for _ in xs for y in ys], s=1.3, c="#6d7d6d", zorder=2)
+    for c in range(1, NC + 1, 2):
+        ax.text(X(hx(c)), -2.2, str(c), fontsize=3.6, ha="center", va="top")
+        ax.text(X(hx(c)), BOARD_H + 1.0, str(c), fontsize=3.6, ha="center", va="bottom")
+    for r in range(1, NR + 1, 2):
+        ax.text(-1.2, hy(r), str(r), fontsize=3.6, ha="right", va="center")
+        ax.text(BOARD_W + 1.2, hy(r), str(r), fontsize=3.6, ha="left", va="center")
+    ax.text(-1.2, -2.2, "R\\C", fontsize=3.6, ha="right", va="top")
+    return X
+
+
+def render_top(b: Board, results, path):
+    from matplotlib.patches import Rectangle, Circle
+    fig, ax, plt = _sheet(f"{b.title} — COMPONENT SIDE (pin holes + placement)",
+                          "View from the component side. C = column (1 at left), R = row (1 at bottom). Each pin hole shows its pin "
+                          "name; blue text = net. Thick right-angled lines = insulated POWER wires laid on this side (GND black, "
+                          "3V3 orange, 5V red) — solder each end into the pin hole shown. Signals are on the solder side (other sheet). "
+                          + " ".join(b.notes))
+    X = _board_bg(ax, b, mirror=False)
+    cols = net_colors(b)
+    pin_net = {(ref, pad): n.name for n in b.nets for ref, pad in n.pins}
+    for x0, y0, x1, y1, lab in b.keepout:
+        ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="none", ec="red", ls=":", lw=0.9, zorder=3))
+        ax.text((x0 + x1) / 2, (y0 + y1) / 2, lab, fontsize=4.5, color="red", ha="center", va="center", zorder=3)
+    for p in b.parts.values():
+        x0, y0, x1, y1 = p.body
+        ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="white" if p.dashed else p.color, ec="k",
+                               lw=0.8, ls="--" if p.dashed else "-", alpha=0.55 if not p.dashed else 0.9, zorder=3))
+        big = (x1 - x0) * (y1 - y0) > 120
+        ax.text((x0 + x1) / 2, y1 - 1.2, f"{p.ref} {p.label}", fontsize=5.0 if big else 3.6, ha="center", va="top",
+                fontweight="bold", zorder=6)
+        if p.note and big:
+            ax.text((x0 + x1) / 2, y0 + 1.0, p.note, fontsize=3.6, ha="center", va="bottom", zorder=6, linespacing=1.0)
+        for pad, (c, r) in p.pins.items():
+            net = pin_net.get((p.ref, pad))
+            ax.add_patch(Circle((hx(c), hy(r)), 0.85, fc=cols.get(net, "#bbbbbb") if net else "#ffffff",
+                                ec="k", lw=0.4, zorder=7))
+            ax.text(hx(c) + 1.0, hy(r) + 0.5, p.names.get(pad, pad), fontsize=3.0, zorder=8, fontweight="bold")
+            if net:
+                ax.text(hx(c) + 1.0, hy(r) - 0.8, net, fontsize=2.6, color="#0b3d91", zorder=8)
+    for name, res in results.items():
+        for a, c in res["jumpers"]:
+            if res.get("wire"):
+                xs, ys = [hx(a[0]), hx(c[0]), hx(c[0])], [hy(a[1]), hy(a[1]), hy(c[1])]
+                ax.plot(xs, ys, lw=2.2, color=cols[name], alpha=0.55, solid_capstyle="round", zorder=9)
+            else:
+                ax.plot([hx(a[0]), hx(c[0])], [hy(a[1]), hy(c[1])], ls="--", lw=0.9, color=cols[name], zorder=9)
+    fig.savefig(path, bbox_inches="tight")
+    plt.close(fig)
+
+
+def render_bottom(b: Board, results, path):
+    from matplotlib.patches import Rectangle, Circle
+    fig, ax, plt = _sheet(f"{b.title} — SOLDER SIDE (traces), board flipped left-right",
+                          "This is what you see after turning the board over (mirror image of the component side): column 1 is now on "
+                          "the RIGHT. Solid lines = bottom traces: bridge neighbouring holes with solder or lay bare tinned wire along "
+                          "the holes shown. Little arches = HOP: a short insulated wire on this side that jumps over the trace "
+                          "beneath it (do not solder the hole in the middle). Power (GND/3V3/5V) is wired on the component side. "
+                          "Every hole a trace passes through belongs to that net only.")
+    X = _board_bg(ax, b, mirror=True)
+    cols = net_colors(b)
+    for p in b.parts.values():
+        x0, y0, x1, y1 = p.body
+        xa, xb = sorted((X(x0), X(x1)))
+        ax.add_patch(Rectangle((xa, y0), xb - xa, y1 - y0, fc="none", ec="#999", lw=0.5, ls=":", zorder=3))
+        ax.text((xa + xb) / 2, y1 - 1.0, p.ref, fontsize=4.0, color="#777", ha="center", va="top", zorder=3)
+    labelled = set()
+    for name, res in results.items():
+        col = cols[name]
+        lw = 2.0 if name in POWER_LAST else 1.3
+        for path_ in res["segs"]:
+            ax.plot([X(hx(c)) for c, r in path_], [hy(r) for c, r in path_], color=col, lw=lw,
+                    solid_capstyle="round", zorder=5)
+            if name not in labelled and len(path_) > 2:
+                mid = path_[len(path_) // 2]
+                ax.text(X(hx(mid[0])), hy(mid[1]) + 0.9, name, fontsize=3.2, color=col, ha="center",
+                        zorder=9, bbox=dict(fc="white", ec="none", alpha=0.75, pad=0.2))
+                labelled.add(name)
+        for a, c in res["jumpers"]:
+            if res.get("wire"):
+                continue                      # power wires live on the component side
+            ax.plot([X(hx(a[0])), X(hx(c[0]))], [hy(a[1]), hy(c[1])], color=col, ls="--", lw=0.9, zorder=6)
+        for a, c in res.get("hops", []):
+            xa, xc, ya, yc = X(hx(a[0])), X(hx(c[0])), hy(a[1]), hy(c[1])
+            mx, my = (xa + xc) / 2, (ya + yc) / 2
+            off = 1.3 if a[1] == c[1] else 0.0
+            offx = 1.3 if a[0] == c[0] else 0.0
+            ax.plot([xa, mx + offx, xc], [ya, my + off, yc], color=col, lw=1.6, zorder=10)
+            ax.plot([xa, mx + offx, xc], [ya, my + off, yc], color="white", lw=0.5, zorder=11)
+    pin_net = {(ref, pad): n.name for n in b.nets for ref, pad in n.pins}
+    for p in b.parts.values():
+        for pad, (c, r) in p.pins.items():
+            net = pin_net.get((p.ref, pad))
+            ax.add_patch(Circle((X(hx(c)), hy(r)), 0.9, fc=cols.get(net, "white") if net else "white",
+                                ec="k", lw=0.4, zorder=7))
+            ax.text(X(hx(c)) - 1.0, hy(r) + 0.55, f"{p.ref}.{p.names.get(pad, pad)}", fontsize=2.3, ha="right", zorder=8)
+    fig.savefig(path, bbox_inches="tight")
+    plt.close(fig)
+
+
+def wiring_list(b: Board, results) -> str:
+    lines = [f"# {b.title} — wiring list", "",
+             "Hole = C(column from left on the component side) R(row from bottom).",
+             "Bottom runs are listed as straight segments; solder-bridge every hole in each segment.", ""]
+    for n in b.nets:
+        res = results[n.name]
+        pins = ", ".join(f"{ref}.{b.parts[ref].names.get(pad, pad)} (C{b.parts[ref].pins[pad][0]} R{b.parts[ref].pins[pad][1]})"
+                         for ref, pad in n.pins)
+        lines.append(f"## {n.name}" + ("  — THICK INSULATED WIRE, point to point" if res.get("wire") else ""))
+        lines.append(f"- pins: {pins}")
+        for path_ in res["segs"]:
+            runs, start = [], path_[0]
+            for i in range(1, len(path_)):
+                if i == len(path_) - 1 or (path_[i + 1][0] - path_[i][0], path_[i + 1][1] - path_[i][1]) != \
+                        (path_[i][0] - path_[i - 1][0], path_[i][1] - path_[i - 1][1]):
+                    runs.append(f"C{start[0]}R{start[1]}→C{path_[i][0]}R{path_[i][1]}")
+                    start = path_[i]
+            lines.append("- bottom: " + " · ".join(runs))
+        for a, c in res.get("hops", []):
+            lines.append(f"- insulated HOP wire (solder side, over the other trace): C{a[0]}R{a[1]} ↔ C{c[0]}R{c[1]}")
+        for a, c in res["jumpers"]:
+            lines.append(f"- {'wire' if res.get('wire') else 'insulated jumper'}: C{a[0]}R{a[1]} ↔ C{c[0]}R{c[1]}")
+        lines.append("")
+    return "\n".join(lines)

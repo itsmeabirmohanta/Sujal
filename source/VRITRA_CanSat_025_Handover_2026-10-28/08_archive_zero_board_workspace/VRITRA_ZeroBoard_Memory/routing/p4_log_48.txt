@@ -1,0 +1,7 @@
+48 links 4 holes 530 problems 0
+49 links 10 holes 588 problems 0
+50 links 6 holes 560 problems 0
+51 links 4 holes 546 problems 0
+52 links 8 holes 591 problems 2
+53 links 3 holes 544 problems 0
+BEST 53 3 544

@@ -1,0 +1,7 @@
+42 links 4 holes 530 problems 1
+43 links 7 holes 576 problems 0
+44 links 4 holes 543 problems 0
+45 fail D: RX3 cannot be routed without sharing a hole
+46 links 15 holes 629 problems 0
+47 links 2 holes 530 problems 0
+BEST 47 2 530

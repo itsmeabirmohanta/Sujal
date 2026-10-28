@@ -1,0 +1,4 @@
+log [21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21]
+failed []
+problems 2 ['RX3: two link ends on one point', 'CAM_COM_RX: two link ends on one point']
+links 53

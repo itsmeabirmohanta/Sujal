@@ -1,0 +1,7 @@
+54 links 3 holes 530 problems 0
+55 links 18 holes 652 problems 0
+56 links 2 holes 528 problems 0
+57 links 2 holes 510 problems 0
+58 links 6 holes 555 problems 0
+59 fail D: SDA cannot be routed without sharing a hole
+BEST 57 2 510

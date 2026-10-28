@@ -1,0 +1,87 @@
+[
+  {
+    "id": "gnss_hardware",
+    "url": "https://quectel.com/content/uploads/2024/02/Quectel_L89_R2.0_Hardware-Design_V1.2.pdf",
+    "status": 200,
+    "final_url": "https://quectel.com/content/uploads/2024/02/Quectel_L89_R2.0_Hardware-Design_V1.2.pdf",
+    "file": "research/sources/gnss_hardware.pdf",
+    "bytes": 1370437,
+    "sha256": "f235b7b2351b324931388ec267805e7f6e2be501c9c19d6cd0e407498cf8d32c"
+  },
+  {
+    "id": "icm_v14",
+    "url": "https://invensense.tdk.com/wp-content/uploads/2021/07/DS-000189-ICM-20948-v1.4.pdf",
+    "status": 404,
+    "final_url": "https://www.invensense.tdk.com/en-us/wp-content/uploads/2021/07/ds-000189-icm-20948-v1.4.pdf"
+  },
+  {
+    "id": "rtc_ds",
+    "url": "https://www.analog.com/media/en/technical-documentation/data-sheets/DS3231.pdf",
+    "error": "HTTPSConnectionPool(host='www.analog.com', port=443): Read timed out. (read timeout=25)"
+  },
+  {
+    "id": "lsm_an",
+    "url": "https://www.st.com/resource/en/application_note/an5473-lsm6dso32-alwayson-3d-accelerometer-and-3d-gyroscope-stmicroelectronics.pdf",
+    "error": "HTTPSConnectionPool(host='www.st.com', port=443): Read timed out. (read timeout=25)"
+  },
+  {
+    "id": "semtech_driver",
+    "url": "https://raw.githubusercontent.com/Lora-net/SWDR001/master/README.md",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/Lora-net/SWDR001/master/README.md",
+    "file": "research/sources/semtech_driver.txt",
+    "bytes": 6967,
+    "sha256": "621ca7e974214baf5e321bf464c55f0ccc2b199fded9cec2e7633abefb0593b2"
+  },
+  {
+    "id": "st_fifo_example",
+    "url": "https://raw.githubusercontent.com/STMicroelectronics/STMems_Standard_C_drivers/master/lsm6dso32_STdC/examples/lsm6dso32_fifo.c",
+    "status": 404,
+    "final_url": "https://raw.githubusercontent.com/STMicroelectronics/STMems_Standard_C_drivers/master/lsm6dso32_STdC/examples/lsm6dso32_fifo.c"
+  },
+  {
+    "id": "st_selftest_example",
+    "url": "https://raw.githubusercontent.com/STMicroelectronics/STMems_Standard_C_drivers/master/lsm6dso32_STdC/examples/lsm6dso32_self_test.c",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/STMicroelectronics/STMems_Standard_C_drivers/master/lsm6dso32_STdC/examples/lsm6dso32_self_test.c",
+    "file": "research/sources/st_selftest_example.txt",
+    "bytes": 15633,
+    "sha256": "ab39cc77ab5556b1ceee96bbd7d3f2e4d59283f08b44dc7e18b398cbc3df0f6e"
+  },
+  {
+    "id": "icm_driver_header",
+    "url": "https://raw.githubusercontent.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary/main/src/util/ICM_20948_REGISTERS.h",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary/main/src/util/ICM_20948_REGISTERS.h",
+    "file": "research/sources/icm_driver_header.txt",
+    "bytes": 17402,
+    "sha256": "01eb8f940f041ca7e0b5a6d1e079b9c3b2d56b310985502f3f3d06a529462335"
+  },
+  {
+    "id": "radiolib_properties",
+    "url": "https://raw.githubusercontent.com/jgromes/RadioLib/7.7.1/library.properties",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/jgromes/RadioLib/7.7.1/library.properties",
+    "file": "research/sources/radiolib_properties.txt",
+    "bytes": 491,
+    "sha256": "411e6dd9e88072402e0f1bcd94f1d6afb92aa09904a5122ea0801dfb55300550"
+  },
+  {
+    "id": "arduino33_uart",
+    "url": "https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.0/cores/esp32/HardwareSerial.h",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.0/cores/esp32/HardwareSerial.h",
+    "file": "research/sources/arduino33_uart.txt",
+    "bytes": 16983,
+    "sha256": "e0b241c3036e1033ff02a5a67e776ef8fda0ccc00460458f56c67ad0941e6d97"
+  },
+  {
+    "id": "hdc_ti_note",
+    "url": "https://www.ti.com/lit/an/sboa631/sboa631.pdf",
+    "status": 200,
+    "final_url": "https://www.ti.com/lit/an/sboa631/sboa631.pdf",
+    "file": "research/sources/hdc_ti_note.pdf",
+    "bytes": 1333544,
+    "sha256": "fcda8df48cdf62419549374a216360dc781f466d0695c38db5daef68e8593f39"
+  }
+]

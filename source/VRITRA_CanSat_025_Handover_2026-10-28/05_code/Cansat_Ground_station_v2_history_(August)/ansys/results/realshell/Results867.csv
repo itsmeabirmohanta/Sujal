@@ -1,0 +1,9 @@
+quantity,value,source_or_reason
+"S11 comm  dB(St(CommPort,CommPort))",-2.038,"dB(St(CommPort,CommPort))"
+"S21 isolation dB(St(GnssPort,CommPort))",-49.308,"dB(St(GnssPort,CommPort))"
+"S22 gnss  dB(St(GnssPort,GnssPort))",-0.014,"dB(St(GnssPort,GnssPort))"
+VSWR comm,8.564,VSWR(CommPort)
+VSWR gnss,1266.607,VSWR(GnssPort)
+peak directivity dB,2.5493,dB(DirTotal)
+peak realized gain dBi,-1.73,FullSphere
+radiation efficiency,0.9966,RadiationEfficiency

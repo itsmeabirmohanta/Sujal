@@ -1,0 +1,19 @@
+name: Check research handoff
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  host-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r research/requirements.txt
+      - run: python research/run_checks.py
+      - run: python research/check_publication.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-research-handoff
+          path: deliverables/VRITRA_RESEARCH_HANDOFF.zip

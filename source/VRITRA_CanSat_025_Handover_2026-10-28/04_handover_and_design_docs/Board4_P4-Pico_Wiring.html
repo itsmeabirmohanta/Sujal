@@ -1,0 +1,832 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Board 4 P4-Pico Wiring</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&family=Saira+Semi+Condensed:wght@500;600;700&display=swap">
+<style>
+:root{
+  /* Layout: a bench card. Pin map first (what you look at with the iron in hand), then the build order you solder in, then the rules. One column, 1080px max. */
+  --bg:#F2F5F3; --surface:#FFFFFF; --sunk:#E7ECE9; --ink:#16201B; --muted:#55625C; --line:#D2DBD6;
+  --accent:#0F6E57; --accent-ink:#FFFFFF; --shadow:rgba(16,32,26,.14);
+  --act:#A04A08; --act-bg:#FCEEE1;
+  --com:#1E55C9; --com-bg:#E6EDFB;
+  --sens:#6B35C9; --sens-bg:#F0E9FC;
+  --pwr:#B42323; --pwr-bg:#FBE8E8;
+  --gnd:#39443F; --gnd-bg:#E2E8E5;
+  /* the board drawing is a physical object: same look in both themes */
+  --board:#111714; --board-edge:#0A0E0C; --silk:#E9EFEB; --silk-dim:#86938C; --pad:#CDA14A; --pad-ink:#231905;
+  --perf:#6B4A2B; --perf-edge:#4F361F; --copper:#D08A4C;
+  --ring-act:#F2A04F; --ring-com:#86AEFF; --ring-sens:#BCA0FF; --ring-pwr:#FF8080; --ring-gnd:#AEBBB4;
+  --ff-display:"Saira Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --ff-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --ff-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1210; --surface:#141B18; --sunk:#1B2420; --ink:#E3EAE6; --muted:#9AA79F; --line:#2A3530;
+    --accent:#3CC29C; --accent-ink:#04110D; --shadow:rgba(0,0,0,.45);
+    --act:#F2A04F; --act-bg:#2D1E10;
+    --com:#86AEFF; --com-bg:#15223B;
+    --sens:#BCA0FF; --sens-bg:#231A36;
+    --pwr:#FF8484; --pwr-bg:#351616;
+    --gnd:#BAC6C0; --gnd-bg:#1F2925;
+    --board-edge:#34413B; --perf-edge:#87653F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1210; --surface:#141B18; --sunk:#1B2420; --ink:#E3EAE6; --muted:#9AA79F; --line:#2A3530;
+  --accent:#3CC29C; --accent-ink:#04110D; --shadow:rgba(0,0,0,.45);
+  --act:#F2A04F; --act-bg:#2D1E10;
+  --com:#86AEFF; --com-bg:#15223B;
+  --sens:#BCA0FF; --sens-bg:#231A36;
+  --pwr:#FF8484; --pwr-bg:#351616;
+  --gnd:#BAC6C0; --gnd-bg:#1F2925;
+  --board-edge:#34413B; --perf-edge:#87653F;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--ff-body);font-size:16px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code,pre{font-family:var(--ff-mono)}
+code{font-size:.88em}
+p{margin:0}
+
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 72px;display:flex;flex-direction:column;gap:40px}
+
+/* header */
+.top{display:flex;flex-direction:column;gap:12px;max-width:780px}
+.eyebrow{font-family:var(--ff-display);font-weight:600;font-size:.82rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--ff-display);font-weight:700;font-size:clamp(2rem,5.2vw,3.15rem);line-height:1.02;letter-spacing:-.01em;margin:0;text-wrap:balance}
+h1 .arrow{color:var(--accent);font-weight:600}
+.lede{font-size:1.07rem;max-width:62ch}
+.facts{list-style:none;margin:2px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:.9rem}
+.facts b{font-family:var(--ff-mono);font-weight:600;color:var(--ink)}
+
+/* sticky progress */
+.progress{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px}
+.prog{flex:1 1 260px;display:flex;align-items:center;gap:12px;min-width:0}
+.prog-text{font-family:var(--ff-mono);font-size:.84rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+.prog-track{flex:1;height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;min-width:60px}
+.prog-fill{height:100%;width:0;background:var(--accent);transition:width .25s ease}
+.sync{font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.sync::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.sync.is-account::before{background:var(--accent)}
+.jump{display:flex;flex-wrap:wrap;gap:2px}
+.jump a{font-family:var(--ff-display);font-weight:600;font-size:.84rem;letter-spacing:.05em;text-transform:uppercase;text-decoration:none;color:var(--muted);padding:6px 8px;border-radius:6px}
+.jump a:hover{color:var(--ink);background:var(--sunk)}
+
+/* sections */
+.sec{display:flex;flex-direction:column;gap:18px;scroll-margin-top:80px}
+.sec-head{display:flex;flex-direction:column;gap:6px;max-width:70ch}
+h2{font-family:var(--ff-display);font-weight:700;font-size:1.7rem;line-height:1.1;margin:0;text-wrap:balance}
+.sec-head p{color:var(--muted)}
+h3{font-family:var(--ff-display);font-weight:600;font-size:1.12rem;line-height:1.2;margin:0;letter-spacing:.01em;text-wrap:balance}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
+
+/* pin map */
+.pm-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+@media (min-width:920px){.pm-layout{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);align-items:start}}
+.pm-card{padding:14px;display:flex;flex-direction:column;gap:12px}
+.pm-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;padding:3px;background:var(--sunk)}
+.seg button{font:600 .9rem/1 var(--ff-display);letter-spacing:.03em;border:0;background:transparent;color:var(--muted);padding:9px 12px;border-radius:7px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px var(--shadow)}
+.pm-hint{font-size:.88rem;color:var(--muted);flex:1 1 220px}
+.pm-scroll{overflow-x:auto}
+.pinmap{--padc:38px;--silkc:62px;--midc:30px;display:grid;grid-template-columns:minmax(0,1fr) var(--padc) var(--silkc) var(--midc) var(--silkc) var(--padc) minmax(0,1fr);grid-auto-rows:minmax(32px,auto);align-items:center;min-width:300px;padding-block:2px}
+.pm-board{grid-column:2/7;grid-row:1/23;align-self:stretch;background:var(--board);border:2px solid var(--board-edge);border-radius:10px}
+.pm-edge{grid-column:2/7;text-align:center;font:600 .66rem/1 var(--ff-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--silk-dim);padding-block:8px;z-index:1}
+.pm-center{grid-column:4;grid-row:2/22;align-self:stretch;display:flex;align-items:center;justify-content:center;z-index:1;overflow:hidden}
+.pm-center span{writing-mode:vertical-rl;transform:rotate(180deg);font:600 .68rem/1 var(--ff-mono);letter-spacing:.22em;text-transform:uppercase;color:var(--silk-dim);white-space:nowrap}
+.pm-pad{z-index:1;justify-self:center;width:24px;height:24px;border-radius:50%;background:var(--pad);color:var(--pad-ink);display:grid;place-items:center;font:600 10px/1 var(--ff-mono);font-variant-numeric:tabular-nums}
+.pm-pad.sq{border-radius:4px}
+.pm-pad.k-act{box-shadow:0 0 0 3px var(--ring-act)}
+.pm-pad.k-com{box-shadow:0 0 0 3px var(--ring-com)}
+.pm-pad.k-sens{box-shadow:0 0 0 3px var(--ring-sens)}
+.pm-pad.k-pwr{box-shadow:0 0 0 3px var(--ring-pwr)}
+.pm-pad.k-gndu{box-shadow:0 0 0 3px var(--ring-gnd)}
+.pm-pad.k-avoid,.pm-pad.k-nc{opacity:.42}
+.pm-pad.k-spare{opacity:.72}
+.pm-silk{z-index:1;font:500 11px/1 var(--ff-mono);color:var(--silk);white-space:nowrap;padding-inline:3px}
+.pm-silk.l{justify-self:start}
+.pm-silk.r{justify-self:end}
+.pm-silk.dim{color:var(--silk-dim)}
+.pm-tag{display:flex;padding-inline:8px;min-width:0}
+.pm-tag.l{justify-content:flex-end;text-align:right}
+.pm-tag.r{justify-content:flex-start;text-align:left}
+.pinmap.is-solder .pm-board{background:var(--perf);border-color:var(--perf-edge)}
+.pinmap.is-solder .pm-pad{background:var(--copper)}
+.pinmap.is-solder .pm-silk.dim,.pinmap.is-solder .pm-edge,.pinmap.is-solder .pm-center span{color:#D9C6B2}
+@media (max-width:560px){
+  .pinmap{--padc:30px;--silkc:40px;--midc:14px}
+  .pm-silk{font-size:10px}
+  .pm-silk .pre{display:none}
+  .pm-pad{width:22px;height:22px}
+  .pm-card{padding:10px}
+}
+
+.tag{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:0 .4em;padding:3px 7px;border-radius:6px;text-decoration:none;color:inherit;max-width:100%;line-height:1.25}
+.pm-tag.l .tag{justify-content:flex-end}
+.tag b{font-family:var(--ff-display);font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:.8rem}
+.tag span{font-family:var(--ff-mono);font-size:.7rem}
+a.tag:hover b{text-decoration:underline}
+.tag.k-act{background:var(--act-bg);color:var(--act)}
+.tag.k-com{background:var(--com-bg);color:var(--com)}
+.tag.k-sens{background:var(--sens-bg);color:var(--sens)}
+.tag.k-pwr{background:var(--pwr-bg);color:var(--pwr)}
+.tag.k-gndu{background:var(--gnd-bg);color:var(--gnd)}
+.tag.k-plain{color:var(--muted);padding-inline:2px}
+.tag.k-plain b{font-weight:600;font-size:.74rem}
+.tag.k-avoid{color:var(--muted);border:1px dashed var(--line)}
+.tag.k-avoid b,.tag.k-nc b{font-size:.72rem}
+.tag.k-nc{color:var(--muted);border:1px solid var(--line)}
+
+.pm-side{display:flex;flex-direction:column;gap:18px;min-width:0}
+.steps{margin:10px 0 0;padding-left:1.25em;display:flex;flex-direction:column;gap:8px;font-size:.93rem}
+.legend{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 12px;font-size:.88rem}
+.legend li{display:flex;align-items:center;gap:8px;min-width:0}
+.sw{width:14px;height:14px;border-radius:4px;flex:none}
+.sw.k-act{background:var(--act)} .sw.k-com{background:var(--com)} .sw.k-sens{background:var(--sens)}
+.sw.k-pwr{background:var(--pwr)} .sw.k-gnd{background:var(--gnd)}
+.sw.k-avoid{border:1.5px dashed var(--muted)} .sw.k-nc{border:1.5px solid var(--muted)} .sw.k-spare{background:var(--sunk);border:1px solid var(--line)}
+
+/* signal table */
+.tscroll{overflow-x:auto;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:640px}
+th{font:600 .74rem/1.2 var(--ff-display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{font-family:var(--ff-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.hdr{font-weight:700}
+tr.grp td{background:var(--sunk);font:600 .72rem/1.2 var(--ff-display);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding-block:6px}
+.sig{display:flex;align-items:baseline;gap:8px}
+.sig i{width:10px;height:10px;border-radius:50%;flex:none;transform:translateY(1px)}
+.sig code{font-size:.76rem;color:var(--muted)}
+
+/* build stages */
+.build-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.btn{font:600 .88rem/1 var(--ff-display);letter-spacing:.04em;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 12px;border-radius:8px;cursor:pointer}
+.btn:hover{background:var(--sunk)}
+.btn.danger{color:var(--pwr);border-color:var(--pwr)}
+.confirm{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.9rem}
+.stages{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media (min-width:880px){.stages{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0;scroll-margin-top:80px}
+.stage-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.stage-no{font:600 .72rem/1 var(--ff-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.stage-head h3{flex:1 1 auto}
+.stage-count{font:600 .8rem/1 var(--ff-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.stage-count.full{color:var(--accent)}
+.stage-why{color:var(--muted);font-size:.9rem}
+.jobs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.job{scroll-margin-top:96px}
+.job-row{display:flex;gap:12px;align-items:flex-start;padding:9px 8px;border-radius:8px;cursor:pointer}
+.job-row:hover{background:var(--sunk)}
+.job input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--accent);flex:none;cursor:pointer}
+.job-body{display:flex;flex-direction:column;gap:3px;min-width:0}
+.job-title{font-weight:700;font-size:.95rem}
+.job-lines{display:flex;flex-direction:column;gap:2px;font-size:.86rem;color:var(--muted)}
+.job.is-done .job-title{color:var(--muted)}
+.job.is-test{margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
+.test-chip{font:700 .64rem/1 var(--ff-display);letter-spacing:.1em;text-transform:uppercase;background:var(--accent);color:var(--accent-ink);padding:3px 6px;border-radius:4px;margin-right:6px;vertical-align:2px}
+.job:target .job-row{outline:2px solid var(--accent);outline-offset:-2px;background:var(--sunk)}
+.pinref{font-family:var(--ff-mono);font-size:.86em;font-weight:600;color:var(--ink)}
+
+/* rules */
+.rules{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+@media (min-width:760px){.rules{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.sev{align-self:flex-start;font:700 .66rem/1 var(--ff-display);letter-spacing:.11em;text-transform:uppercase;padding:4px 7px;border-radius:5px}
+.rule.must .sev{background:var(--pwr-bg);color:var(--pwr)}
+.rule.should .sev{background:var(--sunk);color:var(--muted)}
+.rule h3{font-size:1.04rem}
+.rule p{font-size:.92rem;color:var(--muted)}
+
+/* ground + wire */
+.gw{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+@media (min-width:920px){.gw{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);align-items:start}}
+figure{margin:0;display:flex;flex-direction:column;gap:10px}
+.fig-scroll{overflow-x:auto}
+.fig-scroll svg{display:block;width:100%;min-width:540px;height:auto;color:var(--ink)}
+figcaption{font-size:.88rem;color:var(--muted);max-width:66ch}
+svg .bx{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+svg .bx-in{fill:var(--sunk);stroke:var(--line);stroke-width:1.5}
+svg .t{fill:var(--ink);font-family:var(--ff-body);font-size:13px}
+svg .tb{fill:var(--ink);font-family:var(--ff-display);font-weight:700;font-size:14px;letter-spacing:.03em}
+svg .tm{fill:var(--muted);font-family:var(--ff-mono);font-size:11px}
+svg .tp{fill:var(--pwr);font-family:var(--ff-mono);font-size:11px;font-weight:600}
+svg .sup{stroke:var(--pwr);stroke-width:2;fill:none}
+svg .ret{stroke:var(--ink);stroke-width:3.5;fill:none;stroke-dasharray:7 5}
+svg .spine{stroke:var(--ink);stroke-width:5;fill:none;stroke-linecap:round}
+svg .mk-p path{fill:var(--pwr)}
+svg .mk-i path{fill:var(--ink)}
+.facts-list{list-style:none;margin:0;display:flex;flex-direction:column;gap:14px}
+.facts-list h3{font-size:1rem;margin-bottom:3px}
+.facts-list p{font-size:.92rem;color:var(--muted)}
+.mini{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:6px}
+.mini td{padding:5px 0;border-bottom:1px solid var(--line)}
+.mini td:last-child{text-align:right;font-family:var(--ff-mono);white-space:nowrap;padding-left:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;border:1px solid var(--line);border-radius:999px;padding:3px 9px 3px 5px;color:var(--ink)}
+.chip i{width:12px;height:12px;border-radius:50%;flex:none;border:1px solid var(--line)}
+
+/* power + firmware */
+.two{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+@media (min-width:920px){.two{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);align-items:start}}
+.eq{font-family:var(--ff-mono);font-size:.92rem;background:var(--sunk);border-radius:8px;padding:12px 14px;margin:10px 0;overflow-x:auto;white-space:nowrap}
+.card p+p{margin-top:8px}
+.card .muted{color:var(--muted);font-size:.92rem}
+.code-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+pre{margin:0;background:var(--sunk);border-radius:10px;padding:14px;overflow-x:auto;font-size:.8rem;line-height:1.6}
+.notes{margin:12px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;font-size:.9rem;color:var(--muted)}
+.spares{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.spares span{font-family:var(--ff-mono);font-size:.8rem;border:1px solid var(--line);border-radius:6px;padding:3px 7px}
+
+footer{border-top:1px solid var(--line);padding-top:16px;font-size:.86rem;color:var(--muted);display:flex;flex-direction:column;gap:8px}
+footer ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+
+@media (prefers-reduced-motion: reduce){.prog-fill{transition:none}}
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <p class="eyebrow">VRITRA · Board 4 · Parachute</p>
+    <h1>Teensy 4.0 <span class="arrow">→</span> ESP32‑P4‑Pico</h1>
+    <p class="lede">Thirteen signal wires and the 5&nbsp;V feed move to new pins. Every connector, both sensors, R6 and the five capacitors stay exactly as they were on the PCB. Solder in the six stages below and test after each one.</p>
+    <ul class="facts">
+      <li><b>13</b> signals remapped</li>
+      <li><b>4</b> power rails unchanged</li>
+      <li>Checked pad by pad against <code>BOARD4_PARACHUTE_PCB.kicad_pcb</code> and Waveshare's P4‑Pico schematic</li>
+    </ul>
+  </header>
+
+  <div class="progress" id="progress">
+    <div class="prog">
+      <span class="prog-text" id="prog-text">0 of 0 done</span>
+      <div class="prog-track" aria-hidden="true"><div class="prog-fill" id="prog-fill"></div></div>
+    </div>
+    <span class="sync" id="sync">Ticks saved on this device</span>
+    <nav class="jump" aria-label="Sections">
+      <a href="#pin-map">Pin map</a><a href="#build">Build</a><a href="#rules">Rules</a><a href="#firmware">Firmware</a>
+    </nav>
+  </div>
+
+  <!-- PIN MAP -->
+  <section class="sec" id="pin-map" aria-labelledby="pin-map-h">
+    <div class="sec-head">
+      <h2 id="pin-map-h">Pin map</h2>
+      <p>Every pin on the P4‑Pico's two 20‑pin headers and what its wire connects to. Tap a coloured tag to jump to its soldering step.</p>
+    </div>
+    <div class="pm-layout">
+      <div class="card pm-card">
+        <div class="pm-toolbar">
+          <div class="seg" role="group" aria-label="Board view">
+            <button type="button" id="view-top" aria-pressed="true">Top view</button>
+            <button type="button" id="view-solder" aria-pressed="false">Solder side</button>
+          </div>
+          <p class="pm-hint" id="pm-hint">Looking down at the P4‑Pico on the perfboard. Pin 1 is the square pad.</p>
+        </div>
+        <div class="pm-scroll"><div class="pinmap" id="pinmap"></div></div>
+      </div>
+      <aside class="pm-side">
+        <div class="card">
+          <h3>Find pin 1 before you solder</h3>
+          <ol class="steps">
+            <li>Pin 1 carries GPIO54. Check the board's printed pin labels.</li>
+            <li>Confirm with a multimeter on beep: the USB‑C shell is ground and beeps to pins <span class="pinref">3, 8, 13, 18, 23, 28, 33, 38</span>.</li>
+            <li>Pin 40 (VBUS) sits directly across from pin 1, followed by 39 (VSYS) and 38 (GND).</li>
+            <li>On the perfboard, set the two header rows <b>7 holes apart</b> (17.78 mm), the same as a Raspberry Pi Pico.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3>Legend</h3>
+          <ul class="legend">
+            <li><i class="sw k-act"></i>Servo / ESC signal</li>
+            <li><i class="sw k-com"></i>MAIN, BACKUP, GNSS link</li>
+            <li><i class="sw k-sens"></i>Sensor (I2C, hall)</li>
+            <li><i class="sw k-pwr"></i>5 V in</li>
+            <li><i class="sw k-gnd"></i>Ground you wire</li>
+            <li><i class="sw k-spare"></i>Spare GPIO</li>
+            <li><i class="sw k-avoid"></i>Don't use</li>
+            <li><i class="sw k-nc"></i>Leave empty</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+
+    <div class="card">
+      <h3>Signal by signal</h3>
+      <div class="tscroll">
+        <table>
+          <thead><tr><th>Signal</th><th>P4‑Pico pin</th><th>GPIO</th><th>Goes to</th><th>Was Teensy pin</th></tr></thead>
+          <tbody id="sig-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUILD -->
+  <section class="sec" id="build" aria-labelledby="build-h">
+    <div class="sec-head">
+      <h2 id="build-h">Build it in this order</h2>
+      <p>Power and ground first, the board socket second, then one subsystem at a time. Each stage ends with a test, so a mistake shows up while it is still easy to find.</p>
+    </div>
+    <div class="build-tools">
+      <button type="button" class="btn" id="reset-btn">Clear all ticks</button>
+      <div class="confirm" id="reset-confirm" hidden>
+        <span>Clear every tick on this sheet?</span>
+        <button type="button" class="btn danger" id="reset-yes">Clear ticks</button>
+        <button type="button" class="btn" id="reset-no">Keep them</button>
+      </div>
+    </div>
+    <div class="stages" id="stages"></div>
+  </section>
+
+  <!-- RULES -->
+  <section class="sec" id="rules" aria-labelledby="rules-h">
+    <div class="sec-head">
+      <h2 id="rules-h">Rules that protect the board</h2>
+      <p>The first four can kill the P4‑Pico or a sensor. The rest save you a confusing afternoon.</p>
+    </div>
+    <div class="rules">
+      <article class="rule must"><span class="sev">Must</span><h3>VSYS (pin 39) takes 5 V only</h3><p>Feed it +5V_LOGIC from J8. The P4‑Pico's 3.3 V regulator needs at least 4.5 V, and the other parts on that rail are 5 V parts. Never the 8 V rail, never the battery.</p></article>
+      <article class="rule must"><span class="sev">Must</span><h3>Pin 36 (3V3 out) stays unconnected</h3><p>The sensors keep running from the POWER board's 3V3_B, as before. Joining the P4‑Pico's own 3.3 V to 3V3_B puts two regulators against each other.</p></article>
+      <article class="rule must"><span class="sev">Must</span><h3>R6 pulls the hall line up to 3.3 V, not 5 V</h3><p>The P4 is not 5 V tolerant. If your hall sensor is a module with its own pull‑up resistor to VCC, remove that resistor or power the module from 3V3_B instead.</p></article>
+      <article class="rule must"><span class="sev">Must</span><h3>Don't ground pin 37 (3V3_EN)</h3><p>It switches off the P4‑Pico's 3.3 V supply. Leave it floating: the board already pulls it up.</p></article>
+      <article class="rule should"><span class="sev">Bench</span><h3>USB‑C and the stack</h3><p>With the stack switched off, USB‑C power flows out through VSYS into the 5 V logic rail and every board on it. Flash with J8 unplugged, or use a data‑only (VBUS‑cut) cable while the stack is powered. Your laptop is safe either way: the P4‑Pico blocks current flowing back into USB.</p></article>
+      <article class="rule should"><span class="sev">Parts</span><h3>Capacitor ratings</h3><p>The 470 µF on the 8 V rail needs a 16 V or higher rating; the 5 V rails take 10 V or higher. The striped side goes to GND.</p></article>
+      <article class="rule should"><span class="sev">Skip</span><h3>Pins 19, 20, 21, 22 and 24</h3><p>19 and 20 are the chip's built‑in USB‑JTAG pair. 21, 22 and 24 (GPIO48, 47, 46) share the microSD card's switchable supply, so their voltage depends on firmware.</p></article>
+      <article class="rule should"><span class="sev">Flight</span><h3>Lock it down for 30 g</h3><p>Female headers are fine on the bench. For flight, strap the P4‑Pico to the perfboard with a cable tie or hot glue at both header ends, and put a dab of hot glue where every wire leaves its pad.</p></article>
+    </div>
+  </section>
+
+  <!-- GROUND + WIRE -->
+  <section class="sec" id="wiring" aria-labelledby="wiring-h">
+    <div class="sec-head">
+      <h2 id="wiring-h">Ground and wire on perfboard</h2>
+      <p>The PCB had a full ground pour. On perfboard you build that ground yourself, and where the heavy current returns matters.</p>
+    </div>
+    <div class="gw">
+      <div class="card">
+        <figure>
+          <div class="fig-scroll">
+            <svg viewBox="0 0 640 290" role="img" aria-label="Each load group returns its ground straight to the connector that feeds it; the three input grounds are tied together by a ground spine at the input side.">
+              <defs>
+                <marker id="m-p" class="mk-p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z"/></marker>
+                <marker id="m-i" class="mk-i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z"/></marker>
+              </defs>
+              <!-- spine -->
+              <line class="spine" x1="28" y1="60" x2="28" y2="250"/>
+              <text class="tm" x="10" y="282">GND spine</text>
+              <!-- inputs -->
+              <rect class="bx-in" x="44" y="18" width="150" height="58" rx="8"/>
+              <text class="tb" x="58" y="42">J1</text><text class="t" x="58" y="62">8 V steer in</text>
+              <rect class="bx-in" x="44" y="113" width="150" height="58" rx="8"/>
+              <text class="tb" x="58" y="137">J6</text><text class="t" x="58" y="157">5 V servo in</text>
+              <rect class="bx-in" x="44" y="208" width="150" height="58" rx="8"/>
+              <text class="tb" x="58" y="232">J8</text><text class="t" x="58" y="252">logic power in</text>
+              <!-- ties from spine to inputs -->
+              <line class="spine" x1="28" y1="60" x2="44" y2="60"/>
+              <line class="spine" x1="28" y1="155" x2="44" y2="155"/>
+              <line class="spine" x1="28" y1="250" x2="44" y2="250"/>
+              <!-- loads -->
+              <rect class="bx" x="440" y="18" width="186" height="58" rx="8"/>
+              <text class="tb" x="454" y="42">J10 + J11</text><text class="t" x="454" y="62">steer servos, 8 V</text>
+              <rect class="bx" x="440" y="113" width="186" height="58" rx="8"/>
+              <text class="tb" x="454" y="137">J12 · J13 · J16</text><text class="t" x="454" y="157">MG90S servos, 5 V</text>
+              <rect class="bx" x="440" y="208" width="186" height="58" rx="8"/>
+              <text class="tb" x="454" y="232">P4‑Pico</text><text class="t" x="454" y="252">sensors, hall, links</text>
+              <!-- supply -->
+              <line class="sup" x1="194" y1="36" x2="438" y2="36" marker-end="url(#m-p)"/>
+              <text class="tp" x="316" y="28" text-anchor="middle">+8V_STEER</text>
+              <line class="sup" x1="194" y1="131" x2="438" y2="131" marker-end="url(#m-p)"/>
+              <text class="tp" x="316" y="123" text-anchor="middle">+5V_SERVO</text>
+              <line class="sup" x1="194" y1="226" x2="438" y2="226" marker-end="url(#m-p)"/>
+              <text class="tp" x="316" y="218" text-anchor="middle">+5V_LOGIC · +3V3_B</text>
+              <!-- returns -->
+              <line class="ret" x1="440" y1="60" x2="198" y2="60" marker-end="url(#m-i)"/>
+              <text class="tm" x="316" y="80" text-anchor="middle">GND straight to J1 pins 3 + 4</text>
+              <line class="ret" x1="440" y1="155" x2="198" y2="155" marker-end="url(#m-i)"/>
+              <text class="tm" x="316" y="175" text-anchor="middle">GND straight to J6 pin 2</text>
+              <line class="ret" x1="440" y1="250" x2="198" y2="250" marker-end="url(#m-i)"/>
+              <text class="tm" x="316" y="270" text-anchor="middle">P4 pin 38 to J8 pins 2 + 4</text>
+            </svg>
+          </div>
+          <figcaption>Each load's ground wire runs straight back to the connector that feeds it, and the three grounds meet at the inputs. Steering‑servo current then never flows through the P4‑Pico's ground pins. Electrically it is still the single GND net from the PCB.</figcaption>
+        </figure>
+      </div>
+      <ul class="facts-list card">
+        <li>
+          <h3>Wire sizes</h3>
+          <table class="mini">
+            <tr><td>+8V_STEER and its ground</td><td>20 AWG</td></tr>
+            <tr><td>+5V_SERVO and its ground</td><td>22 AWG</td></tr>
+            <tr><td>+5V_LOGIC, +3V3_B</td><td>24–26 AWG</td></tr>
+            <tr><td>All signal wires</td><td>28–30 AWG</td></tr>
+          </table>
+        </li>
+        <li>
+          <h3>Suggested colours</h3>
+          <div class="chips">
+            <span class="chip"><i style="background:#111"></i>GND</span>
+            <span class="chip"><i style="background:#D22"></i>+ rails</span>
+            <span class="chip"><i style="background:#F28C1E"></i>servo, ESC</span>
+            <span class="chip"><i style="background:#2F6BEA"></i>UART</span>
+            <span class="chip"><i style="background:#F4F4F4"></i>I2C, hall</span>
+          </div>
+          <p style="margin-top:8px">Write the rail name beside each red bus with a marker: four positive rails look identical once soldered.</p>
+        </li>
+        <li>
+          <h3>Servo headers</h3>
+          <p>Mark <b>− + S</b> beside every 3‑pin header. MG90S leads run brown, red, orange in that order.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- POWER + FIRMWARE -->
+  <section class="sec" id="firmware" aria-labelledby="firmware-h">
+    <div class="sec-head">
+      <h2 id="firmware-h">Power budget and firmware pins</h2>
+      <p>Two things change outside the soldering: how much the 5 V logic rail must supply, and the pin numbers in your flight code.</p>
+    </div>
+    <div class="two">
+      <div class="card">
+        <h3>Plan about 0.3 A on +5V_LOGIC</h3>
+        <p class="muted" style="margin-top:6px">Espressif asks for a 3.3 V supply that can deliver at least 380 mA to the ESP32‑P4, flash and PSRAM included. Through the P4‑Pico's buck regulator, at roughly 90 % efficiency:</p>
+        <div class="eq">3.3 V × 0.38 A ÷ 0.90 ÷ 5 V ≈ 0.28 A peak at 5 V</div>
+        <p class="muted">Check that the POWER board's 5 V logic regulator has that headroom on top of everything else it feeds. Then measure the real current into VSYS during bring‑up and update the 2‑hour pad budget with it.</p>
+        <h3 style="margin-top:18px">Spare pins for later</h3>
+        <p class="muted" style="margin-top:6px">Good homes for an IMU data‑ready interrupt, a buzzer or a status LED:</p>
+        <div class="spares"><span>GPIO54 · pin 1</span><span>GPIO19 · pin 2</span><span>GPIO5 · 11</span><span>GPIO4 · 12</span><span>GPIO3 · 14</span><span>GPIO2 · 15</span><span>GPIO33 · 25</span><span>GPIO27 · 27</span><span>GPIO26 · 29</span></div>
+      </div>
+      <div class="card">
+        <div class="code-head">
+          <h3>Pin map for the flight code</h3>
+          <button type="button" class="btn" id="copy-btn">Copy</button>
+        </div>
+<pre id="code">// VRITRA Board 4 - ESP32-P4-Pico pin map (replaces Teensy 4.0)
+// hdr = P4-Pico header pin, T = old Teensy pin
+
+// Things that move: servo PWM; ESC on PWM, or RMT for DShot
+#define PIN_STEER_L      18   // hdr 4  -> J10 S   (T 2)
+#define PIN_STEER_R      17   // hdr 5  -> J11 S   (T 3)
+#define PIN_BAY_LID      16   // hdr 6  -> J12 S   (T 4)
+#define PIN_PETRI        15   // hdr 7  -> J13 S   (T 5)
+#define PIN_SERVO_X      14   // hdr 9  -> J16 S   (T 10)
+#define PIN_ESC           6   // hdr 10 -> J14 S   (T 6)
+
+// Sensors on the P4-Pico's own I2C bus (2.2k pull-ups on board)
+#define PIN_I2C_SDA       7   // hdr 17            (T 18)
+#define PIN_I2C_SCL       8   // hdr 16            (T 19)
+#define I2C_ADDR_BMP585   0x47  // SDO tied to 3V3_B
+#define I2C_ADDR_LSM6DSO  0x6A  // DO tied to GND
+// 0x18 also answers: the ES8311 audio codec on the P4-Pico
+#define PIN_HALL         32   // hdr 26, 10k pull-up to 3V3_B (T 9)
+
+// Links. UART0 (GPIO37/38) is the USB-C console: keep it free.
+#define PIN_GNSS_RX      23   // hdr 31  UART1 RX           (T 0)
+#define PIN_LINK_TX      20   // hdr 35  UART2 TX -> MAIN + BACKUP (T 8)
+#define PIN_MAIN_RX      21   // hdr 34  UART2 RX &lt;- MAIN   (T 7)
+#define PIN_BACKUP_RX    22   // hdr 32  UART3 RX &lt;- BACKUP (T 15)</pre>
+        <ul class="notes">
+          <li>GNSS and BACKUP ports only receive. Give them an RX pin and leave TX unassigned. BACKUP hears <code>PIN_LINK_TX</code>, the same shared line Teensy TX2 drove.</li>
+          <li>Turn on the internal pull‑ups on the three RX pins, so a loose cable idles high instead of feeding noise into a parser.</li>
+          <li>Command every servo to its safe position as the first thing in setup.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Netlist read pad by pad from <code>BOARD4_PARACHUTE_PCB.kicad_pcb</code> (VRITRA BOARD 4) on 27 Oct 2026. W1–W4 on the PCB were routing jumpers; on perfboard they are simply part of the wires.</p>
+    <ul>
+      <li><a href="https://www.waveshare.com/wiki/ESP32-P4-Pico" target="_blank" rel="noopener">Waveshare ESP32‑P4‑Pico wiki</a> and <a href="https://files.waveshare.com/wiki/ESP32-P4-Pico/ESP32-P4-Pico-datasheet.pdf" target="_blank" rel="noopener">schematic</a> (header pinout, onboard I2C, power path)</li>
+      <li><a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/peripherals/gpio.html" target="_blank" rel="noopener">Espressif ESP32‑P4 GPIO reference</a> (strapping and USB‑JTAG pins)</li>
+      <li><a href="https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32p4/schematic-checklist-esp32p4.html" target="_blank" rel="noopener">Espressif ESP32‑P4 schematic checklist</a> (IO power domains, 380 mA supply)</li>
+    </ul>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- data (verified against the KiCad netlist) ---------- */
+  var PINS = {
+    1:{g:"GPIO54",k:"spare"}, 2:{g:"GPIO19",k:"spare"}, 3:{g:"GND",k:"gnd"},
+    4:{g:"GPIO18",k:"act",tag:"Steer L",to:"J10 S",job:"a-j10"},
+    5:{g:"GPIO17",k:"act",tag:"Steer R",to:"J11 S",job:"a-j11"},
+    6:{g:"GPIO16",k:"act",tag:"Bay lid",to:"J12 S",job:"a-j12"},
+    7:{g:"GPIO15",k:"act",tag:"Petri",to:"J13 S",job:"a-j13"},
+    8:{g:"GND",k:"gnd"},
+    9:{g:"GPIO14",k:"act",tag:"Servo X",to:"J16 S",job:"a-j16"},
+    10:{g:"GPIO6",k:"act",tag:"ESC",to:"J14 S",job:"a-j14"},
+    11:{g:"GPIO5",k:"spare"}, 12:{g:"GPIO4",k:"spare"}, 13:{g:"GND",k:"gnd"},
+    14:{g:"GPIO3",k:"spare"}, 15:{g:"GPIO2",k:"spare"},
+    16:{g:"GPIO8",k:"sens",tag:"SCL",to:"IMU + baro",job:"i-scl"},
+    17:{g:"GPIO7",k:"sens",tag:"SDA",to:"IMU + baro",job:"i-sda"},
+    18:{g:"GND",k:"gnd"},
+    19:{g:"GPIO24",k:"avoid",tag:"USB D−"}, 20:{g:"GPIO25",k:"avoid",tag:"USB D+"},
+    21:{g:"GPIO48",k:"avoid",tag:"SD supply"}, 22:{g:"GPIO47",k:"avoid",tag:"SD supply"},
+    23:{g:"GND",k:"gnd"}, 24:{g:"GPIO46",k:"avoid",tag:"SD supply"},
+    25:{g:"GPIO33",k:"spare"},
+    26:{g:"GPIO32",k:"sens",tag:"Hall",to:"J15 + R6",job:"h-j15"},
+    27:{g:"GPIO27",k:"spare"}, 28:{g:"GND",k:"gnd"}, 29:{g:"GPIO26",k:"spare"},
+    30:{g:"EN",k:"nc",tag:"reset"},
+    31:{g:"GPIO23",k:"com",tag:"GNSS RX",to:"J5",job:"u-gnss"},
+    32:{g:"GPIO22",k:"com",tag:"RX ← Backup",to:"J3",job:"u-rx3"},
+    33:{g:"GND",k:"gndu",tag:"GND",to:"J2 J3 J5",job:"u-gnd"},
+    34:{g:"GPIO21",k:"com",tag:"RX ← Main",to:"J2",job:"u-rx2"},
+    35:{g:"GPIO20",k:"com",tag:"TX →",to:"J2 + J3",job:"u-tx"},
+    36:{g:"3V3",k:"nc",tag:"3V3 out"}, 37:{g:"3V3_EN",k:"nc",tag:"3V3 enable"},
+    38:{g:"GND",k:"gndu",tag:"GND",to:"J8",job:"m-gnd"},
+    39:{g:"VSYS",k:"pwr",tag:"+5V in",to:"J8 pin 1",job:"m-vsys"},
+    40:{g:"VBUS",k:"nc",tag:"USB 5 V"}
+  };
+
+  var SIGNALS = [
+    {grp:"Things that move"},
+    {name:"Left steer servo",net:"STEER_L",k:"act",hdr:"4",gpio:"18",to:"J10 pin 3 (S)",t:"2"},
+    {name:"Right steer servo",net:"STEER_R",k:"act",hdr:"5",gpio:"17",to:"J11 pin 3 (S)",t:"3"},
+    {name:"Parachute bay lid",net:"BAY_LID",k:"act",hdr:"6",gpio:"16",to:"J12 pin 3 (S)",t:"4"},
+    {name:"Petri plate servo",net:"PETRI",k:"act",hdr:"7",gpio:"15",to:"J13 pin 3 (S)",t:"5"},
+    {name:"Extra servo",net:"SERVO_X",k:"act",hdr:"9",gpio:"14",to:"J16 pin 3 (S)",t:"10"},
+    {name:"ESC signal",net:"ESC",k:"act",hdr:"10",gpio:"6",to:"J14 pin 2 (S)",t:"6"},
+    {grp:"Sensors"},
+    {name:"I2C clock",net:"SCL",k:"sens",hdr:"16",gpio:"8",to:"U6 SCL, U5 SCK",t:"19"},
+    {name:"I2C data",net:"SDA",k:"sens",hdr:"17",gpio:"7",to:"U6 SDA, U5 SDI",t:"18"},
+    {name:"Hall sensor",net:"HALL",k:"sens",hdr:"26",gpio:"32",to:"J15 pin 3 (OUT), R6",t:"9"},
+    {grp:"Links"},
+    {name:"GNSS data in",net:"GNSS_IN",k:"com",hdr:"31",gpio:"23",to:"J5 pin 1",t:"0 (RX1)"},
+    {name:"From BACKUP",net:"RX3",k:"com",hdr:"32",gpio:"22",to:"J3 pin 2",t:"15 (RX3)"},
+    {name:"From MAIN",net:"RX2",k:"com",hdr:"34",gpio:"21",to:"J2 pin 2",t:"7 (RX2)"},
+    {name:"To MAIN and BACKUP",net:"TX2",k:"com",hdr:"35",gpio:"20",to:"J2 pin 1 and J3 pin 1",t:"8 (TX2)"},
+    {grp:"Power"},
+    {name:"5 V logic in",net:"+5V_LOGIC",k:"pwr",hdr:"39 (VSYS)",gpio:"—",to:"J8 pin 1",t:"VIN"},
+    {name:"Ground",net:"GND",k:"gnd",hdr:"38, any GND",gpio:"—",to:"GND spine",t:"GND"}
+  ];
+
+  function P(n, g){ return '<span class="pinref">pin ' + n + '</span> (' + g + ')'; }
+
+  var STAGES = [
+    {id:"stage-power", title:"Power rails and ground", why:"Build the buses and test them before anything expensive is plugged in.", jobs:[
+      {k:"p-j8", t:"J8 · logic power, from POWER J7", lines:["Pin 1 (+5V) → +5V_LOGIC bus","Pins 2 and 4 (GND) → GND spine","Pin 3 (+3V3) → +3V3_B bus"]},
+      {k:"p-j1", t:"J1 · 8 V steering power, from POWER J8", lines:["Pins 1 and 2 (+8V) → +8V_STEER bus, use both","Pins 3 and 4 (GND) → GND spine, use both"]},
+      {k:"p-j6", t:"J6 · 5 V servo power, from POWER J9", lines:["Pin 1 (+5VS) → +5V_SERVO bus","Pin 2 (GND) → GND spine"]},
+      {k:"p-c1", t:"C1 · 470 µF across +8V_STEER and GND", lines:["16 V or higher rating, stripe to GND","Place it beside J10 and J11"]},
+      {k:"p-c2", t:"C2 · 470 µF across +5V_SERVO and GND", lines:["10 V or higher, stripe to GND","Place it beside J12, J13 and J16"]},
+      {k:"p-c3", t:"C3 · 470 µF across +5V_LOGIC and GND", lines:["10 V or higher, stripe to GND","Place it between J8 and the P4‑Pico"]},
+      {k:"p-c45", t:"C4 and C5 · 100 nF ceramics", lines:["C4: +5V_LOGIC to GND, right at P4 " + P(39,"VSYS"),"C5: +3V3_B to GND, right at the sensors"]}
+    ], test:{k:"t-power", t:"Beep test, no power connected", lines:["No beep from any rail to GND. A short chirp while the big caps charge is fine.","No beep between rails: +8V_STEER, +5V_SERVO, +5V_LOGIC, +3V3_B."]}},
+
+    {id:"stage-socket", title:"ESP32‑P4‑Pico socket", why:"Two 1×20 female headers, so the board stays removable on the bench.", jobs:[
+      {k:"m-hdr", t:"Headers 7 holes apart (17.78 mm)", lines:["Same spacing as a Raspberry Pi Pico","Mark the pin‑1 corner (GPIO54) on the perfboard"]},
+      {k:"m-vsys", t:"P4 " + P(39,"VSYS") + " → +5V_LOGIC", lines:["5 V only. Never the 8 V rail, never the battery."]},
+      {k:"m-gnd", t:"P4 " + P(38,"GND") + " → GND spine", lines:["The logic ground return to J8"]},
+      {k:"m-nc", t:"Leave pins 30, 36, 37 and 40 empty", lines:["30 reset · 36 3V3 out · 37 3V3_EN · 40 VBUS"]}
+    ], test:{k:"t-socket", t:"First power‑up", lines:["P4‑Pico out, power on: socket pin 39 reads 5 V and pin 36 reads nothing.","P4‑Pico in, power on: its power LED lights and pin 36 reads 3.3 V."]}},
+
+    {id:"stage-sensors", title:"Sensors on I2C", why:"Both breakouts share the P4‑Pico's own I2C bus, which already has pull‑ups.", jobs:[
+      {k:"i-scl", t:"P4 " + P(16,"GPIO8, SCL") + " → IMU and baro clock", lines:["U6 LSM6DSO32 'SCL' and U5 BMP585 'SCK'"]},
+      {k:"i-sda", t:"P4 " + P(17,"GPIO7, SDA") + " → IMU and baro data", lines:["U6 'SDA' and U5 'SDI'"]},
+      {k:"i-u6", t:"U6 · LSM6DSO32 breakout", lines:["VIN → +3V3_B · GND → GND","DO → GND (address 0x6A) · CS → +3V3_B (I2C mode)","3Vo, INT1, INT2: leave empty"]},
+      {k:"i-u5", t:"U5 · BMP585 breakout", lines:["VIN → +3V3_B · GND → GND","SDO → +3V3_B (address 0x47) · CS → +3V3_B (I2C mode)","3V3, INT: leave empty"]}
+    ], test:{k:"t-sensors", t:"I2C scan", lines:["Expect exactly 0x18, 0x47 and 0x6A.","0x18 is the audio codec on the P4‑Pico itself, so it always shows up."]}},
+
+    {id:"stage-links", title:"Links to MAIN, BACKUP and GNSS", why:"One transmit line feeds both boards, exactly as Teensy TX2 did.", jobs:[
+      {k:"u-tx", t:"P4 " + P(35,"GPIO20, TX") + " → J2 pin 1 and J3 pin 1", lines:["One wire from the P4 to both connectors"]},
+      {k:"u-rx2", t:"J2 pin 2 (from MAIN) → P4 " + P(34,"GPIO21"), lines:[]},
+      {k:"u-rx3", t:"J3 pin 2 (from BACKUP) → P4 " + P(32,"GPIO22"), lines:[]},
+      {k:"u-gnss", t:"J5 pin 1 (GNSS data) → P4 " + P(31,"GPIO23"), lines:[]},
+      {k:"u-gnd", t:"J2 pin 3, J3 pin 3, J5 pin 2 → GND", lines:["P4 " + P(33,"GND") + " sits in the middle of this group"]}
+    ], test:{k:"t-links", t:"Loopback", lines:["Jumper J2 pin 1 to J2 pin 2 and check that UART2 echoes what it sends.","Remove the jumper afterwards."]}},
+
+    {id:"stage-servos", title:"Servos and ESC", why:"Each servo's ground runs straight back to the connector that powers it.", jobs:[
+      {k:"a-j10", t:"J10 · left steer, A20CLM on 8 V", lines:["− → GND, straight back to J1 pins 3/4","+ → +8V_STEER","S → P4 " + P(4,"GPIO18")]},
+      {k:"a-j11", t:"J11 · right steer, A20CLM on 8 V", lines:["− → GND, straight back to J1 pins 3/4","+ → +8V_STEER","S → P4 " + P(5,"GPIO17")]},
+      {k:"a-j12", t:"J12 · parachute bay lid, MG90S on 5 V", lines:["− → GND, straight back to J6 pin 2","+ → +5V_SERVO","S → P4 " + P(6,"GPIO16")]},
+      {k:"a-j13", t:"J13 · petri plate, MG90S on 5 V", lines:["− → GND, J6 side","+ → +5V_SERVO","S → P4 " + P(7,"GPIO15")]},
+      {k:"a-j16", t:"J16 · extra servo, MG90S on 5 V", lines:["− → GND, J6 side","+ → +5V_SERVO","S → P4 " + P(9,"GPIO14")]},
+      {k:"a-j14", t:"J14 · ESC signal, Cyclone 45A BLHeli_S", lines:["− → GND","S → P4 " + P(10,"GPIO6"),"No + pin here: leave any red ESC lead unconnected"]}
+    ], test:{k:"t-servos", t:"Movement test", lines:["Servo horns, linkages and the motor's wheel off.","Each servo moves only on its own pin; the ESC arms only on pin 10."]}},
+
+    {id:"stage-hall", title:"Hall sensor", why:"The sensor runs on 5 V, but its output only ever reaches the P4 at 3.3 V.", jobs:[
+      {k:"h-j15", t:"J15 · hall sensor plug", lines:["− → GND","+5V → +5V_LOGIC (the sensor needs 5 V)","OUT → P4 " + P(26,"GPIO32")]},
+      {k:"h-r6", t:"R6 · 10 kΩ from P4 pin 26 to +3V3_B", lines:["To 3.3 V, never to 5 V"]}
+    ], test:{k:"t-hall", t:"Magnet test", lines:["Pin 26 never reads above 3.3 V, magnet or not.","A magnet at the sensor flips the reading."]}}
+  ];
+
+  var ALL_KEYS = [];
+  STAGES.forEach(function(s){ s.jobs.forEach(function(j){ ALL_KEYS.push(j.k); }); ALL_KEYS.push(s.test.k); });
+
+  /* ---------- storage: this device first, your account when available ---------- */
+  var LS_KEY = "board4-p4-wiring:ticks:v1", LS_VIEW = "board4-p4-wiring:view";
+  var done = {};
+  var localOK = true;
+  try { var raw = localStorage.getItem(LS_KEY); if (raw) { var o = JSON.parse(raw); if (o && typeof o === "object") done = o; } } catch (e) { localOK = false; }
+  function saveLocal(){ try { localStorage.setItem(LS_KEY, JSON.stringify(done)); } catch (e) { localOK = false; } }
+
+  var syncEl = document.getElementById("sync");
+  function setSync(mode){
+    if (mode === "account") { syncEl.textContent = "Ticks sync to your account"; syncEl.classList.add("is-account"); }
+    else { syncEl.textContent = localOK ? "Ticks saved on this device" : "Ticks are not saved in this view"; syncEl.classList.remove("is-account"); }
+  }
+
+  var remote = null, pending = {}, writing = Promise.resolve(), flushTimer = null;
+  function dropRemote(){ remote = null; pending = {}; setSync("device"); }
+  function queueRemote(k, v){
+    if (!remote) return;
+    pending[k] = v;
+    clearTimeout(flushTimer);
+    flushTimer = setTimeout(flushRemote, 700);
+  }
+  function flushRemote(){
+    if (!remote) return;
+    var batch = pending; pending = {};
+    if (!Object.keys(batch).length) return;
+    writing = writing.then(function(){
+      if (!remote) return;
+      var ref = remote.ref;
+      var op = remote.exists ? ref.update({done: batch}) : ref.set({done: Object.assign({}, done)});
+      return op.then(function(){ if (remote) { remote.exists = true; setSync("account"); } })
+        .catch(function(e){
+          var code = e && e.code;
+          if (code === "invalid_argument" && remote && remote.exists) {
+            return ref.set({done: Object.assign({}, done)}).then(function(){ setSync("account"); }).catch(dropRemote);
+          }
+          if (code === "unavailable" || code === "resource_exhausted") {
+            pending = Object.assign({}, batch, pending);
+            setTimeout(flushRemote, 1500 + Math.random() * 1500);
+            return;
+          }
+          dropRemote();
+        });
+    });
+  }
+  function onRemote(snap){
+    if (!remote) return;
+    if (snap.exists) {
+      remote.exists = true;
+      var body = snap.data() || {}, d = body.done || {}, next = {};
+      Object.keys(d).forEach(function(k){ if (d[k] === true) next[k] = true; });
+      Object.keys(pending).forEach(function(k){ if (pending[k]) next[k] = true; else delete next[k]; });
+      done = next; saveLocal(); paintChecks(); setSync("account");
+    } else {
+      remote.exists = false;
+    }
+  }
+  (function connect(){
+    var c = window.claude;
+    if (!c || typeof c.use !== "function") return;
+    Promise.all([c.use("db"), c.use("user")]).then(function(r){
+      var db = r[0], user = r[1];
+      if (!db || !user) return null;
+      return user.id().then(function(id){
+        if (!id) return;
+        var ref = db.doc("data/users/" + id + "/board4-solder");
+        remote = {ref: ref, exists: false};
+        ref.onSnapshot(onRemote, function(){ dropRemote(); });
+      });
+    }).catch(function(){ /* stay on this device */ });
+  })();
+
+  /* ---------- pin map ---------- */
+  var pinmap = document.getElementById("pinmap");
+  var hint = document.getElementById("pm-hint");
+  var btnTop = document.getElementById("view-top"), btnSolder = document.getElementById("view-solder");
+
+  function silkText(g){
+    if (g.indexOf("GPIO") === 0) return '<span class="pre">GPIO</span>' + g.slice(4);
+    return g;
+  }
+  function tagFor(n){
+    var p = PINS[n];
+    if (p.k === "gnd") return '<span class="tag k-plain"><b>GND</b></span>';
+    if (p.k === "spare") return '<span class="tag k-plain"><b>spare</b></span>';
+    if (p.k === "avoid") return '<span class="tag k-avoid" title="Do not use"><b>don’t use</b><span>' + p.tag + '</span></span>';
+    if (p.k === "nc") return '<span class="tag k-nc" title="Leave empty"><b>empty</b><span>' + p.tag + '</span></span>';
+    return '<a class="tag k-' + p.k + '" href="#job-' + p.job + '"><b>' + p.tag + '</b><span>' + p.to + '</span></a>';
+  }
+  function cells(n, side, row){
+    var p = PINS[n];
+    var c = side === "l" ? {tag:1, pad:2, silk:3} : {tag:7, pad:6, silk:5};
+    var dim = (p.k === "gnd" || p.k === "spare" || p.k === "avoid" || p.k === "nc") ? " dim" : "";
+    return '<div class="pm-tag ' + side + '" style="grid-row:' + row + ';grid-column:' + c.tag + '">' + tagFor(n) + '</div>' +
+      '<div class="pm-pad k-' + p.k + (n === 1 ? ' sq' : '') + '" style="grid-row:' + row + ';grid-column:' + c.pad + '" title="Header pin ' + n + ' · ' + p.g + '">' + n + '</div>' +
+      '<div class="pm-silk ' + side + dim + '" style="grid-row:' + row + ';grid-column:' + c.silk + '">' + silkText(p.g) + '</div>';
+  }
+  function renderPinmap(view){
+    var solder = view === "solder";
+    var h = '<div class="pm-board"></div>' +
+      '<div class="pm-edge" style="grid-row:1">' + (solder ? "pin 1 end · seen from below" : "pin 1 end") + '</div>' +
+      '<div class="pm-center"><span>' + (solder ? "perfboard underside · mirrored" : "ESP32‑P4‑Pico · top view") + '</span></div>' +
+      '<div class="pm-edge" style="grid-row:22">pins 20 · 21</div>';
+    for (var r = 0; r < 20; r++) {
+      var L = solder ? 40 - r : 1 + r, R = solder ? 1 + r : 40 - r;
+      h += cells(L, "l", r + 2) + cells(R, "r", r + 2);
+    }
+    pinmap.innerHTML = h;
+    pinmap.classList.toggle("is-solder", solder);
+    btnTop.setAttribute("aria-pressed", String(!solder));
+    btnSolder.setAttribute("aria-pressed", String(solder));
+    hint.textContent = solder
+      ? "Flipped left to right, like turning a page: what you see when soldering the header pins on the underside. Pin 1 is the square pad."
+      : "Looking down at the P4‑Pico on the perfboard. Pin 1 is the square pad.";
+  }
+  var view = "top";
+  try { if (localStorage.getItem(LS_VIEW) === "solder") view = "solder"; } catch (e) {}
+  renderPinmap(view);
+  btnTop.addEventListener("click", function(){ view = "top"; renderPinmap(view); try { localStorage.setItem(LS_VIEW, view); } catch (e) {} });
+  btnSolder.addEventListener("click", function(){ view = "solder"; renderPinmap(view); try { localStorage.setItem(LS_VIEW, view); } catch (e) {} });
+
+  /* ---------- signal table ---------- */
+  var colorVar = {act:"var(--act)", com:"var(--com)", sens:"var(--sens)", pwr:"var(--pwr)", gnd:"var(--gnd)"};
+  document.getElementById("sig-body").innerHTML = SIGNALS.map(function(s){
+    if (s.grp) return '<tr class="grp"><td colspan="5">' + s.grp + '</td></tr>';
+    return '<tr><td><div class="sig"><i style="background:' + colorVar[s.k] + '"></i><span>' + s.name + ' <code>' + s.net + '</code></span></div></td>' +
+      '<td class="num hdr">' + s.hdr + '</td><td class="num">' + s.gpio + '</td><td>' + s.to + '</td><td class="num">' + s.t + '</td></tr>';
+  }).join("");
+
+  /* ---------- checklist ---------- */
+  var stagesEl = document.getElementById("stages");
+  function jobHTML(j, isTest){
+    var lines = j.lines.length ? '<span class="job-lines">' + j.lines.map(function(l){ return '<span>' + l + '</span>'; }).join("") + '</span>' : "";
+    return '<li class="job' + (isTest ? ' is-test' : '') + '" id="job-' + j.k + '">' +
+      '<label class="job-row"><input type="checkbox" id="cb-' + j.k + '" data-k="' + j.k + '">' +
+      '<span class="job-body"><span class="job-title">' + (isTest ? '<span class="test-chip">Test</span>' : '') + j.t + '</span>' + lines + '</span></label></li>';
+  }
+  stagesEl.innerHTML = STAGES.map(function(s, i){
+    return '<section class="stage" id="' + s.id + '" aria-labelledby="' + s.id + '-h">' +
+      '<div class="stage-head"><span class="stage-no">Stage ' + (i + 1) + '</span><h3 id="' + s.id + '-h">' + s.title + '</h3>' +
+      '<span class="stage-count" data-stage="' + i + '"></span></div>' +
+      '<p class="stage-why">' + s.why + '</p>' +
+      '<ul class="jobs">' + s.jobs.map(function(j){ return jobHTML(j, false); }).join("") + jobHTML(s.test, true) + '</ul></section>';
+  }).join("");
+
+  var progText = document.getElementById("prog-text"), progFill = document.getElementById("prog-fill");
+  function paintChecks(){
+    ALL_KEYS.forEach(function(k){
+      var cb = document.getElementById("cb-" + k);
+      if (!cb) return;
+      cb.checked = !!done[k];
+      cb.closest(".job").classList.toggle("is-done", !!done[k]);
+    });
+    var n = ALL_KEYS.filter(function(k){ return done[k]; }).length;
+    progText.textContent = n + " of " + ALL_KEYS.length + " done";
+    progFill.style.width = (n / ALL_KEYS.length * 100) + "%";
+    STAGES.forEach(function(s, i){
+      var keys = s.jobs.map(function(j){ return j.k; }).concat([s.test.k]);
+      var m = keys.filter(function(k){ return done[k]; }).length;
+      var el = stagesEl.querySelector('[data-stage="' + i + '"]');
+      el.textContent = m + "/" + keys.length;
+      el.classList.toggle("full", m === keys.length);
+    });
+  }
+  stagesEl.addEventListener("change", function(e){
+    var k = e.target && e.target.getAttribute("data-k");
+    if (!k) return;
+    if (e.target.checked) done[k] = true; else delete done[k];
+    saveLocal();
+    paintChecks();
+    queueRemote(k, !!e.target.checked);
+  });
+  paintChecks();
+  setSync("device");
+
+  /* reset with an in-page confirm */
+  var resetBtn = document.getElementById("reset-btn"), resetBox = document.getElementById("reset-confirm");
+  resetBtn.addEventListener("click", function(){ resetBox.hidden = false; resetBtn.hidden = true; document.getElementById("reset-no").focus(); });
+  document.getElementById("reset-no").addEventListener("click", function(){ resetBox.hidden = true; resetBtn.hidden = false; resetBtn.focus(); });
+  document.getElementById("reset-yes").addEventListener("click", function(){
+    done = {}; saveLocal(); paintChecks();
+    resetBox.hidden = true; resetBtn.hidden = false;
+    if (remote) {
+      pending = {}; clearTimeout(flushTimer);
+      var ref = remote.ref;
+      writing = writing.then(function(){ return ref.set({done: {}}).then(function(){ if (remote) remote.exists = true; }).catch(dropRemote); });
+    }
+  });
+
+  /* copy firmware pins */
+  var copyBtn = document.getElementById("copy-btn"), codeEl = document.getElementById("code");
+  copyBtn.addEventListener("click", function(){
+    var text = codeEl.textContent;
+    function selectIt(){
+      var range = document.createRange(); range.selectNodeContents(codeEl);
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      copyBtn.textContent = "Selected, press Ctrl+C";
+    }
+    try {
+      navigator.clipboard.writeText(text).then(function(){ copyBtn.textContent = "Copied"; setTimeout(function(){ copyBtn.textContent = "Copy"; }, 1600); }, selectIt);
+    } catch (e) { selectIt(); }
+  });
+})();
+</script>
+
+</body></html>

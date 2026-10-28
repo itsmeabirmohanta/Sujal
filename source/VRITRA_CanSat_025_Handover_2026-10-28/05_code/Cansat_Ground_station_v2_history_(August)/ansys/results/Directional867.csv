@@ -1,0 +1,11 @@
+cut,direction,realized_gain_dBi,antenna_gain_dBi
+phi=0,zenith    theta=0,-47.88,-43.59
+phi=0,theta=45,-3.23,1.06
+phi=0,horizon   theta=90,-3.14,1.16
+phi=0,theta=135,-7.11,-2.82
+phi=0,nadir     theta=180,-49.94,-45.64
+phi=90,zenith    theta=0,-47.88,-43.59
+phi=90,theta=45,-3.20,1.09
+phi=90,horizon   theta=90,-3.02,1.27
+phi=90,theta=135,-7.24,-2.95
+phi=90,nadir     theta=180,-49.94,-45.64

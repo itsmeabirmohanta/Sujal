@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import pypdf; print\\('pypdf ok'\\)\")",
+      "Bash(python -c \"import fitz; print\\('fitz ok'\\)\")",
+      "Bash(python -c \"import pdfplumber; print\\('pdfplumber ok'\\)\")",
+      "Bash(ls \"C:/Users/kalbh/.claude/projects/\" 2>/dev/null)",
+      "PowerShell(python --version)",
+      "PowerShell(pip show pypdf 2>$null)",
+      "PowerShell(Get-Process | Where-Object { $_.ProcessName -match 'ansys|hfss|aedt|desktop|ansysedt|Electronics|python|schedul' } | Select-Object Id, ProcessName, StartTime, @{n='CPU_s';e={[math]::Round\\($_.CPU,1\\)}}, @{n='WS_MB';e={[math]::Round\\($_.WorkingSet64/1MB,1\\)}} | Format-Table -AutoSize | Out-String -Width 200)"
+    ]
+  }
+}

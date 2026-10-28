@@ -1,0 +1,6 @@
+quantity,AbsLattice,RealPerforated,delta
+peak antenna gain (dBi),2.574,2.534,-0.039
+peak realized gain (dBi),-1.720,-1.731,-0.011
+directivity (dB),2.585,2.549,-0.036
+radiation efficiency,0.997,0.997,+0.000
+isolation S21 (dB),-49.337,-49.308,+0.029

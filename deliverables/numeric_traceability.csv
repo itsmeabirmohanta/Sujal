@@ -1,0 +1,33 @@
+ID,Values_or_family,Location,Evidence_class,Source_section_or_derivation,Link,Acceptance
+N01,Fixed pin/address assignments,report3.1; pins.hpp,H,Current brief3-4 and current board BUILD_LIST/KiCad,../source/VRITRA_CanSat_025_Handover_2026-10-28/01_PROJECT_BRIEF_AND_PARTS.md,T-PINS
+N02,866.50/865.25 MHz; SF9; sync0x99,report6.1,R,Official assignment PDF page2 row18; visual recheck,../source/VRITRA_CanSat_025_Handover_2026-10-28/02_competition_documents/CAN7USAT_Team_Frequency_Assignments_19-10-2026_(OFFICIAL_for_team_025).pdf,T-RF
+N03,600±10 m;1Hz;state0-7;92dB,report2;7.5,R,Guidelines5.2/5.4/6.2/6.3; state names are examples,../source/VRITRA_CanSat_025_Handover_2026-10-28/02_competition_documents/IN-SPACe_CAN-7USAT_Mission_Requirements_and_Guidelines_IN-SPACe.CAN.MR.CG.01.pdf,T-DEPLOY/T-RF/T-BEACON
+N04,950 m;10s;target26.717535/84.301543;0.40m2,report1;8,H,Current brief; canopy geometry still disputed,../source/VRITRA_CanSat_025_Handover_2026-10-28/01_PROJECT_BRIEF_AND_PARTS.md,T-EVENT/T-GLIDE
+N05,PAIR IDs/fields/checksums;1/5/10Hz;115200,report4;gnss_commands.txt,V/D,Quectel protocol1.0 sections2.4; chosen profile D; XOR checked,https://quectel.com/content/uploads/2024/02/Quectel_L89_R2.0_GNSS_Protocol_Specification_V1.0.pdf,T-GNSS
+N06,L1/L5;RESET100ms;V_BCKP2.2-4.3V;TTFF28/23/1s,report4.1/4.4,V,Quectel hardware1.2 Table2;3.2.2;5.2.2; antenna section,https://quectel.com/content/uploads/2024/02/Quectel_L89_R2.0_Hardware-Design_V1.2.pdf,T-GNSS
+N07,BMP register writes;50Hz;P16/T2;0.21Pa,report5.2;drivers.hpp,V/D,Bosch DS003 4.3-4.6;8.27-8.36;Tables7/9; profile selection D,https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp585-ds003.pdf,T-SENSOR/T-BARO
+N08,ICM banks/scales/DLPF;16g/2000dps;AK100Hz,report5.3,V/D,TDK DS-000189 register map; partial local source evidence; selected profile D,https://product.tdk.com/system/files/dam/doc/product/sensor/mortion-inertial/imu/data_sheet/ds-000189-icm-20948-v1.5.pdf,T-SENSOR
+N09,LSM208Hz;16g;2000dps;timestamp25us;registers,report5.4;drivers.hpp,V/D,ST datasheet/register driver; selected profile D,https://github.com/STMicroelectronics/lsm6dso32-pid,T-SENSOR
+N10,LSM self-test52Hz/4g;50-1700mg;150000-700000mdps,report5.4,V,"Official ST self-test example, complete test setup required",https://github.com/STMicroelectronics/STMems_Standard_C_drivers/blob/master/lsm6dso32_STdC/examples/lsm6dso32_self_test.c,T-SENSOR
+N11,INA0x6527;16avg;1.1ms;1.25mA/mV;10mW;35.2ms,report5.5,V/D,TI8.6 register map;35.2ms derived16*(1.1+1.1); profile D,https://www.ti.com/lit/ds/symlink/ina260.pdf,T-SENSOR/T-POWER
+N12,RTC control0x0E/status0x0F;OSF,report5.5,V,ADI DS3231 register description,https://www.analog.com/media/en/technical-documentation/data-sheets/ds3231.pdf,T-RESET
+N13,HDC commands/CRC0x31;T/RH conversion,report5.5;drivers.hpp,V/D,TI Tables7-1/7-4/7-5; startup budget D,https://www.ti.com/lit/ds/symlink/hdc3020.pdf,T-SENSOR
+N14,Flash256-byte pages/4KiB sectors/opcodes,report5.5,V/U,W25Q64JV instruction tables; fitted suffix and maximum timing U,https://www.winbond.com/resource-files/w25q64jv%20spi%20%20%20revc%2006032016%20kms.pdf,T-LOG
+N15,TCXO1.6V;DIO5/6;begin signature7.7.1,report6.1,H/V,Supplied radio source and RadioLib7.7.1 API,https://github.com/jgromes/RadioLib/blob/7.7.1/src/modules/LR11x0/LR1120.h,T-RF
+N16,SF9 airtime;130+32bytes+40ms=984.128ms,calculations.json,D,LoRa symbol formula with explicit header/CRC/preamble8; guards D,reference_code/engineering_checks.py,T-RF
+N17,Payload64/decoded90/wire92;CRC32;UART7.99ms,ICD_WIRE_FORMATS.md,D,Explicit22+64+4 schema;COBS+2;92*10/115200,reference_code/protocol.hpp,T-LINK
+N18,L0.0065;Rd287.05;g9.80665;pressure height model,report5.2,D/model,US Standard Atmosphere1976; measured T0 applied by design,https://ntrs.nasa.gov/api/citations/19770009539/downloads/19770009539.pdf,T-BARO
+N19,Noise/flow pressure/spool/capacitor/wheel calculations,calculations.json,D,Declared formulas and illustrative inputs; not measured performance,reference_code/engineering_checks.py,T-BARO/T-POWER/T-HALL
+N20,Freshness500/2500ms;sats6;HDOP2.5;reacquire5,report4.4,D,Conservative proposed gates; tune from raw observations,reference_code/flight_core.hpp,T-NAV
+N21,Task rates/priorities/WCET/RAM/CPU margins,report7.1;8.5,D,Scheduling allocations; not platform benchmarks,VRITRA_ENGINEERING_REPORT.md,T-TIMING
+N22,Lift10m/0.5mps/2s;descent0.5s;land5m/0.3mps/10s,report7.5,D,Proposed dwell thresholds; qualification required,reference_code/fsm.hpp,T-FSM
+N23,Mahonykp0.5/ki0;noise1/5/0.5/2;wind0.05,report7.3-7.4,D,"Starting filter tuning, not measured sensor errors",VRITRA_ENGINEERING_REPORT.md,T-SENSOR/T-GLIDE
+N24,Wind12samples/120degrees;residual/age caps,report7.4,D,Observability heuristic; circle fit from velocity vectors,reference_code/estimators.hpp,T-GLIDE
+N25,Heading/PID/height/radius/slew examples,report8.2-8.3,D,Caller-qualified limits; no flight-qualified gain set,reference_code/planner.hpp,T-GUIDE
+N26,B26CLM4.8-8.4V;1520us;333Hz;torque/speed,report8.4,V/U,Manufacturer advertised values; actual current/endpoints/loss behavior U,https://www.agf-rc.com/agfrc-coreless-mini-servo-b26clm-p1669135.html,T-POWER/T-GUIDE
+N27,MG90S1.8kgcm/4.8V;qualified5V use,report8.4,V/D,Manufacturer listing; installed unit/pulse/current testing required,https://towerpro.com.tw/product/mg90s-3/,T-EVENT/T-POWER
+N28,ESC1000us;motor2300KV;wheel10000RPM,report8.4,H/U,Brief convention/target only; not validated ESC/rotor safety limits,../source/VRITRA_CanSat_025_Handover_2026-10-28/01_PROJECT_BRIEF_AND_PARTS.md,T-HALL/T-WHEEL
+N29,Grove85dB versus required92dB,report1.1,V/R,Seeed rating and guideline5.2; measurement setup pending,https://wiki.seeedstudio.com/Grove-Buzzer/,T-BEACON
+N30,MCU cores/I2C400kHz/PWM50Hz14bit,report3/5.6,V/D,SDK/core references plus chosen PWM/I2C profile; actual chip/core lock pending,https://docs.espressif.com/projects/arduino-esp32/en/latest/api/ledc.html,T-PINS/T-TIMING
+N31,Command IDs/frame sizes/journal/log byte offsets,ICD_WIRE_FORMATS.md,D/H,Legacy IDs from supplied code; new IDs and schemas D,reference_code/journal.hpp,T-TARGET/T-RESET/T-LOG
+N32,Hardware-change rupee costs and effort,report12,D/U,"Planning estimates only, no vendor quote or availability verification",VRITRA_ENGINEERING_REPORT.md,Team procurement

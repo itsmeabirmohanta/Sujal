@@ -1,0 +1,8 @@
+(version 1)
+# home etching (laser print -> iron -> etch), 1 oz copper, single sided, copper on B.Cu only
+(rule "etch clearance"  (constraint clearance (min 0.45mm)))
+(rule "etch track"      (constraint track_width (min 0.7mm)))
+(rule "etch hole"       (constraint hole_size (min 1.0mm)))
+(rule "etch annular"    (constraint annular_width (min 0.4mm)))
+(rule "etch edge"       (constraint edge_clearance (min 1.0mm)))
+(rule "gnd spokes"      (constraint min_resolved_spokes 1))

@@ -1,0 +1,11 @@
+# Preserve supplied originals byte-for-byte across platforms.
+source/** -text
+*.md text eol=lf
+*.py text eol=lf
+*.hpp text eol=lf
+*.cpp text eol=lf
+*.json text eol=lf
+*.csv text eol=lf
+*.yml text eol=lf
+# Last match wins: never normalize source snapshots or their nested archives.
+source/** -text

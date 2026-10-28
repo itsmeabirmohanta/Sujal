@@ -1,0 +1,315 @@
+[
+  {
+    "id": "gnss_protocol",
+    "url": "https://quectel.com/content/uploads/2024/02/Quectel_L89_R2.0_GNSS_Protocol_Specification_V1.0.pdf",
+    "status": 200,
+    "final_url": "https://quectel.com/content/uploads/2024/02/Quectel_L89_R2.0_GNSS_Protocol_Specification_V1.0.pdf",
+    "file": "research/sources/gnss_protocol.pdf",
+    "bytes": 563000,
+    "sha256": "2a8da88409db3b1f20899b3efcab5cf73df0fbf4460937795bf3561b25be8960"
+  },
+  {
+    "id": "bmp585_ds",
+    "url": "https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp585-ds003.pdf",
+    "status": 200,
+    "final_url": "https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp585-ds003.pdf",
+    "file": "research/sources/bmp585_ds.pdf",
+    "bytes": 2698004,
+    "sha256": "3110ebeb52eecfe87afb24517a84078614a29329f48ca1e7903227e7e19472b1"
+  },
+  {
+    "id": "bmp5_defs",
+    "url": "https://raw.githubusercontent.com/boschsensortec/BMP5_SensorAPI/master/bmp5_defs.h",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/boschsensortec/BMP5_SensorAPI/master/bmp5_defs.h",
+    "file": "research/sources/bmp5_defs.h",
+    "bytes": 32671,
+    "sha256": "571ec560d0f9494997c8c3c72e2310144b829e17af6c7e507360ddd8ab46b070"
+  },
+  {
+    "id": "bmp5_driver",
+    "url": "https://raw.githubusercontent.com/boschsensortec/BMP5_SensorAPI/master/bmp5.c",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/boschsensortec/BMP5_SensorAPI/master/bmp5.c",
+    "file": "research/sources/bmp5_driver.c",
+    "bytes": 69693,
+    "sha256": "c9f8e0fc510c27ac2d3ea8ac5dc1b51cc2a97eab20580a314376443df64e323a"
+  },
+  {
+    "id": "icm_ds",
+    "url": "https://product.tdk.com/system/files/dam/doc/product/sensor/mortion-inertial/imu/data_sheet/ds-000189-icm-20948-v1.5.pdf",
+    "status": 403,
+    "final_url": "https://product.tdk.com/system/files/dam/doc/product/sensor/mortion-inertial/imu/data_sheet/ds-000189-icm-20948-v1.5.pdf"
+  },
+  {
+    "id": "lsm_ds",
+    "url": "https://www.st.com/resource/en/datasheet/lsm6dso32.pdf",
+    "error": "HTTPSConnectionPool(host='www.st.com', port=443): Read timed out. (read timeout=35)"
+  },
+  {
+    "id": "lsm_driver",
+    "url": "https://raw.githubusercontent.com/STMicroelectronics/lsm6dso32-pid/master/lsm6dso32_reg.c",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/STMicroelectronics/lsm6dso32-pid/master/lsm6dso32_reg.c",
+    "file": "research/sources/lsm_driver.c",
+    "bytes": 256667,
+    "sha256": "d5c03f86b8b510f102e08be29d7c12c2fd776a700d7d8fbbe31d1c913d47014f"
+  },
+  {
+    "id": "lsm_header",
+    "url": "https://raw.githubusercontent.com/STMicroelectronics/lsm6dso32-pid/master/lsm6dso32_reg.h",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/STMicroelectronics/lsm6dso32-pid/master/lsm6dso32_reg.h",
+    "file": "research/sources/lsm_header.h",
+    "bytes": 140916,
+    "sha256": "9949bb3efedc56e00b98098478e4eee1ec27b2e4ca3feeb8c69619f0b8efd2a8"
+  },
+  {
+    "id": "ina_ds",
+    "url": "https://www.ti.com/lit/ds/symlink/ina260.pdf",
+    "status": 200,
+    "final_url": "https://www.ti.com/lit/ds/symlink/ina260.pdf",
+    "file": "research/sources/ina_ds.pdf",
+    "bytes": 762561,
+    "sha256": "5160ed4af198b093e541beb3fe5f1048f00233fa23cd4f4822391acad9f94dcf"
+  },
+  {
+    "id": "hdc_ds",
+    "url": "https://www.ti.com/lit/ds/symlink/hdc3020.pdf",
+    "status": 200,
+    "final_url": "https://www.ti.com/lit/ds/symlink/hdc3020.pdf",
+    "file": "research/sources/hdc_ds.pdf",
+    "bytes": 2258738,
+    "sha256": "733d31c0cfce545c4caa1e2a3b03ed3ca7191dbc165f171a0e2650b679328cc7"
+  },
+  {
+    "id": "rtc_ds",
+    "url": "https://www.analog.com/media/en/technical-documentation/data-sheets/ds3231.pdf",
+    "error": "HTTPSConnectionPool(host='www.analog.com', port=443): Read timed out. (read timeout=35)"
+  },
+  {
+    "id": "lr1121_ds",
+    "url": "https://files.waveshare.com/wiki/Core1121/LR1121_H2_DS_v2_0.pdf",
+    "status": 200,
+    "final_url": "https://files.waveshare.com/wiki/Core1121/LR1121_H2_DS_v2_0.pdf",
+    "file": "research/sources/lr1121_ds.pdf",
+    "bytes": 1326059,
+    "sha256": "ede17ac37a721fb8f92158374e5ebe89a3a7683da1af75c0b105f6e110278ce1"
+  },
+  {
+    "id": "radio_lr11_header",
+    "url": "https://raw.githubusercontent.com/jgromes/RadioLib/7.7.1/src/modules/LR11x0/LR11x0.h",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/jgromes/RadioLib/7.7.1/src/modules/LR11x0/LR11x0.h",
+    "file": "research/sources/radio_lr11_header.h",
+    "bytes": 45875,
+    "sha256": "bbf5856d8bdce714ed89d1c086def6b8064f95daf04be7c7014252857d75ecf7"
+  },
+  {
+    "id": "radio_lr11_cpp",
+    "url": "https://raw.githubusercontent.com/jgromes/RadioLib/7.7.1/src/modules/LR11x0/LR11x0.cpp",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/jgromes/RadioLib/7.7.1/src/modules/LR11x0/LR11x0.cpp",
+    "file": "research/sources/radio_lr11_cpp.cpp",
+    "bytes": 60318,
+    "sha256": "788b40e37f737d058eb1d3e8df4be120ecc678cc946f5cc12295cb4cab061836"
+  },
+  {
+    "id": "radio_lr1121_cpp",
+    "url": "https://raw.githubusercontent.com/jgromes/RadioLib/7.7.1/src/modules/LR11x0/LR1121.cpp",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/jgromes/RadioLib/7.7.1/src/modules/LR11x0/LR1121.cpp",
+    "file": "research/sources/radio_lr1121_cpp.cpp",
+    "bytes": 147,
+    "sha256": "63cb72c409b911cf149de9b02539d76f463d0ec30590220c782ee5f05a197c02"
+  },
+  {
+    "id": "core1121",
+    "url": "https://www.waveshare.com/wiki/Core1121-XF",
+    "status": 403,
+    "final_url": "https://www.waveshare.com/wiki/Core1121-XF"
+  },
+  {
+    "id": "p4board",
+    "url": "https://www.waveshare.com/wiki/ESP32-P4-Pico",
+    "status": 403,
+    "final_url": "https://www.waveshare.com/wiki/ESP32-P4-Pico"
+  },
+  {
+    "id": "agfrc",
+    "url": "https://www.agf-rc.com/agfrc-coreless-mini-servo-b26clm-p1669135.html",
+    "status": 200,
+    "final_url": "https://www.agf-rc.com/agfrc-coreless-mini-servo-b26clm-p1669135.html",
+    "file": "research/sources/agfrc.html",
+    "bytes": 284795,
+    "sha256": "286c3b4c18be5f1d2f07b866e858ad78942a1a4222e44dae7642a450da762528"
+  },
+  {
+    "id": "towerpro",
+    "url": "https://towerpro.com.tw/product/mg90s-3/",
+    "status": 200,
+    "final_url": "https://towerpro.com.tw/product/mg90s-3/",
+    "file": "research/sources/towerpro.html",
+    "bytes": 61455,
+    "sha256": "010b632d6c0f95f861ff92fc5c8fe1a075141a46960e5766a21e4fb4156ae781"
+  },
+  {
+    "id": "grove",
+    "url": "https://wiki.seeedstudio.com/Grove-Buzzer/",
+    "status": 200,
+    "final_url": "https://wiki.seeedstudio.com/Grove-Buzzer/",
+    "file": "research/sources/grove.html",
+    "bytes": 142633,
+    "sha256": "f5b0cd017be9292447acbb6cf472ad5e7757c1571de05d671f280a0ceee54a9f"
+  },
+  {
+    "id": "7semi_l89",
+    "url": "https://7semi.com/7semi-l89ha-breakout-multi-gnss-engines-for-gps-irnss-glonass-beidou-galileo-and-qzss/",
+    "status": 200,
+    "final_url": "https://7semi.com/7semi-l89ha-breakout-multi-gnss-engines-for-gps-irnss-glonass-beidou-galileo-and-qzss/",
+    "file": "research/sources/7semi_l89.html",
+    "bytes": 182043,
+    "sha256": "c7c9b2c087fc6fa1292cb668a8cc316dfba1544f67cee50d65e8bf2efda521d1"
+  },
+  {
+    "id": "p4_uart",
+    "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/peripherals/uart.html",
+    "status": 200,
+    "final_url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/peripherals/uart.html",
+    "file": "research/sources/p4_uart.html",
+    "bytes": 326378,
+    "sha256": "dc582275ca0f1c0b85c452c2578d000a34e710da10c7cd4c8e84a138b003de6b"
+  },
+  {
+    "id": "p4_ledc",
+    "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/peripherals/ledc.html",
+    "status": 200,
+    "final_url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/peripherals/ledc.html",
+    "file": "research/sources/p4_ledc.html",
+    "bytes": 282427,
+    "sha256": "733b538210f4f2da1d7b4f1de62644437a10492c82b7d1ac651a4cf516551ebf"
+  },
+  {
+    "id": "p4_mcpwm",
+    "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/peripherals/mcpwm.html",
+    "status": 200,
+    "final_url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/peripherals/mcpwm.html",
+    "file": "research/sources/p4_mcpwm.html",
+    "bytes": 599283,
+    "sha256": "168a347070c12a5e01e3568be9bc46d7b11d403b6decc212b52f7a3a3bcb0b7c"
+  },
+  {
+    "id": "p4_freertos",
+    "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/system/freertos_idf.html",
+    "status": 200,
+    "final_url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/system/freertos_idf.html",
+    "file": "research/sources/p4_freertos.html",
+    "bytes": 878878,
+    "sha256": "0d34fdeb07d7a97e4c101cbb33360ffb836380917138476bc9189355a3a2835d"
+  },
+  {
+    "id": "teensy_serial",
+    "url": "https://www.pjrc.com/teensy/td_uart.html",
+    "status": 200,
+    "final_url": "https://www.pjrc.com/teensy/td_uart.html",
+    "file": "research/sources/teensy_serial.html",
+    "bytes": 58167,
+    "sha256": "10fda11461c64128ea5c3c6a36dba3cc0a7873fc6eea07cca68730108b5a1eca"
+  },
+  {
+    "id": "teensy_wire",
+    "url": "https://www.pjrc.com/teensy/td_libs_Wire.html",
+    "status": 200,
+    "final_url": "https://www.pjrc.com/teensy/td_libs_Wire.html",
+    "file": "research/sources/teensy_wire.html",
+    "bytes": 26711,
+    "sha256": "373e801da124497cb7ba22d6ee8d7de714ee3e3a675d77d2d249a3434d5f591f"
+  },
+  {
+    "id": "teensy_timer",
+    "url": "https://www.pjrc.com/teensy/td_timing_IntervalTimer.html",
+    "status": 200,
+    "final_url": "https://www.pjrc.com/teensy/td_timing_IntervalTimer.html",
+    "file": "research/sources/teensy_timer.html",
+    "bytes": 19434,
+    "sha256": "5a0b9598399a519ec6d2e217c769fdfa0838474feb41df703fc068456d4e4f3a"
+  },
+  {
+    "id": "teensy_sd",
+    "url": "https://www.pjrc.com/teensy/td_libs_SD.html",
+    "status": 404,
+    "final_url": "https://www.pjrc.com/teensy/td_libs_SD.html"
+  },
+  {
+    "id": "teensy_eeprom",
+    "url": "https://www.pjrc.com/teensy/td_libs_EEPROM.html",
+    "status": 200,
+    "final_url": "https://www.pjrc.com/teensy/td_libs_EEPROM.html",
+    "file": "research/sources/teensy_eeprom.html",
+    "bytes": 19120,
+    "sha256": "6e8621a5e4f80a3edc1422689f90b319a93de4a7a3f528d8accd9a62f5ed23a9"
+  },
+  {
+    "id": "nasa_wind",
+    "url": "https://ntrs.nasa.gov/citations/20200011546",
+    "status": 200,
+    "final_url": "https://ntrs.nasa.gov/citations/20200011546",
+    "file": "research/sources/nasa_wind.html",
+    "bytes": 91936,
+    "sha256": "4140071ffa4d3be7c43e173eb82e3b89340a1f46276e06f34813f321e9efd918"
+  },
+  {
+    "id": "parafoil_paper",
+    "url": "https://arxiv.org/pdf/2105.00715",
+    "status": 200,
+    "final_url": "https://arxiv.org/pdf/2105.00715",
+    "file": "research/sources/parafoil_paper.pdf",
+    "bytes": 1201028,
+    "sha256": "b3d0787cca7fd95721d2e13b5f3d5a13c0e788ea9f0b3397bf6153b56054481f"
+  },
+  {
+    "id": "gnss_forum",
+    "url": "https://forums.quectel.com/t/problem-with-pstm-commands-for-l89ha-gnss-module/48222",
+    "status": 200,
+    "final_url": "https://forums.quectel.com/t/problem-with-pstm-commands-for-l89ha-gnss-module/48222",
+    "file": "research/sources/gnss_forum.html",
+    "bytes": 60517,
+    "sha256": "217bfe478d571f6fd6894537b60b0e8a29d85236d596775d44478ee261a751a9"
+  },
+  {
+    "id": "hdc_driver",
+    "url": "https://raw.githubusercontent.com/adafruit/Adafruit_HDC302x/main/Adafruit_HDC302x.cpp",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/adafruit/Adafruit_HDC302x/main/Adafruit_HDC302x.cpp",
+    "file": "research/sources/hdc_driver.cpp",
+    "bytes": 14781,
+    "sha256": "b29962c63f8c18492537b305fb970b2c0207bb3e6e719b91d083a374b1fca9bf"
+  },
+  {
+    "id": "ino_ina",
+    "url": "https://raw.githubusercontent.com/adafruit/Adafruit_INA260/master/Adafruit_INA260.cpp",
+    "status": 200,
+    "final_url": "https://raw.githubusercontent.com/adafruit/Adafruit_INA260/master/Adafruit_INA260.cpp",
+    "file": "research/sources/ino_ina.cpp",
+    "bytes": 13356,
+    "sha256": "dd3c49c7299f6e0991f22b8b8f853170edad28d692892a39c6d6d988a26724fc"
+  },
+  {
+    "id": "w25_ds",
+    "url": "https://www.winbond.com/resource-files/w25q64jv%20spi%20%20%20revc%2006032016%20kms.pdf",
+    "status": 200,
+    "final_url": "https://www.winbond.com/resource-files/w25q64jv%20spi%20%20%20revc%2006032016%20kms.pdf",
+    "file": "research/sources/w25_ds.pdf",
+    "bytes": 2942657,
+    "sha256": "8943e5b1630c7d88d7aaf964b9fd8d54beab00e91bd50ed8dcb949aa18b2b425"
+  },
+  {
+    "id": "sparkfun_icm",
+    "url": "https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary",
+    "status": 200,
+    "final_url": "https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary",
+    "file": "research/sources/sparkfun_icm.html",
+    "bytes": 284730,
+    "sha256": "e8d2ddab3cb0d4808183eaac030ee4d31725c7a27c8cf64459d86d2e8028471d"
+  }
+]

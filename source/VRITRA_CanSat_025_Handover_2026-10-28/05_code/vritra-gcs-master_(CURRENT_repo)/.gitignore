@@ -1,0 +1,69 @@
+# =====================================================================
+#  VRITRA CAN-7USAT  —  .gitignore
+# =====================================================================
+
+# ── Python ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+*.spec.bak
+
+# ── PyInstaller build artefacts (distribute via GitHub Releases) ─────
+gcs/build/
+gcs/dist/
+
+# ── Map tiles (fetched at runtime by fetch_map.py) ──────────────────
+map_tiles/
+gcs/map_tiles/
+*.jpg.tile
+
+# ── Virtual environments (anywhere in the tree) ──────────────────────
+pyaedtenv/
+.venv/
+venv/
+env/
+**/pyaedtenv/
+**/.venv/
+**/venv/
+**/env/
+
+# ── ANSYS simulation — large CAD, results, generated reports ─────────
+# Keep: Python scripts (*.py), RunModel.bat, solve logs (*.log, *.err)
+# Exclude: everything else that's generated or too large
+simulation/ansys/fusionparts/
+simulation/ansys/realshell/
+simulation/ansys/results/
+simulation/ansys/*.step
+simulation/ansys/*.csv
+simulation/ansys/*.png
+simulation/ansys/*.html
+simulation/ansys/*.lock
+simulation/ansys/**/*.aedtresults/
+
+# ── IDEs & editors ──────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+*.sublime-project
+*.sublime-workspace
+
+# ── OS noise ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Arduino / PlatformIO build output ───────────────────────────────
+firmware/**/.pio/
+firmware/**/build/
+firmware/**/*.elf
+firmware/**/*.bin
+firmware/**/*.hex
+firmware/**/*.map
+
+# ── Logs ─────────────────────────────────────────────────────────────
+*.log
+*.err

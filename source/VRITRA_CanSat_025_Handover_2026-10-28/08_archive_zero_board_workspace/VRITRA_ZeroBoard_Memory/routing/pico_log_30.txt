@@ -1,0 +1,7 @@
+fit/netlist: OK
+30 links 5 holes 440 problems 0
+31 links 6 holes 443 problems 0
+32 links 5 holes 444 problems 0
+33 links 7 holes 488 problems 0
+34 links 4 holes 454 problems 0
+BEST 34 4 454 -> D:\linux\Software\Claude\VRITRA_ZeroBoard_Memory\routing\BOARD4_PICO_ROUTED_30_35.json

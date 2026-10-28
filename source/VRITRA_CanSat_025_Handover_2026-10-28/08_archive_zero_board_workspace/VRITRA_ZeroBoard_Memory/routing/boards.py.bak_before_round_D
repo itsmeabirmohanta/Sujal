@@ -1,0 +1,499 @@
+"""Board definitions for the VRITRA zero-board build (pin map v0.2, see
+../03_PIN_MAP_AND_WIRING.md). Run:  python boards.py  [A B C D E]
+Outputs per board: <key>_top.png, <key>_bottom.png, <key>_wiring.md
+"""
+from __future__ import annotations
+
+import os
+import sys
+
+from zb_engine import (Board, Net, fit_check, hx, hy, place_2pin, place_box, place_fp, place_row,
+                       render_bottom, render_top, route, verify, wiring_list)
+
+OUT = os.path.dirname(os.path.abspath(__file__))
+
+C_MCU, C_RF, C_SENS, C_PWR = "#f6c85f", "#9fd3f5", "#b8e0a6", "#f4a582"
+
+T41_NAMES = {str(i): str(i) for i in range(42)}
+T41_NAMES.update({"GND1": "GND", "GND2": "GND", "GND3": "GND", "3V3_1": "3V3", "3V3_2": "3V3", "VIN": "VIN"})
+T40_NAMES = {"1": "GND", "28": "VIN", "27": "GND", "26": "3V3"}
+T40_NAMES.update({str(i + 2): str(i) for i in range(24)})      # symbol pins 2..25 = Teensy 0..23
+CORE = {"1": "2.4G", "2": "GND", "3": "CS", "4": "CLK", "5": "MOSI", "6": "MISO", "7": "RESET", "8": "BUSY",
+        "9": "LORA_ANT", "10": "GND", "11": "DIO9", "12": "DIO8", "13": "DIO7", "14": "NC", "15": "GND", "16": "3.3V"}
+L89 = {"1": "3D_FIX", "2": "WAKE", "3": "SDA", "4": "SCL", "5": "GEO", "6": "JAM", "7": "RST", "8": "BAT",
+       "9": "TX", "10": "RX", "11": "3V3", "12": "GND"}
+BMP = {"1": "VIN", "2": "3V3", "3": "GND", "4": "SCK", "5": "SDO", "6": "SDI", "7": "CS", "8": "INT"}
+ICM = {"1": "VIN", "2": "1V8", "3": "GND", "4": "SCL", "5": "SDA", "6": "INT", "7": "CS", "8": "SDO", "9": "GND",
+       "10": "ACL", "11": "ADA", "12": "FSYNC"}
+W25 = {"1": "3V3", "2": "CS", "3": "MISO", "4": "SCK", "5": "MOSI", "6": "GND"}
+LSM = {"1": "VIN", "2": "3Vo", "3": "GND", "4": "SCL", "5": "SDA", "6": "DO", "7": "CS", "8": "INT1", "9": "INT2",
+       "10": "SCX", "11": "SDX", "12": "CS(back)", "13": "DO(back)", "14": "GND(back)"}   # 9 front + 5 back = 14 holes
+MUX = {"1": "VCC_L1", "2": "TX1", "3": "RX1", "4": "GND", "5": "VCC_L2", "6": "TX2", "7": "RX2", "8": "GND",
+       "9": "A", "10": "B", "11": "VCC_R1", "12": "TX3", "13": "RX3", "14": "GND", "15": "VCC_R2", "16": "TX4",
+       "17": "RX4", "18": "GND", "19": "C", "20": "GND"}   # from the KiCad symbol (BO-10145)
+AMP = {"1": "LRC", "2": "BCLK", "3": "DIN", "4": "GAIN", "5": "SD", "6": "GND", "7": "Vin"}  # Adafruit #3006 order
+INA = {"1": "VCC", "2": "GND", "3": "SCL", "4": "SDA", "5": "ALERT", "6": "VBUS", "7": "IN+", "8": "IN-"}
+
+
+def ds3231_flat(b, ref, c, r_top):
+    """ZS-042 'MH' RTC mounted FLAT on a straight 4-pin header through its
+    4-hole end (SCL, SDA, VCC, GND top to bottom). Body 38 x 22 mm extends to
+    the right of the pin column; CR2032 faces up. 6-pin right-angle end unused."""
+    p = place_row(b, ref, c, r_top, ["SCL", "SDA", "VCC", "GND"], "DS3231 (MH ZS-042)", direction="down",
+                  height=9.5, color=C_SENS,
+                  note="flat on 4-pin end · CR2032 up\nREMOVE charge resistor · 0x68 + EEPROM 0x57")
+    yc = (hy(r_top) + hy(r_top - 3)) / 2
+    p.body = (hx(c) - 2.0, yc - 11.0, hx(c) + 36.0, yc + 11.0)
+    return p
+
+
+# ===========================================================================
+# BOARD A — PRIMARY (follows firmware vritra_fc/Config.h rev 2026-08)
+# ===========================================================================
+def board_a() -> Board:
+    b = Board("A", "Board A PRIMARY (Teensy 4.1 #1)", keep_x=(0.0, 120.0), plane_y=None)
+    b.notes = ["Do NOT connect the Teensy 3V3 pins to the 3V3_A rail. Teensy pins 33-36 are still driven by the "
+               "firmware (old motor driver) - leave them free. 3 mm edges kept clear for the slot mount."]
+    # Teensy upright, USB at the TOP, microSD at the BOTTOM (rot 270: pad 0 at C21 R40)
+    place_fp(b, "U1", "Teensy 4.1_hdr", "0", 21, 40, 270, "Teensy 4.1 PRIMARY", T41_NAMES, 13.0, C_MCU,
+             note="on female headers\nUSB up · microSD down")
+    # left side: radio (SPI1 pins 24-30 are on the left column) and GNSS (Serial2 pins 6-8)
+    place_fp(b, "U2", "Core1121xf Lora", "8", 8, 12, 90, "Core1121-HF", CORE, 6.0, C_RF,
+             note="label side DOWN\nu.FL → T-antenna")
+    place_fp(b, "U3", "L89_hdr", "1", 9, 55, 90, "L89HA GNSS", L89, 10.0, C_RF,
+             note="7Semi board · built-in antennas\n9600 baud")
+    # right side, all ABOVE the Serial3/Wire1 rows so the I2C bus never crosses them
+    p = place_row(b, "U4", 32, 56, ["SCL", "SDA", "VCC", "GND"], "DS3231 (MH ZS-042)", direction="right",
+                  height=9.5, color=C_SENS, note="flat on its 4-pin end · CR2032 up\nREMOVE charge resistor\n0x68 + EEPROM 0x57")
+    xc = (hx(32) + hx(35)) / 2
+    p.body = (xc - 11.0, hy(56) - 36.0, xc + 11.0, hy(56) + 2.0)
+    place_fp(b, "U5", "BMP585_hdr8", "1", 31, 36, 0, "BMP585 #1", BMP, 6.0, C_SENS, note="0x47 (SDO→3V3)")
+    place_fp(b, "U6", "ICM20948_7Semi_hdr12", "1", 40, 45, 0, "ICM-20948 #1", ICM, 6.0, C_SENS,
+             note="CS+SDO → 1V8 · 0x69")
+    # left side, under the radio: SPI flash shares SPI1 (26/27/39) with the Core1121
+    place_fp(b, "U7", "W25Q64_hdr6", "1", 14, 9, 180, "W25Q64 flash", W25, 6.0, C_SENS, note="CS → pin 9")
+    # connectors: right edge in Teensy pin order, B-link + GNSS cell on the left edge, power at the top
+    place_row(b, "J9", 45, 40, ["O3", "UV", "GND"], "analog to C J7", direction="down", jst=True)
+    place_row(b, "J6", 45, 36, ["SDA1", "SCL1", "3V3", "GND"], "I2C to C J1", direction="down", jst=True)
+    place_row(b, "J8", 45, 31, ["GNSS", "GND"], "GNSS to D J5", direction="down", jst=True)
+    place_row(b, "J4", 45, 28, ["RX3", "TX3", "GND"], "UART to D J2", direction="down", jst=True)
+    place_row(b, "J5", 3, 24, ["HB", "GNSS", "MUX_TX", "MUX_RX", "GND"], "LINK cable to BACKUP J2", direction="down", jst=True)
+    place_row(b, "J2", 26, 52, ["SCL", "SDA", "GND"], "I2C to E J2", jst=True)
+    place_row(b, "J3", 43, 57, ["VBAT", "GND"], "VBAT from E J10", jst=True)
+    place_row(b, "J1", 21, 52, ["+5V", "GND", "+3V3", "GND"], "PWR from E J5", jst=True)
+    place_row(b, "J7", 3, 47, ["CELL+", "GND"], "GNSS backup cell", jst=True)
+    # passives (1/4 W resistors flat on 4 pitches, LEDs and diodes standing)
+    place_2pin(b, "R1", 17, 9, 17, 13, "10k LORA_CS↑")
+    place_2pin(b, "R2", 17, 3, 17, 7, "10k FLASH_CS↑")
+    place_2pin(b, "R3", 10, 33, 14, 33, "1k HB")
+    place_2pin(b, "R4", 39, 29, 43, 29, "1k TX3")
+    place_2pin(b, "R5", 10, 37, 14, 37, "1k GNSS→D")
+    place_2pin(b, "R6", 10, 35, 14, 35, "1k GNSS→B")
+    place_2pin(b, "R7", 39, 54, 43, 54, "100k VBAT")
+    place_2pin(b, "R8", 39, 52, 43, 52, "22k VBAT")
+    place_2pin(b, "R9", 19, 19, 19, 15, "470 LED OK")
+    place_2pin(b, "R10", 18, 18, 18, 14, "470 LED FLT")
+    place_2pin(b, "R11", 10, 31, 14, 31, "1k CAM TX")
+    # Adafruit MAX98357A I2S amp (beacon) on firmware pins 2/3/4 + SD 37; speaker on its screw terminal
+    place_fp(b, "U9", "MAX98357A_hdr7", "1", 32, 10, 0, "MAX98357A beacon amp", AMP, 9.0, C_PWR,
+             note="speaker on the amp screw terminal\n(+ and - only, neither is GND)")
+    place_2pin(b, "R12", 39, 4, 43, 4, "100k GAIN↓ 15dB")
+    place_2pin(b, "C6", 40, 8, 42, 8, "100µF amp", kind="CP")
+    place_2pin(b, "D1", 19, 12, 19, 11, "LED green", kind="LED_G")
+    place_2pin(b, "D2", 18, 11, 18, 10, "LED red", kind="LED_R")
+    place_2pin(b, "D3", 4, 51, 4, 55, "Schottky 3V3→BAT", kind="D")
+    place_2pin(b, "D4", 2, 51, 2, 55, "Schottky cell→BAT", kind="D")
+    place_2pin(b, "C1", 21, 55, 23, 55, "470µF", kind="CP")
+    place_2pin(b, "C2", 25, 55, 27, 55, "100nF", kind="C")
+    place_2pin(b, "C3", 6, 18, 6, 20, "100nF", kind="C")
+    place_2pin(b, "C4", 31, 33, 33, 33, "100nF", kind="C")
+    place_2pin(b, "C5", 40, 42, 42, 42, "100nF", kind="C")
+    b.keepout = [(50.5, 104.5, 69.5, 118.0, "USB plug\nkeep clear"), (50.5, 30.0, 69.5, 43.0, "microSD\npull-out")]
+
+    T = lambda p: ("U1", p)
+    b.nets = [
+        Net("GND", [T("GND1"), T("GND2"), T("GND3"), ("U2", "2"), ("U2", "10"), ("U2", "15"), ("U3", "12"),
+                    ("U4", "4"), ("U5", "3"), ("U6", "3"), ("U6", "9"), ("U6", "12"), ("U7", "6"),
+                    ("J1", "2"), ("J1", "4"), ("J2", "3"), ("J3", "2"), ("J6", "4"), ("J9", "3"), ("J4", "3"), ("J8", "2"), ("J5", "5"), ("U9", "6"), ("R12", "2"), ("C6", "2"),
+                    ("J7", "2"), ("R8", "2"), ("D1", "2"), ("D2", "2"), ("C1", "2"), ("C2", "2"), ("C3", "2"),
+                    ("C4", "2"), ("C5", "2")], kind="wire"),
+        Net("+5V_LOGIC", [("J1", "1"), T("VIN"), ("C1", "1"), ("C2", "1"), ("U9", "7"), ("C6", "1")], kind="wire"),
+        Net("+3V3_A", [("J1", "3"), ("U2", "16"), ("U3", "11"), ("U3", "2"), ("U4", "3"),
+                       ("U5", "1"), ("U5", "5"), ("U5", "7"), ("U6", "1"), ("U7", "1"), ("R1", "2"), ("R2", "2"),
+                       ("J6", "3"), ("C3", "1"), ("C4", "1"), ("C5", "1"), ("D3", "1")], kind="wire"),
+        Net("GNSS_VBCKP", [("U3", "8"), ("D3", "2"), ("D4", "2")]),
+        Net("GNSS_CELL", [("J7", "1"), ("D4", "1")]),
+        Net("ICM_1V8", [("U6", "2"), ("U6", "7"), ("U6", "8")]),
+        Net("SDA", [T("18"), ("U4", "2"), ("U5", "6"), ("U6", "5"), ("J2", "2")]),
+        Net("SCL", [T("19"), ("U4", "1"), ("U5", "4"), ("U6", "4"), ("J2", "1")]),
+        Net("GNSS_TX", [("U3", "9"), T("7"), ("R5", "1"), ("R6", "1")]),
+        Net("GNSS_RX", [("U3", "10"), T("8")]),
+        Net("GNSS_RST", [("U3", "7"), T("6")]),
+        Net("LORA_CS", [("U2", "3"), T("29"), ("R1", "1")]),
+        Net("LORA_BUSY", [("U2", "8"), T("24")]),
+        Net("LORA_RST", [("U2", "7"), T("25")]),
+        Net("LORA_IRQ", [("U2", "11"), T("30")]),
+        Net("MOSI1", [T("26"), ("U2", "5"), ("U7", "5")]),
+        Net("SCK1", [T("27"), ("U2", "4"), ("U7", "4")]),
+        Net("MISO1", [T("39"), ("U2", "6"), ("U7", "3")]),
+        Net("FLASH_CS", [T("9"), ("U7", "2"), ("R2", "1")]),
+        Net("HB_OUT", [T("5"), ("R3", "1")]),
+        Net("HB_J5", [("R3", "2"), ("J5", "1")]),
+        Net("CAM_TX", [T("1"), ("R11", "1")]),
+        Net("CAM_TX_J", [("R11", "2"), ("J5", "3")]),
+        Net("CAM_RX", [("J5", "4"), T("0")]),
+        Net("AMP_DIN", [T("2"), ("U9", "3")]),
+        Net("AMP_LRC", [T("3"), ("U9", "1")]),
+        Net("AMP_BCLK", [T("4"), ("U9", "2")]),
+        Net("AMP_SD", [T("37"), ("U9", "5")]),
+        Net("AMP_GAIN", [("U9", "4"), ("R12", "1")]),
+        Net("TX3", [T("14"), ("R4", "1")]),
+        Net("TX3_J4", [("R4", "2"), ("J4", "2")]),
+        Net("RX3", [T("15"), ("J4", "1")]),
+        Net("GNSS_D", [("R5", "2"), ("J8", "1")]),
+        Net("GNSS_B", [("R6", "2"), ("J5", "2")]),
+        Net("VBAT_SENSE", [("J3", "1"), ("R7", "1")]),
+        Net("BUS_V", [("R7", "2"), ("R8", "1"), T("20")]),
+        Net("SDA1", [T("17"), ("J6", "1")]),
+        Net("SCL1", [T("16"), ("J6", "2")]),
+        Net("ENV_UV", [T("22"), ("J9", "2")]),
+        Net("ENV_O3", [T("23"), ("J9", "1")]),
+        Net("LED_OK", [T("31"), ("R9", "1")]),
+        Net("LED_OK_A", [("R9", "2"), ("D1", "1")]),
+        Net("LED_FLT", [T("32"), ("R10", "1")]),
+        Net("LED_FLT_A", [("R10", "2"), ("D2", "1")]),
+    ]
+    return b
+
+
+# expected Teensy pin -> net, copied from 03_PIN_MAP_AND_WIRING.md §1 (independent cross-check)
+EXPECT_A = {"0": "CAM_RX", "1": "CAM_TX", "2": "AMP_DIN", "3": "AMP_LRC", "4": "AMP_BCLK", "37": "AMP_SD",
+            "5": "HB_OUT", "6": "GNSS_RST", "7": "GNSS_TX", "8": "GNSS_RX", "14": "TX3", "15": "RX3",
+            "16": "SCL1", "17": "SDA1", "18": "SDA", "19": "SCL", "20": "BUS_V", "23": "ENV_O3", "24": "LORA_BUSY",
+            "25": "LORA_RST", "26": "MOSI1", "27": "SCK1", "29": "LORA_CS", "30": "LORA_IRQ", "31": "LED_OK",
+            "32": "LED_FLT", "9": "FLASH_CS", "39": "MISO1", "22": "ENV_UV", "VIN": "+5V_LOGIC",
+            "GND1": "GND", "GND2": "GND", "GND3": "GND"}
+FORBIDDEN_A = {"33", "34", "35", "36", "3V3_1", "3V3_2"}
+
+
+def check_pins(b: Board, ref: str, expect: dict, forbidden: set) -> list[str]:
+    got = {pad: n.name for n in b.nets for r, pad in n.pins if r == ref}
+    msgs = [f"{ref}.{p}: expected {n}, got {got.get(p)}" for p, n in expect.items() if got.get(p) != n]
+    msgs += [f"{ref}.{p}: in {got[p]} but pin is reserved / must stay free" for p in forbidden if p in got]
+    msgs += [f"{ref}.{p}: wired to {got[p]} but not in the pin map" for p in got if p not in expect]
+    return msgs
+
+
+# ===========================================================================
+# BOARD B — BACKUP Teensy 4.1 #2 (logger; no radio unless a 2nd Core1121 is bought)
+# ===========================================================================
+def board_b() -> Board:
+    b = Board("B", "Board 2 BACKUP + SENSOR (Teensy 4.1 #2)", keep_x=(0.0, 120.0), plane_y=None)
+    b.notes = ["Only one Core1121 flies, so B logs to its own microSD and watches A's heartbeat. "
+               "U10 camera mux: channel 1 = MAIN Teensy (default, held by 10k pull-downs), channel 2 = this Teensy "
+               "after a takeover. Mux bottom row is off the 2.54 grid: fit header pins UP and run 5 short wires to the "
+               "U10B landing holes. Mux DIP switches OFF, VCC jumper on 3V3."]
+    place_fp(b, "U1", "Teensy 4.1_hdr", "0", 21, 40, 270, "Teensy 4.1 BACKUP", T41_NAMES, 13.0, C_MCU,
+             note="on female headers\nUSB up · microSD down")
+    place_fp(b, "U5", "BMP585_hdr8", "1", 31, 36, 0, "BMP585 #2", BMP, 6.0, C_SENS, note="0x47 (SDO→3V3)")
+    place_fp(b, "U8", "LSM6DSO32_hdr", "1", 31, 44, 0, "LSM6DSO32 (Adafruit)", LSM, 6.0, C_SENS,
+             note="I²C mode: CS→3V3, DO→GND = 0x6A · ±32 g\nsolder only the 9-pin FRONT row")
+    place_row(b, "J1", 21, 52, ["+5V", "GND", "+3V3", "GND"], "PWR from E J6", jst=True)
+    place_row(b, "J2", 3, 41, ["HB", "GNSS", "MUX_TX", "MUX_RX", "GND"], "LINK cable from MAIN J5", direction="down", jst=True)
+    place_row(b, "J3", 45, 31, ["RX3", "TX3", "GND"], "to D J3", direction="down", jst=True)
+    place_row(b, "J4", 45, 22, ["+5V", "GND", "to D7", "from D6"], "CAMERA plug (the only one)", direction="down", jst=True)
+    # 7Semi 4-channel UART mux (BO-10145): side columns on the grid, bottom row via 5 short wires
+    place_fp(b, "U10", "UART_MUX_7SEMI_25", "1", 29, 15, 0, "7Semi UART mux", MUX, 8.0, C_PWR,
+             note="ch1 = MAIN · ch2 = BACKUP\nDIP OFF · VCC jumper 3V3", pins_used={str(i) for i in range(1, 21)})
+    place_row(b, "U10B", 30, 3, ["5V", "3V3", "GND", "RX_COM", "TX_COM"], "mux bottom-row wires", height=3.0,
+              color=C_PWR)
+    place_2pin(b, "R1", 38, 29, 42, 29, "1k TX3")
+    place_2pin(b, "R2", 29, 20, 33, 20, "1k TX8")
+    place_2pin(b, "R3", 29, 18, 33, 18, "1k RX8")
+    place_2pin(b, "R9", 38, 17, 42, 17, "1k cam RX")
+    place_2pin(b, "R10", 38, 15, 42, 15, "1k cam TX")
+    place_2pin(b, "R6", 14, 30, 18, 30, "10k MUX_A↓")
+    place_2pin(b, "R7", 14, 28, 18, 28, "10k MUX_B↓")
+    place_2pin(b, "R8", 14, 26, 18, 26, "10k MUX_C↓")
+    place_2pin(b, "R4", 29, 23, 33, 23, "470 LED OK")
+    place_2pin(b, "R5", 29, 25, 33, 25, "470 LED FLT")
+    place_2pin(b, "D1", 35, 23, 35, 22, "LED green", kind="LED_G")
+    place_2pin(b, "D2", 35, 26, 35, 25, "LED red", kind="LED_R")
+    place_2pin(b, "C1", 21, 55, 23, 55, "470µF", kind="CP")
+    place_2pin(b, "C2", 25, 55, 27, 55, "100nF", kind="C")
+    place_2pin(b, "C3", 31, 33, 33, 33, "100nF", kind="C")
+    place_2pin(b, "C4", 42, 42, 44, 42, "100nF", kind="C")
+    # microSD card module (6-pin, 74xx125 buffer + regulator): flat on a straight header,
+    # card slot toward the TOP edge; alone on SPI0 (pins 10-13) because its MISO never tri-states
+    sd = place_row(b, "U11", 7, 41, ["CS", "SCK", "MOSI", "MISO", "VCC", "GND"], "microSD card module",
+                   height=8.0, color=C_SENS, note="straight header, module FLAT\ncard slot → top edge · VCC = 5 V")
+    sd.body = (hx(7) + 6.35 - 12.0, hy(41) - 2.0, hx(7) + 6.35 + 12.0, hy(41) + 42.0)
+    # HDC3020 (7Semi cable module, silk + - D C): module on 2 screws, cable wires soldered to M1L
+    place_box(b, "M1", 96.0, 128.0, 118.0, 144.0, "HDC3020 (7Semi)", C_SENS, height=6.0,
+              note="2× M2 screws · JST-PH cable\n+ - D C → 3V3 GND SDA SCL · 0x44")
+    place_row(b, "M1L", 41, 50, ["3V3", "GND", "SDA", "SCL"], "HDC3020 cable wires", height=3.0, color=C_SENS)
+    b.keepout = [(50.5, 104.5, 69.5, 118.0, "USB plug\nkeep clear"), (50.5, 30.0, 69.5, 43.0, "microSD\npull-out")]
+    T = lambda p: ("U1", p)
+    b.nets = [
+        Net("GND", [T("GND1"), T("GND2"), T("GND3"), ("U5", "3"), ("U8", "3"), ("U8", "6"), ("J1", "2"),
+                    ("J1", "4"), ("J2", "5"), ("J3", "3"), ("J4", "2"), ("D1", "2"), ("D2", "2"), ("C1", "2"),
+                    ("C2", "2"), ("C3", "2"), ("C4", "2"), ("U10", "4"), ("U10", "20"), ("U10B", "3"),
+                    ("R6", "2"), ("R7", "2"), ("R8", "2"), ("U11", "6"), ("M1L", "2")], kind="wire"),
+        Net("+5V_LOGIC", [("J1", "1"), T("VIN"), ("C1", "1"), ("C2", "1"), ("J4", "1"), ("U11", "5")], kind="wire"),
+        Net("+3V3_B", [("J1", "3"), ("U5", "1"), ("U5", "5"), ("U5", "7"), ("U8", "1"), ("U8", "7"),
+                       ("C3", "1"), ("C4", "1"), ("U10B", "2"), ("M1L", "1")], kind="wire"),
+        Net("SD_CS", [T("10"), ("U11", "1")]),
+        Net("SD_SCK", [T("13"), ("U11", "2")]),
+        Net("SD_MOSI", [T("11"), ("U11", "3")]),
+        Net("SD_MISO", [T("12"), ("U11", "4")]),
+        Net("CAM_TX_J", [("J2", "3"), ("U10", "2")]),
+        Net("CAM_RX", [("J2", "4"), ("U10", "3")]),
+        Net("MUX_A", [T("5"), ("U10", "9"), ("R6", "1")]),
+        Net("MUX_B", [T("6"), ("U10", "10"), ("R7", "1")]),
+        Net("MUX_C", [T("9"), ("U10", "19"), ("R8", "1")]),
+        Net("CAM_COM_TX", [("U10B", "5"), ("R9", "1")]),
+        Net("CAM_TO_XIAO", [("R9", "2"), ("J4", "3")]),
+        Net("CAM_FROM_XIAO", [("J4", "4"), ("R10", "2")]),
+        Net("CAM_COM_RX", [("R10", "1"), ("U10B", "4")]),
+        Net("SDA", [T("18"), ("U5", "6"), ("U8", "5"), ("M1L", "3")]),
+        Net("SCL", [T("19"), ("U5", "4"), ("U8", "4"), ("M1L", "4")]),
+        Net("GNSS_IN", [("J2", "2"), T("0")]),
+        Net("HB_IN", [("J2", "1"), T("4")]),
+        Net("TX3", [T("14"), ("R1", "1")]),
+        Net("TX3_J", [("R1", "2"), ("J3", "2")]),
+        Net("RX3", [("J3", "1"), T("15")]),
+        Net("TX8", [T("35"), ("R2", "1")]),
+        Net("TX8_J", [("R2", "2"), ("U10", "6")]),
+        Net("RX8_J", [("U10", "7"), ("R3", "2")]),
+        Net("RX8", [("R3", "1"), T("34")]),
+        Net("LED_OK", [T("36"), ("R4", "1")]),
+        Net("LED_OK_A", [("R4", "2"), ("D1", "1")]),
+        Net("LED_FLT", [T("37"), ("R5", "1")]),
+        Net("LED_FLT_A", [("R5", "2"), ("D2", "1")]),
+    ]
+    return b
+
+
+EXPECT_B = {"10": "SD_CS", "11": "SD_MOSI", "12": "SD_MISO", "13": "SD_SCK", "0": "GNSS_IN", "4": "HB_IN", "5": "MUX_A", "6": "MUX_B", "9": "MUX_C", "14": "TX3", "15": "RX3", "18": "SDA", "19": "SCL", "34": "RX8",
+            "35": "TX8", "36": "LED_OK", "37": "LED_FLT", "VIN": "+5V_LOGIC", "GND1": "GND", "GND2": "GND",
+            "GND3": "GND"}
+FORBIDDEN_B = {"3V3_1", "3V3_2"}
+
+
+# ===========================================================================
+# BOARD C — ENVIRONMENT / PAYLOAD (no MCU; hangs off A's Wire1 + 2 analog lines)
+# ===========================================================================
+def board_c() -> Board:
+    b = Board("C", "Board C ENVIRONMENT", keep_x=(0.0, 120.0), plane_y=None)
+    b.notes = ["Only the HDC3020 is owned today; J4 x2 / J5 / J6 are ready for the env sensors you add later."]
+    place_row(b, "J1", 3, 42, ["SDA1", "SCL1", "3V3", "GND"], "I2C from A J6", direction="down", jst=True)
+    place_row(b, "J7", 3, 35, ["O3", "UV", "GND"], "analog from A J9", direction="down", jst=True)
+    place_row(b, "J3", 3, 28, ["+5V", "GND"], "5V from E J11", direction="down", jst=True)
+    place_row(b, "J2", 20, 44, ["3V3", "GND", "SDA", "SCL"], "HDC3020 cable")
+    place_box(b, "M1", 15.0, 50.0, 37.0, 66.0, "HDC3020 (7Semi)", C_SENS, height=6.0,
+              note="cable module, 2× M2 screws\nJST-PH  + - D C → J2  · 0x44")
+    place_row(b, "J4", 20, 34, ["3V3", "GND", "SDA", "SCL"], "I²C sensor #1", jst=True)
+    place_row(b, "J8", 20, 26, ["3V3", "GND", "SDA", "SCL"], "I²C sensor #2", jst=True)
+    place_row(b, "J5", 32, 34, ["3V3", "GND", "UV"], "ML8511 UV", jst=True)
+    place_row(b, "J6", 32, 26, ["+5V", "GND", "AO"], "MQ-131", jst=True)
+    place_2pin(b, "R1", 10, 44, 14, 44, "4.7k SDA1↑ (fit if needed)")
+    place_2pin(b, "R2", 10, 46, 14, 46, "4.7k SCL1↑ (fit if needed)")
+    place_2pin(b, "R4", 38, 24, 42, 24, "10k MQ divider top")
+    place_2pin(b, "R5", 38, 20, 42, 20, "20k (2×10k) bottom")
+    place_2pin(b, "C1", 26, 44, 28, 44, "100nF", kind="C")
+    for i, (ref, nm, x0, y0, w, h) in enumerate((("U10", "SCD41 CO₂", 8, 18, 30, 22), ("U11", "SEN0290 lightning", 44, 18, 27, 22),
+                                                ("U12", "AS7343 spectral", 77, 22, 25, 18), ("U13", "BMV080 PM", 8, 4, 31, 11),
+                                                ("U14", "ML8511 UV", 44, 3, 19, 15), ("U15", "MQ-131 O₃ (hot)", 77, 100, 32, 22))):
+        place_box(b, ref, x0, y0, x0 + w, y0 + h, nm, "#ffffff", dashed=True, note="future")
+    b.nets = [
+        Net("GND", [("J1", "4"), ("J7", "3"), ("J3", "2"), ("J2", "2"), ("J4", "2"), ("J8", "2"), ("J5", "2"), ("J6", "2"),
+                    ("R5", "2"), ("C1", "2")], kind="wire"),
+        Net("+3V3_A", [("J1", "3"), ("J2", "1"), ("J4", "1"), ("J8", "1"), ("J5", "1"), ("R1", "2"), ("R2", "2"),
+                       ("C1", "1")], kind="wire"),
+        Net("+5V_MQ", [("J3", "1"), ("J6", "1")], kind="wire"),
+        Net("SDA1", [("J1", "1"), ("J2", "3"), ("J4", "3"), ("J8", "3"), ("R1", "1")]),
+        Net("SCL1", [("J1", "2"), ("J2", "4"), ("J4", "4"), ("J8", "4"), ("R2", "1")]),
+        Net("ENV_UV", [("J7", "2"), ("J5", "3")]),
+        Net("MQ_AO", [("J6", "3"), ("R4", "1")]),
+        Net("ENV_O3", [("R4", "2"), ("R5", "1"), ("J7", "1")]),
+    ]
+    return b
+
+
+# ===========================================================================
+# BOARD D — PARAFOIL / RECOVERY Teensy 4.0
+# ===========================================================================
+T40_PIN = lambda n: str(n + 2)          # Teensy 4.0 pin n -> footprint pad
+
+
+def board_d() -> Board:
+    b = Board("D", "Board 4 PARACHUTE (Teensy 4.0) — zero board", keep_x=(0.0, 120.0), plane_y=None)
+    b.notes = ["Servo plugs: − + S with S nearest the Teensy. Hall output pulled up to 3.3 V only. "
+               "Servo/ESC power arrives on thick wires (component side) — never through the Teensy."]
+    place_fp(b, "U1", "Teensy_4.0_hdr_Robu", "1", 21, 40, 270, "Teensy 4.0 PARAFOIL", T40_NAMES, 13.0, C_MCU,
+             note="female headers · outer pins only\nUSB up", pins_used={str(i) for i in range(1, 29)})
+    place_fp(b, "U5", "BMP585_hdr8", "1", 31, 36, 0, "BMP585 #3 (to buy)", BMP, 6.0, C_SENS, note="0x47 · own 600 m baro")
+    place_fp(b, "U6", "ICM20948_7Semi_hdr12", "1", 31, 44, 0, "ICM-20948 #2", ICM, 6.0, C_SENS, note="CS+SDO → 1V8 · 0x69")
+    # (the microSD card module moved to Board 2 BACKUP + SENSOR)
+    # servo plugs = normal 2.54 mm 3-pin headers (user), − + S like every servo lead (brown/black, red, orange/white);
+    # 3 rows (7.6 mm) apart so the servo plugs sit side by side with room for fingers. ESC / Hall / power / UART = JST-XH.
+    servos = (("J10", "A20CLM LEFT steer (8 V)", "R1"), ("J11", "A20CLM RIGHT steer (8 V)", "R2"),
+              ("J12", "MG90S #1 PARACHUTE BAY", "R3"), ("J13", "MG90S #2 PETRI PLATE", "R4"),
+              ("J16", "MG90S #3 EXTRA", "R9"))
+    for i, (ref, name, rref) in enumerate(servos):
+        row = 41 - 3 * i
+        place_row(b, ref, 2, row, ["−", "+", "S"], name, height=14.0, note="2.54 mm servo header")
+        place_2pin(b, rref, 12, row, 8, row, "330")
+    # the ESC's 2 thin wires: ground + signal (its thick wires go to the POWER board ESC pads)
+    place_row(b, "J14", 2, 26, ["−", "S"], "ESC signal (Cyclone 45A BLHeli_S)", jst=True)
+    place_2pin(b, "R5", 12, 26, 8, 26, "330")
+    place_row(b, "J15", 2, 23, ["−", "+5V", "OUT"], "HALL sensor", jst=True)
+    place_2pin(b, "R6", 8, 23, 12, 23, "10k HALL↑3V3")
+    place_row(b, "J2", 3, 20, ["TX2→A", "RX2←A", "GND"], "UART from A J4", direction="down", jst=True)
+    place_row(b, "J5", 3, 45, ["GNSS", "GND"], "GNSS from A J8", direction="down", jst=True)
+    place_row(b, "J3", 45, 31, ["TX→B", "RX3←B", "GND"], "to B J3", direction="down", jst=True)
+    place_2pin(b, "R7", 8, 17, 12, 17, "1k TX2→A")
+    place_2pin(b, "R8", 38, 31, 42, 31, "1k TX→B")
+    place_row(b, "J1", 2, 55, ["+8V", "+8V", "GND", "GND"], "8 V steer in (POWER J8)", jst=True)
+    place_row(b, "J6", 8, 55, ["+5VS", "GND"], "5 V servo in (POWER J9)", jst=True)
+    place_row(b, "J8", 21, 52, ["+5V", "GND", "+3V3", "GND"], "logic PWR from E J7", jst=True)
+    place_2pin(b, "C1", 2, 48, 4, 48, "470µF 8V rail", kind="CP")
+    place_2pin(b, "C2", 6, 48, 8, 48, "470µF 5VS rail", kind="CP")
+    place_2pin(b, "C3", 21, 55, 23, 55, "470µF", kind="CP")
+    place_2pin(b, "C4", 25, 55, 27, 55, "100nF", kind="C")
+    place_2pin(b, "C5", 31, 33, 33, 33, "100nF", kind="C")
+    b.keepout = [(50.5, 104.0, 69.5, 117.0, "USB plug\nkeep clear")]
+    T = lambda n: ("U1", T40_PIN(n))
+    b.nets = [
+        Net("GND", [("U1", "1"), ("U1", "27"), ("U5", "3"), ("U6", "3"), ("U6", "9"), ("U6", "12"),
+                    ("J10", "1"), ("J11", "1"), ("J12", "1"), ("J13", "1"), ("J16", "1"), ("J14", "1"), ("J15", "1"), ("J2", "3"),
+                    ("J5", "2"), ("J3", "3"), ("J1", "3"), ("J1", "4"), ("J6", "2"), ("J8", "2"), ("J8", "4"), ("C1", "2"),
+                    ("C2", "2"), ("C3", "2"), ("C4", "2"), ("C5", "2")], kind="wire"),
+        Net("+8V_STEER", [("J1", "1"), ("J1", "2"), ("C1", "1"), ("J10", "2"), ("J11", "2")], kind="wire"),
+        Net("+5V_SERVO", [("J6", "1"), ("C2", "1"), ("J12", "2"), ("J13", "2"), ("J16", "2")], kind="wire"),
+        Net("+5V_LOGIC", [("J8", "1"), ("U1", "28"), ("C3", "1"), ("C4", "1"), ("J15", "2")], kind="wire"),
+        Net("+3V3_B", [("J8", "3"), ("U5", "1"), ("U5", "5"), ("U5", "7"), ("U6", "1"), ("R6", "2"), ("C5", "1")],
+            kind="wire"),
+        Net("ICM_1V8", [("U6", "2"), ("U6", "7"), ("U6", "8")]),
+        Net("SDA", [T(18), ("U5", "6"), ("U6", "5")]),
+        Net("SCL", [T(19), ("U5", "4"), ("U6", "4")]),
+        Net("GNSS_IN", [("J5", "1"), T(0)]),
+        Net("STEER_L", [T(2), ("R1", "1")]), Net("STEER_L_S", [("R1", "2"), ("J10", "3")]),
+        Net("STEER_R", [T(3), ("R2", "1")]), Net("STEER_R_S", [("R2", "2"), ("J11", "3")]),
+        Net("BAY_LID", [T(4), ("R3", "1")]), Net("BAY_LID_S", [("R3", "2"), ("J12", "3")]),
+        Net("PETRI", [T(5), ("R4", "1")]), Net("PETRI_S", [("R4", "2"), ("J13", "3")]),
+        Net("SERVO_X", [T(10), ("R9", "1")]), Net("SERVO_X_S", [("R9", "2"), ("J16", "3")]),
+        Net("ESC", [T(6), ("R5", "1")]), Net("ESC_S", [("R5", "2"), ("J14", "2")]),
+        Net("RX2", [("J2", "2"), T(7)]),
+        Net("TX2", [T(8), ("R7", "1"), ("R8", "1")]),
+        Net("TX2_A", [("R7", "2"), ("J2", "1")]),
+        Net("TX2_B", [("R8", "2"), ("J3", "1")]),
+        Net("RX3", [("J3", "2"), T(15)]),
+        Net("HALL", [T(9), ("J15", "3"), ("R6", "1")]),
+    ]
+    return b
+
+
+EXPECT_D = {T40_PIN(n): v for n, v in {0: "GNSS_IN", 2: "STEER_L", 3: "STEER_R", 4: "BAY_LID", 5: "PETRI", 6: "ESC",
+                                         10: "SERVO_X",
+                                         7: "RX2", 8: "TX2", 9: "HALL",
+                                         15: "RX3", 18: "SDA", 19: "SCL"}.items()}
+EXPECT_D.update({"1": "GND", "27": "GND", "28": "+5V_LOGIC"})
+FORBIDDEN_D = {"26"}                     # Teensy 3V3 out: do not tie to the 3V3_B rail
+
+
+# ===========================================================================
+# BOARD E — POWER (next to the battery). High current = thick wire, never traces.
+# ===========================================================================
+def _module(b, ref, x0, y0, w, h, label, c, r, note=""):
+    """Buck module as a box + a 3-hole landing row [IN, GND, OUT] next to it.
+    Solder short wires from the module's own VIN/GND/VOUT pads (check its
+    silkscreen) to these holes — no module pin order is assumed."""
+    place_box(b, ref, x0, y0, x0 + w, y0 + h, label, C_PWR, height=8.0, note=note)
+    place_row(b, ref + "L", c, r, ["IN", "GND", "OUT"], ref + " landing", direction="down", height=3.0)
+
+
+def board_e() -> Board:
+    b = Board("E", "Board E POWER", keep_x=(0.0, 120.0), plane_y=None)
+    b.notes = ["Battery, ESC and 8 V paths: ≥18 AWG silicone wire. 5 V/3V3 distribution: 22 AWG. INA260 IN+/IN− take the "
+               "thick wire directly. INA260 I²C addresses: set the module's A0/A1 pads to 0x40 / 0x41 / 0x45 and confirm by scan."]
+    place_fp(b, "U1", "INA260_7Semi_hdr8", "1", 5, 50, 0, "INA260 #1 BATTERY", INA, 6.0, C_PWR, note="0x40")
+    place_fp(b, "U3", "INA260_7Semi_hdr8", "1", 5, 30, 0, "INA260 #3 5V LOGIC", INA, 6.0, C_PWR, note="0x45")
+    place_fp(b, "U2", "INA260_7Semi_hdr8", "1", 5, 14, 0, "INA260 #2 8V STEER", INA, 6.0, C_PWR, note="0x41")
+    _module(b, "M1", 52, 112, 21, 18, "AP64500 #1 → +5V_LOGIC", 19, 50)
+    _module(b, "M2", 90, 112, 21, 18, "AP64500 #2 → +5V_SERVO", 34, 50)
+    _module(b, "M3", 52, 80, 45, 25, "8 V multi-output buck", 19, 40, note="A20CLM steering only")
+    _module(b, "M4", 52, 45, 18, 16, "AP62301 #1 → +3V3_A", 19, 22)
+    _module(b, "M5", 80, 45, 18, 16, "AP62301 #2 → +3V3_B", 30, 22)
+    for m in ("M1L", "M2L", "M3L", "M4L", "M5L"):
+        c, r = b.parts[m].pins["1"]
+        place_row(b, m, c, r, ["IN", "GND", "OUT"], m[:2] + " landing", direction="down", height=3.0)
+    place_row(b, "J1", 2, 57, ["BAT+", "BAT−"], "BATTERY (XT60 lead)", height=10.0)
+    place_row(b, "J3", 6, 57, ["SW_A", "SW_B"], "rocker switch (shell)")
+    place_row(b, "F1", 10, 57, ["IN", "OUT"], "FUSE 10 A (link until fitted)")
+    place_2pin(b, "R1", 14, 54, 18, 54, "1k LED")
+    place_2pin(b, "D1", 20, 54, 20, 53, "PWR LED red", kind="LED_R")
+    place_row(b, "J4", 44, 57, ["VBAT", "GND"], "ESC (XT30 lead)", height=10.0)
+    place_row(b, "J2", 30, 57, ["SCL", "SDA", "GND"], "I²C to A J2", jst=True)
+    place_row(b, "J5", 44, 16, ["+5V", "GND", "+3V3_A", "GND"], "PWR to A J1", direction="down", jst=True)
+    place_row(b, "J6", 41, 16, ["+5V", "GND", "+3V3_B", "GND"], "PWR to B J1", direction="down", jst=True)
+    place_row(b, "J7", 38, 16, ["+5V", "GND", "+3V3_B", "GND"], "PWR to D J8", direction="down", jst=True)
+    place_row(b, "J8", 35, 16, ["+8V", "+8V", "GND", "GND"], "8 V → PARACHUTE J1", direction="down", jst=True)
+    place_row(b, "J9", 35, 9, ["+5VS", "GND"], "5 V servo → PARACHUTE J6", direction="down", jst=True)
+    place_row(b, "J10", 44, 9, ["VBAT", "GND"], "VBAT sense to A J3", direction="down", jst=True)
+    place_2pin(b, "C1", 22, 44, 24, 44, "470µF 25V VBAT", kind="CP")
+    b.nets = [
+        Net("SCL", [("J2", "1"), ("U1", "3"), ("U2", "3"), ("U3", "3")]),
+        Net("SDA", [("J2", "2"), ("U1", "4"), ("U2", "4"), ("U3", "4")]),
+        Net("GND", [("J1", "2"), ("U1", "2"), ("U2", "2"), ("U3", "2"), ("M1L", "2"), ("M2L", "2"), ("M3L", "2"),
+                    ("M4L", "2"), ("M5L", "2"), ("D1", "2"), ("J4", "2"), ("J2", "3"), ("J5", "2"), ("J5", "4"),
+                    ("J6", "2"), ("J6", "4"), ("J7", "2"), ("J7", "4"), ("J8", "3"), ("J8", "4"), ("J9", "2"), ("J10", "2"),
+                    ("C1", "2")], kind="wire"),
+        Net("BAT+", [("J1", "1"), ("J3", "1")], kind="wire"),
+        Net("VBAT_SW", [("J3", "2"), ("F1", "1"), ("R1", "1")], kind="wire"),
+        Net("VBAT_F", [("F1", "2"), ("U1", "7")], kind="wire"),
+        Net("VBAT", [("U1", "8"), ("U1", "6"), ("M1L", "1"), ("M2L", "1"), ("M3L", "1"), ("J4", "1"), ("J10", "1"),
+                     ("C1", "1")], kind="wire"),
+        Net("LED_A", [("R1", "2"), ("D1", "1")]),
+        Net("8V_RAW", [("M3L", "3"), ("U2", "7")], kind="wire"),
+        Net("+8V_STEER", [("U2", "8"), ("U2", "6"), ("J8", "1"), ("J8", "2")], kind="wire"),
+        Net("5V_RAW", [("M1L", "3"), ("U3", "7")], kind="wire"),
+        Net("+5V_LOGIC", [("U3", "8"), ("U3", "6"), ("J5", "1"), ("J6", "1"), ("J7", "1"),
+                          ("M4L", "1"), ("M5L", "1")], kind="wire"),
+        Net("+5V_SERVO", [("M2L", "3"), ("J9", "1")], kind="wire"),
+        Net("+3V3_A", [("M4L", "3"), ("J5", "3"), ("U1", "1"), ("U2", "1"), ("U3", "1")], kind="wire"),
+        Net("+3V3_B", [("M5L", "3"), ("J6", "3"), ("J7", "3")], kind="wire"),
+    ]
+    return b
+
+
+BOARDS = {"A": (board_a, [("U1", EXPECT_A, FORBIDDEN_A)]),
+          "B": (board_b, [("U1", EXPECT_B, FORBIDDEN_B)]),
+          "D": (board_d, [("U1", EXPECT_D, FORBIDDEN_D)]),
+          "E": (board_e, [])}
+
+
+def run(key: str) -> bool:
+    make, pin_checks = BOARDS[key]
+    b = make()
+    problems = fit_check(b)
+    for ref, exp, forb in pin_checks:
+        problems += check_pins(b, ref, exp, forb)
+    results, occ = route(b)
+    problems += verify(b, results, occ)
+    jumpers = sum(len(r["jumpers"]) for r in results.values() if not r.get("wire"))
+    holes = sum(len(set(h for p in r["segs"] for h in p)) for r in results.values())
+    print(f"[{key}] nets={len(b.nets)} routed-holes={holes} top-jumpers={jumpers} problems={len(problems)}")
+    for m in problems:
+        print("   !", m)
+    render_top(b, results, os.path.join(OUT, f"{key}_top.png"))
+    render_bottom(b, results, os.path.join(OUT, f"{key}_bottom.png"))
+    with open(os.path.join(OUT, f"{key}_wiring.md"), "w", encoding="utf-8") as f:
+        f.write(wiring_list(b, results))
+    return not problems
+
+
+if __name__ == "__main__":
+    keys = sys.argv[1:] or list(BOARDS)
+    ok = all([run(k) for k in keys])
+    sys.exit(0 if ok else 1)

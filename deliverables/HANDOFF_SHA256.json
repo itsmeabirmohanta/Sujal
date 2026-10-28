@@ -1,0 +1,192 @@
+[
+  {
+    "path": "ACTION_PLAN.md",
+    "bytes": 1901,
+    "sha256": "0f4401e99f1884652567cf4ef6ad49e791be8ab0fa9774912bf0fae3257a4464"
+  },
+  {
+    "path": "calculations.json",
+    "bytes": 1662,
+    "sha256": "11426867c42d1ee7752165da3c712b341d2ea55fdb50556f0e26812a7021f063"
+  },
+  {
+    "path": "DELIVERABLE_AUDIT.md",
+    "bytes": 4105,
+    "sha256": "7c7c402ca5780e8736edc7863cf99105811c8e2d9d3d5757f712fb24b358f10b"
+  },
+  {
+    "path": "GCS_HANDOFF.md",
+    "bytes": 3091,
+    "sha256": "87c1639b08c658dc089fb87b82dd958d3ac3807fec6656dbfd21615c75f85031"
+  },
+  {
+    "path": "ICD_WIRE_FORMATS.md",
+    "bytes": 6780,
+    "sha256": "f7ba345cdbe09fdc29363094ed4fff04cde596a2089bc36eb7aa5ad71e018f09"
+  },
+  {
+    "path": "IMPLEMENTATION_STATUS.md",
+    "bytes": 6130,
+    "sha256": "dec3b4fe131a0354b927ccc2db3da1e44ac3ed8300dfd8fc3e780fddcaa5dee2"
+  },
+  {
+    "path": "LAUNCH_DAY_CHECKLIST.md",
+    "bytes": 2280,
+    "sha256": "373380c362bcbc02add9e041eb225630c5d6df64e2224fb5e22d066b59a2a1d5"
+  },
+  {
+    "path": "numeric_traceability.csv",
+    "bytes": 6342,
+    "sha256": "1ca7e2c9f6587a62dc7a596fa13d611245199c7a1754208a34f1761d78e06274"
+  },
+  {
+    "path": "PROMPT_COVERAGE.csv",
+    "bytes": 6654,
+    "sha256": "168346cad0d795bd7761143df736623b0f649f37c3f56f988f56786d31492ac5"
+  },
+  {
+    "path": "README.md",
+    "bytes": 2231,
+    "sha256": "2b8b2f1bb1c9bb26e3c2970b9d8ebae1f67ed5f01d32eae3a046ad495a2078f2"
+  },
+  {
+    "path": "reference_code/control_pi.hpp",
+    "bytes": 1236,
+    "sha256": "2df6b32ad6b599c7f1e462a90f32f84d124d9788e825e292b2e132b44b3c9074"
+  },
+  {
+    "path": "reference_code/drivers.hpp",
+    "bytes": 3046,
+    "sha256": "225c020c32a748699f3b764a42214a3bd9818ef49f79fe0c81613e74f5be4110"
+  },
+  {
+    "path": "reference_code/engineering_checks.py",
+    "bytes": 4845,
+    "sha256": "eb83bb61a4f8881055781a548137aff8deafe5823473e190b68dd53fe416090c"
+  },
+  {
+    "path": "reference_code/estimators.hpp",
+    "bytes": 6276,
+    "sha256": "94656746805d6c59d8906092a2257ebb5daf404102ba270903b845e8167319b0"
+  },
+  {
+    "path": "reference_code/flight_core.hpp",
+    "bytes": 10329,
+    "sha256": "4ce479ebeb7aaa6083c11a8b4c85ef6f01eebc8a73bfa95d09d1e951d74f0512"
+  },
+  {
+    "path": "reference_code/fsm.hpp",
+    "bytes": 3581,
+    "sha256": "7bdb7ac4dcd5084152c6012a9c2a8bcc53745a66e486f07d65ed59c85999c4c9"
+  },
+  {
+    "path": "reference_code/gcs_protocol.py",
+    "bytes": 3594,
+    "sha256": "d2a9c814ed06d90eab4cbb0eaabcfc122bd4ee2379a216760c5e1175e28f7998"
+  },
+  {
+    "path": "reference_code/gnss_commands.txt",
+    "bytes": 2402,
+    "sha256": "fd7d42823b5d485fedb61c403efe6180b912d864106c02bbb33e72f2d27dc430"
+  },
+  {
+    "path": "reference_code/journal.hpp",
+    "bytes": 3311,
+    "sha256": "9e2a5b4bcfd0b1a04c3b26eb33389371c853e4a9c3ceaa5dd1bb08e28ddf08cc"
+  },
+  {
+    "path": "reference_code/logging.hpp",
+    "bytes": 2245,
+    "sha256": "a2a791e4ba97ecc4cfd59456e0f7b0749192d957443077372b98b83a338b74ca"
+  },
+  {
+    "path": "reference_code/nmea_epoch.hpp",
+    "bytes": 8217,
+    "sha256": "c669bb7868d5b620d9a585b3b4d5f6f0dc13da795b3c0a6b8bed87dcae84aeef"
+  },
+  {
+    "path": "reference_code/pins.hpp",
+    "bytes": 1171,
+    "sha256": "9507c9f59be7ade6a265d0099f5601bce98b1c8be644acd8e62873901aa54b28"
+  },
+  {
+    "path": "reference_code/planner.hpp",
+    "bytes": 5369,
+    "sha256": "514bb9f432dd41acb3797c6f388b6c0da9b4d8bf681f1d10c5e1da647fe1fffc"
+  },
+  {
+    "path": "reference_code/protocol.hpp",
+    "bytes": 3395,
+    "sha256": "da06f027802db8ada30b5c93673b66d9afcb4e2761e351b6baceb46880bf1977"
+  },
+  {
+    "path": "reference_code/README.md",
+    "bytes": 3577,
+    "sha256": "a65a1890e80c98f495333cd7e19cb1a2fd960671c37dd3cf7e8a50fe447353ce"
+  },
+  {
+    "path": "reference_code/scheduler.hpp",
+    "bytes": 1171,
+    "sha256": "09f42e3f01910d812f41c8535e9b66316209a7b799e4fcc5af68aee930b9e7a2"
+  },
+  {
+    "path": "reference_code/telemetry.hpp",
+    "bytes": 2921,
+    "sha256": "9ad85f2b3a54cfbb46145ba655abc902c5b3d9a7f736b36ac0fe72116b5cf306"
+  },
+  {
+    "path": "reference_code/test_core.cpp",
+    "bytes": 7752,
+    "sha256": "19734255e607eec80233ea1dc85f1fa613ddf4a4e54e155fff40fe2242f5bcdb"
+  },
+  {
+    "path": "reference_code/test_gcs_protocol.py",
+    "bytes": 2084,
+    "sha256": "7225082210be303e1e5d214c9432baba36791b02c6ae5fa7aced69db9494ba96"
+  },
+  {
+    "path": "reference_code/test_modules.cpp",
+    "bytes": 7682,
+    "sha256": "479aec5043d0d91006b0897a84c29862c2562ac21f1b45b21a850962598a188f"
+  },
+  {
+    "path": "requirements.csv",
+    "bytes": 4450,
+    "sha256": "f9c070b2445a47599f7f055b2b030fc51994832185e32f753d30cd160565eff0"
+  },
+  {
+    "path": "SENSOR_COMPLETENESS.md",
+    "bytes": 5558,
+    "sha256": "d2b15416a7581801529253644d6e67d9a3204835b9bf65d95c7353cfbe2bdc63"
+  },
+  {
+    "path": "SOURCE_REGISTER.md",
+    "bytes": 14039,
+    "sha256": "a5302c19b6afe78be3ac33d905d4aef27e3182b04f7d468f6a008ce936a7027d"
+  },
+  {
+    "path": "TEAM_OPEN_QUESTIONS.md",
+    "bytes": 1731,
+    "sha256": "3664bd6cf20b3f5749a089609de08b6b8abc0eb5911ce7b41f76ecdf51344726"
+  },
+  {
+    "path": "TEST_EVIDENCE_TEMPLATE.csv",
+    "bytes": 3101,
+    "sha256": "7764fa18f9ab13b19140d4b43c1842b0e809dfae031375ba51aabc447dc0e209"
+  },
+  {
+    "path": "VERIFICATION.md",
+    "bytes": 3066,
+    "sha256": "4ec4a8724b6caf21060d366e9a5356b35e9d390580c17c81142330026a601855"
+  },
+  {
+    "path": "VRITRA_ENGINEERING_REPORT.html",
+    "bytes": 140269,
+    "sha256": "36dcb8a22c64db348a891e0cfd5cb6543407c77a4eb44c8e7e4c041f30975eb5"
+  },
+  {
+    "path": "VRITRA_ENGINEERING_REPORT.md",
+    "bytes": 114489,
+    "sha256": "5490ee4181598466142291baa5ec57f691037337e7659f84f4e0845120ce5668"
+  }
+]

@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "D:\linux\Software\Claude\VRITRA_ZeroBoard_Memory\routing\etch_export.py", line 264, in <module>
+  File "D:\linux\Software\Claude\VRITRA_ZeroBoard_Memory\routing\etch_export.py", line 129, in build
+  File "D:\linux\Software\Claude\VRITRA_ZeroBoard_Memory\routing\zb_router_etch.py", line 201, in route_etch
+RuntimeError: B: LED_FLT_A cannot be routed without sharing
+exit 1

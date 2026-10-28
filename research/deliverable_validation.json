@@ -1,0 +1,82 @@
+[
+  {
+    "check": "all 15 principal report sections",
+    "passed": true
+  },
+  {
+    "check": "all requested priority tiers",
+    "passed": true
+  },
+  {
+    "check": "explicit team clarification",
+    "passed": true
+  },
+  {
+    "check": "flight qualification boundary",
+    "passed": true
+  },
+  {
+    "check": "20 traced requirements",
+    "passed": true
+  },
+  {
+    "check": "hardware results not invented",
+    "passed": true
+  },
+  {
+    "check": "45 mapped prompt outputs",
+    "passed": true
+  },
+  {
+    "check": "coverage evidence limitations explicit",
+    "passed": true
+  },
+  {
+    "check": "coverage artifacts exist",
+    "passed": true
+  },
+  {
+    "check": "32 numeric evidence families",
+    "passed": true
+  },
+  {
+    "check": "INA260 configuration restored",
+    "passed": true
+  },
+  {
+    "check": "version2 wire budget reconciled",
+    "passed": true
+  },
+  {
+    "check": "selected radio schedule matches report",
+    "passed": true
+  },
+  {
+    "check": "HTML tables and code rendered",
+    "passed": true
+  },
+  {
+    "check": "report local links resolve",
+    "passed": true
+  },
+  {
+    "check": "all handoff Markdown links resolve",
+    "passed": true
+  },
+  {
+    "check": "handoff hashes match",
+    "passed": true
+  },
+  {
+    "check": "ZIP integrity",
+    "passed": true
+  },
+  {
+    "check": "no third-party downloads or binaries in shareable ZIP",
+    "passed": true
+  },
+  {
+    "check": "no placeholder TODOs",
+    "passed": true
+  }
+]

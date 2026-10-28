@@ -1,0 +1,14 @@
+/research/deps/
+/research/sources/
+/research/extracted/
+!/research/extracted/
+/research/extracted/*
+!/research/extracted/*.png
+/research/audit_v2/
+/build/
+/deliverables/reference_code/*.exe
+/deliverables/reference_code/__pycache__/
+/deliverables/VRITRA_RESEARCH_HANDOFF.zip
+/VRITRA_CanSat_025_Handover_2026-10-28.zip
+/research/__pycache__/
+/.venv/

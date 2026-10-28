@@ -1,0 +1,7 @@
+fit/netlist: OK
+55 links 4 holes 445 problems 0
+56 fail D: TX2 cannot be routed without sharing a hole
+57 links 7 holes 456 problems 0
+58 links 4 holes 458 problems 0
+59 links 6 holes 456 problems 0
+BEST 55 4 445 -> D:\linux\Software\Claude\VRITRA_ZeroBoard_Memory\routing\BOARD4_PICO_ROUTED_55_60.json

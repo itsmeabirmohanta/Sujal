@@ -1,0 +1,70 @@
+[
+  {
+    "command": [
+      "g++",
+      "-std=c++17",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pedantic",
+      "deliverables/reference_code/test_core.cpp",
+      "-o",
+      "C:\\Users\\Abir Mahanta\\OneDrive\\Documents\\College-Coding\\Sujal\\build\\test_core.exe"
+    ],
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "command": [
+      "C:\\Users\\Abir Mahanta\\OneDrive\\Documents\\College-Coding\\Sujal\\build\\test_core.exe"
+    ],
+    "exit_code": 0,
+    "output": "PASS: 41 grouped assertions; offline synthetic inputs only"
+  },
+  {
+    "command": [
+      "g++",
+      "-std=c++17",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pedantic",
+      "deliverables/reference_code/test_modules.cpp",
+      "-o",
+      "C:\\Users\\Abir Mahanta\\OneDrive\\Documents\\College-Coding\\Sujal\\build\\test_modules.exe"
+    ],
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "command": [
+      "C:\\Users\\Abir Mahanta\\OneDrive\\Documents\\College-Coding\\Sujal\\build\\test_modules.exe"
+    ],
+    "exit_code": 0,
+    "output": "PASS: module integration, corruption, expiry, estimator, control, FSM and storage checks"
+  },
+  {
+    "command": [
+      "C:\\Python313\\python.exe",
+      "deliverables/reference_code/test_gcs_protocol.py"
+    ],
+    "exit_code": 0,
+    "output": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.001s\n\nOK"
+  },
+  {
+    "command": [
+      "C:\\Python313\\python.exe",
+      "deliverables/reference_code/engineering_checks.py"
+    ],
+    "exit_code": 0,
+    "output": "PASS: independent checksum examples, airtime boundary, and illustrative CSV length\n1Hz schedule: 984.128 ms"
+  },
+  {
+    "command": [
+      "C:\\Python313\\python.exe",
+      "research/complete_handoff.py"
+    ],
+    "exit_code": 0,
+    "output": "Wrote 45 individually mapped prompt deliverables and operational extracts."
+  }
+]

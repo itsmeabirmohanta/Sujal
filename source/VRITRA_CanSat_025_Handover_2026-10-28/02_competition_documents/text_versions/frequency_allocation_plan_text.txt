@@ -1,0 +1,180 @@
+NOTE (added by the team): machine text extraction of the PDF; table columns may be misaligned. Read the PDF for exact values.
+Team 025 official values are in CAN7USAT_Team_Frequency_Assignments_19-10-2026 (866.50 / 865.25 MHz, SF9, 0x99).
+==========
+                         Team Frequency Assignments
+
+          IN-SPACe CAN-7USAT/Model Rocketry India Student Competition 2026-27
+
+Your Can7USat /Model Rocket has two telemetry links - an 868 MHz LoRa link and a 2.4 GHz XBee link, each with a
+MAIN and a BACKUP channel. You may use either link or both. Use MAIN by default; switch to BACKUP only when Mission
+Control tells you. Never transmit on any frequency not assigned to you.
+
+Strictly avoid - never transmit on these
+
+     - Any frequency or channel not assigned to you (868 main/backup, or your XBee main/backup).
+     - The 433 MHz band (419 - 437 MHz) - reserved for rockets ignition command
+     - Voice / walkie-talkie band: 446.0 - 446.2 MHz.
+     - Transmitting before your slot is called, or leaving any transmitter switched on after you finish.
+     - All CAN-7USATs should automatically switch off transmission 90 min after launch detection, to avoid interference with
+
+          other teams.
+
+LoRa settings (868 MHz link)
+
+                  Parameter                                                 Value
+Modulation                    LoRa (not FSK)
+Band                          865 - 868 MHz (India licence-free)
+Bandwidth                     125 kHz (mandatory - India caps carrier at 200 kHz)
+Spreading Factor              Your value SF7-SF11 (see your row)
+Coding Rate                   4/5
+Sync Word                     0x80 + Team ID (see your row)
+TX Power                      +10 dBm on pad / ~+14 dBm in flight
+
+Each pad has a different SF (SF7-SF11). In this narrow band the different spreading factors keep the five live links separable even where
+channels are close. The Sync Word makes your receiver ignore other teams on the same frequency.
+
+XBee settings (2.4 GHz link)
+
+Use the 2.4 GHz XBee variant in 802.15.4 mode (NOT XBee 900). Your Main and Backup channels and your PAN ID are in
+the table below. The PAN ID (0x1000 + your team ID) is unique to your team. Use your Main channel by default; move to
+Backup only on Mission Control's call.
+
+Ground station & remote control
+
+     � Ground station: use a high-gain directional antenna (e.g., a Yagi), elevated on a mast, for reliable reception at 1 km
+          and beyond. Use one receiver per channel (or an SDR).
+
+     � Remote on/off (telecommand): your CAN-7USAT must be able to switch EACH link (868 LoRa and 2.4 GHz XBee)
+          ON and OFF by telecommand, so you can silence a link if Mission Control reports it is interfering with another team.
+
+Video transmitters (VTX)
+
+     � Any onboard video transmitter must NOT operate in any competition or reserved band (433 MHz rockets, 865-868
+          MHz telemetry, 915 MHz ignition, the 2.4 GHz XBee channels, or 446 MHz voice). A 5.8 GHz VTX is usually the safest
+          choice.
+
+     � Jury check required: have your exact video transmitter frequency measured and approved by the jury before you are
+          cleared to fly.
+
+Your assigned CAN-7USAT settings
+
+Programme your 868 link (Main/Backup + SF), your 2.4 GHz XBee link (Main/Backup channel + PAN ID), and your
+team Sync Word.
+   Team   868 Main  868 Backup SF  Sync  XBee Main     XBee Backup   PAN ID
+ Number     (MHz)       (MHz)               (MHz)           (MHz)
+                                   0x81                              0x1001
+   2026-   865.50   867.25  SF7    0x82  Ch 11 (2405)  Ch 21 (2455)  0x1002
+INSPACe-   866.00   867.75  SF8    0x83  Ch 15 (2425)  Ch 25 (2475)  0x1003
+           866.50   865.25  SF9    0x84  Ch 19 (2445)  Ch 12 (2410)  0x1004
+   CAN-    867.00   865.75  SF10   0x85  Ch 23 (2465)  Ch 16 (2430)  0x1005
+ 7USAT-    867.50   866.25  SF11   0x86  Ch 26 (2480)  Ch 20 (2450)  0x1006
+           865.50   867.25  SF7    0x87  Ch 11 (2405)  Ch 21 (2455)  0x1007
+    XXX    866.00   867.75  SF8    0x88  Ch 15 (2425)  Ch 25 (2475)  0x1008
+           866.50   865.25  SF9    0x89  Ch 19 (2445)  Ch 12 (2410)  0x1009
+   001     867.00   865.75  SF10   0x8A  Ch 23 (2465)  Ch 16 (2430)  0x100A
+   002     867.50   866.25  SF11   0x8B  Ch 26 (2480)  Ch 20 (2450)  0x100B
+   003     865.50   867.25  SF7    0x8C  Ch 11 (2405)  Ch 21 (2455)  0x100C
+   004     866.00   867.75  SF8    0x8D  Ch 15 (2425)  Ch 25 (2475)  0x100D
+   005     866.50   865.25  SF9    0x8E  Ch 19 (2445)  Ch 12 (2410)  0x100E
+   006     867.00   865.75  SF10   0x8F  Ch 23 (2465)  Ch 16 (2430)  0x100F
+   007     867.50   866.25  SF11   0x90  Ch 26 (2480)  Ch 20 (2450)  0x1010
+   008     865.50   867.25  SF7    0x91  Ch 11 (2405)  Ch 21 (2455)  0x1011
+   009     866.00   867.75  SF8    0x92  Ch 15 (2425)  Ch 25 (2475)  0x1012
+   010     866.50   865.25  SF9    0x93  Ch 19 (2445)  Ch 12 (2410)  0x1013
+   011     867.00   865.75  SF10   0x94  Ch 23 (2465)  Ch 16 (2430)  0x1014
+   012     867.50   866.25  SF11   0x95  Ch 26 (2480)  Ch 20 (2450)  0x1015
+   013     865.50   867.25  SF7    0x96  Ch 11 (2405)  Ch 21 (2455)  0x1016
+   014     866.00   867.75  SF8    0x97  Ch 15 (2425)  Ch 25 (2475)  0x1017
+   016     866.50   865.25  SF9    0x98  Ch 19 (2445)  Ch 12 (2410)  0x1018
+   017     867.00   865.75  SF10   0x99  Ch 23 (2465)  Ch 16 (2430)  0x1019
+   018     867.50   866.25  SF11   0x9A  Ch 26 (2480)  Ch 20 (2450)  0x101A
+   019     865.50   867.25  SF7    0x9B  Ch 11 (2405)  Ch 21 (2455)  0x101B
+   020     866.00   867.75  SF8    0x9C  Ch 15 (2425)  Ch 25 (2475)  0x101C
+   021     866.50   865.25  SF9    0x9D  Ch 19 (2445)  Ch 12 (2410)  0x101D
+   022     867.00   865.75  SF10   0x9E  Ch 23 (2465)  Ch 16 (2430)  0x101E
+   023     867.50   866.25  SF11   0x9F  Ch 26 (2480)  Ch 20 (2450)  0x101F
+   024     865.50   867.25  SF7    0xA0  Ch 11 (2405)  Ch 21 (2455)  0x1020
+   025     866.00   867.75  SF8    0xA1  Ch 15 (2425)  Ch 25 (2475)  0x1021
+   027     866.50   865.25  SF9    0xA2  Ch 19 (2445)  Ch 12 (2410)  0x1022
+   028     867.00   865.75  SF10   0xA3  Ch 23 (2465)  Ch 16 (2430)  0x1023
+   029     867.50   866.25  SF11   0xA4  Ch 26 (2480)  Ch 20 (2450)  0x1024
+   030     865.50   867.25  SF7          Ch 11 (2405)  Ch 21 (2455)
+   031
+   032
+   033
+   034
+   035
+   036
+   037
+   038
+Team 868 Main 868 Backup SF     Sync  XBee Main  XBee Backup     PAN ID
+                                         (MHz)        (MHz)
+Number    (MHz)   (MHz)
+
+2026-
+
+INSPACe-
+
+CAN-
+
+7USAT-
+
+XXX
+
+039       866.00  867.75  SF8   0xA5  Ch 15 (2425) Ch 25 (2475)  0x1025
+
+040       866.50  865.25  SF9   0xA6  Ch 19 (2445) Ch 12 (2410)  0x1026
+
+041       867.00  865.75  SF10  0xA7  Ch 23 (2465) Ch 16 (2430)  0x1027
+
+042       867.50  866.25  SF11  0xA8  Ch 26 (2480) Ch 20 (2450)  0x1028
+
+043       865.50  867.25  SF7   0xA9  Ch 11 (2405) Ch 21 (2455)  0x1029
+
+044       866.00  867.75  SF8   0xAA  Ch 15 (2425) Ch 25 (2475)  0x102A
+
+045       866.50  865.25  SF9   0xAB  Ch 19 (2445) Ch 12 (2410)  0x102B
+
+046       867.00  865.75 SF10 0xAC    Ch 23 (2465) Ch 16 (2430)  0x102C
+
+047       867.50  866.25 SF11 0xAD    Ch 26 (2480) Ch 20 (2450)  0x102D
+
+048       865.50  867.25  SF7   0xAE  Ch 11 (2405) Ch 21 (2455)  0x102E
+
+049       866.00  867.75  SF8   0xAF  Ch 15 (2425) Ch 25 (2475)  0x102F
+
+050       866.50  865.25  SF9   0xB0  Ch 19 (2445) Ch 12 (2410)  0x1030
+
+051       867.00  865.75  SF10  0xB1  Ch 23 (2465) Ch 16 (2430)  0x1031
+
+053       867.50  866.25  SF11  0xB2  Ch 26 (2480) Ch 20 (2450)  0x1032
+
+054       865.50  867.25  SF7   0xB3  Ch 11 (2405) Ch 21 (2455)  0x1033
+
+056       866.00  867.75  SF8   0xB4  Ch 15 (2425) Ch 25 (2475)  0x1034
+
+059       866.50  865.25  SF9   0xB5  Ch 19 (2445) Ch 12 (2410)  0x1035
+
+060       867.00  865.75  SF10  0xB6  Ch 23 (2465) Ch 16 (2430)  0x1036
+
+061       867.50  866.25  SF11  0xB7  Ch 26 (2480) Ch 20 (2450)  0x1037
+
+062       865.50  867.25  SF7   0xB8  Ch 11 (2405) Ch 21 (2455)  0x1038
+
+063       866.00  867.75  SF8   0xB9  Ch 15 (2425) Ch 25 (2475)  0x1039
+
+064       866.50  865.25  SF9   0xBA  Ch 19 (2445) Ch 12 (2410)  0x103A
+
+065       867.00  865.75 SF10 0xBB    Ch 23 (2465) Ch 16 (2430)  0x103B
+
+066       867.50  866.25 SF11 0xBC    Ch 26 (2480) Ch 20 (2450)  0x103C
+
+067       865.50  867.25  SF7   0xBD  Ch 11 (2405) Ch 21 (2455)  0x103D
+
+068       866.00  867.75  SF8   0xBE  Ch 15 (2425) Ch 25 (2475)  0x103E
+
+069       866.50  865.25  SF9   0xBF  Ch 19 (2445) Ch 12 (2410)  0x103F
+
+Assignments repeat across teams because the launch heats ensure teams sharing a channel are never live at the same time (only 5 pads live
+at once). Your pad = ((team number - 1) mod 5) + 1.
+

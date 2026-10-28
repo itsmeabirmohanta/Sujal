@@ -1,0 +1,2 @@
+[D] D:\linux\Software\Claude\VRITRA_ZeroBoard_Memory\etch_pcb\BOARD4_PARACHUTE\BOARD4_PARACHUTE.kicad_pcb nets=35 track-segments=281 jumpers=36
+exit 0

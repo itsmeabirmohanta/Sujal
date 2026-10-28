@@ -1,0 +1,8 @@
+(version 1)
+# Board 4 single-layer PCB: 1.4 mm holes, 2.2 mm pads (0.34 mm between pads on a 2.54 mm header)
+(rule "clearance"   (constraint clearance (min 0.3mm)))
+(rule "track"       (constraint track_width (min 1.0mm)))
+(rule "hole"        (constraint hole_size (min 1.4mm)))
+(rule "annular"     (constraint annular_width (min 0.4mm)))
+(rule "edge"        (constraint edge_clearance (min 1.0mm)))
+(rule "gnd spokes"  (constraint min_resolved_spokes 1))

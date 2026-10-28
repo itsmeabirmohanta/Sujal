@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: ["master", "main"]
+  pull_request:
+    branches: ["master", "main"]
+
+jobs:
+  schema-verify:
+    name: Telemetry Schema Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install numpy
+
+      - name: Run schema verifier
+        run: python gcs/verify_schema.py
+
+  lint:
+    name: Python Lint (GCS)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Syntax check — all GCS scripts
+        run: |
+          python -m py_compile gcs/vritra_gcs.py   && echo "vritra_gcs.py  OK"
+          python -m py_compile gcs/fetch_map.py    && echo "fetch_map.py   OK"
+          python -m py_compile gcs/verify_schema.py && echo "verify_schema.py OK"

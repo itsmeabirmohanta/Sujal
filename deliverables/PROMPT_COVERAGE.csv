@@ -1,0 +1,46 @@
+ID,Request,Report_section,Artifact,Status,Remaining
+1.01,L89 HA documents/configuration/read/recovery,4,reference_code/gnss_commands.txt,EVIDENCE_LIMITED,Firmware-matched AGNSS/dynamic-mode documents and sky tests remain unavailable
+1.02,BMP585 documents/configuration/read/recovery,5.2,reference_code/drivers.hpp,DELIVERED_DESIGN,Pressure ramp/port and actual noise tests
+1.03,ICM-20948 / AK09916 documents/configuration/read/recovery,5.3,VRITRA_ENGINEERING_REPORT.md,EVIDENCE_LIMITED,Installed firmware-independent self-test limits require full TDK document/driver validation
+1.04,LSM6DSO32 documents/configuration/read/recovery,5.4,reference_code/drivers.hpp,DELIVERED_DESIGN,Board2 fault isolation and optional FIFO qualification
+1.05,LR1121 documents/configuration/read/recovery,6.1–6.2,calculations.json,DELIVERED_DESIGN,"Actual waveform length, duty cycle, RX guards and conducted RF tests"
+1.06,INA260 documents/configuration/read/recovery,5.5,SENSOR_COMPLETENESS.md,DELIVERED_DESIGN,Restored boot register/read sequence; reference load test
+1.07,DS3231 documents/configuration/read/recovery,5.5,SENSOR_COMPLETENESS.md,DELIVERED_DESIGN,OSF/time trust and reset endurance
+1.08,HDC3020 documents/configuration/read/recovery,5.5,reference_code/drivers.hpp,DELIVERED_DESIGN,Physical identity/CRC/reference humidity test
+1.09,W25Q64 documents/configuration/read/recovery,5.5,reference_code/logging.hpp,EVIDENCE_LIMITED,Identify actual suffix before maximum program/erase timing
+1.10,XIAO camera documents/configuration/read/recovery,5.6,VRITRA_ENGINEERING_REPORT.md,DELIVERED_DESIGN,"Installed sensor, recording ACK/SD and Wi-Fi-off validation"
+1.11,Grove buzzer documents/configuration/read/recovery,5.6/9,VRITRA_ENGINEERING_REPORT.md,DELIVERED_DESIGN,92 dB compliance measurement
+1.12,ESP32-P4 documents/configuration/read/recovery,7.1/5.6,reference_code/pins.hpp,DELIVERED_DESIGN,"Core lock, peripheral build and timing"
+1.13,Teensy4.1 documents/configuration/read/recovery,7.1/5.6,reference_code/scheduler.hpp,DELIVERED_DESIGN,"Core lock, platform build and WCET"
+1.14,B26CLM documents/configuration/read/recovery,8.4,VRITRA_ENGINEERING_REPORT.md,DELIVERED_DESIGN,Measured endpoints/current/holding/signal loss
+1.15,MG90S documents/configuration/read/recovery,8.4,VRITRA_ENGINEERING_REPORT.md,DELIVERED_DESIGN,Actual mechanism limits and current
+1.16,ESC / EMAX / Hall documents/configuration/read/recovery,8.4,VRITRA_ENGINEERING_REPORT.md,EVIDENCE_LIMITED,Identify exact ESC/Hall; containment and tachometer tests
+2.01,Hardware/protocol/SDK and compatible family evidence,4.1/4.4,SOURCE_REGISTER.md,EVIDENCE_LIMITED,No verified public AG3335M SDK or firmware-matched assistance transaction
+2.02,Constellations/NavIC/L5/channel budget,4.1–4.3,reference_code/gnss_commands.txt,EVIDENCE_LIMITED,Exact per-constellation channel allocation unavailable; best India profile requires comparative test
+2.03,Baud change and three listeners,4.2–4.3,ICD_WIRE_FORMATS.md,DELIVERED_DESIGN,ACK/save/reboot and resync require physical receiver
+2.04,Rates/sentences/line budget,4.2–4.3,calculations.json,DELIVERED_DESIGN,Measure actual 1/5/10 Hz and GSV bursts
+2.05,Dynamics/SBAS/mask/static hold/PPS/jam/geofence,4.4,SOURCE_REGISTER.md,EVIDENCE_LIMITED,Unsupported firmware-specific commands not invented; unwired pins documented
+2.06,Save/restart/checksums/ACKs,4.2–4.4,reference_code/gnss_commands.txt,DELIVERED_DESIGN,Ground transaction only; installed firmware validation
+2.07,TTFF/backup/EPO/RTC/real fix,4.4,reference_code/nmea_epoch.hpp,EVIDENCE_LIMITED,Matching AGNSS document and assistance file unavailable
+2.08,Raw plus MAIN state sharing/age/checksums,3.3/4.4,ICD_WIRE_FORMATS.md,DELIVERED_DESIGN,Clock/age adapter and link fault tests
+2.09,Antenna L1/L5,4.1,SOURCE_REGISTER.md,DELIVERED_DESIGN,Inspect any fitted external antenna
+3.1,Requirements traced to tests,2/11,requirements.csv,DELIVERED_DESIGN,Hardware qualification remains pending
+3.2,All links/commands/byte budgets/timeouts,3/10.3,ICD_WIRE_FORMATS.md,DELIVERED_DESIGN,Hardware qualification remains pending
+3.3,Per-board tasks/rates/priority/CPU/watchdog,7.1,reference_code/scheduler.hpp,DELIVERED_DESIGN,Hardware qualification remains pending
+3.4,Typed pipeline blocks at every stage,7.2,IMPLEMENTATION_STATUS.md,DELIVERED_DESIGN,Hardware qualification remains pending
+3.5,Attitude/position/velocity/wind equations/tuning,7.3–7.4,reference_code/estimators.hpp,DELIVERED_DESIGN,Hardware qualification remains pending
+3.6,State0–7/release/events/reset recovery,7.5–7.6,reference_code/fsm.hpp,DELIVERED_DESIGN,Hardware qualification remains pending
+3.7,Takeover/local P4/FMEA/safe defaults,7.6/9,IMPLEMENTATION_STATUS.md,DELIVERED_DESIGN,Hardware qualification remains pending
+3.8,Exact CSV/SD/flash/1Hz,6.2–6.4,reference_code/telemetry.hpp,DELIVERED_DESIGN,Hardware qualification remains pending
+3.9,Field calibration/storage,11.1,LAUNCH_DAY_CHECKLIST.md,DELIVERED_DESIGN,Hardware qualification remains pending
+4.1,Parafoil papers/code comparison,7.4/8,SOURCE_REGISTER.md,DELIVERED_DESIGN,Hardware qualification remains pending
+4.2,Homing/energy/wind/final/GNSS loss,8.1–8.2,reference_code/planner.hpp,DELIVERED_DESIGN,Hardware qualification remains pending
+4.3,PID/sign/gains/tuning/limits/antiwindup,8.3,reference_code/control_pi.hpp,DELIVERED_DESIGN,Hardware qualification remains pending
+4.4,Loop/latency/jitter/timestamps,7.1/8.5,calculations.json,DELIVERED_DESIGN,Hardware qualification remains pending
+4.5,Servo/pulse/travel/power/interlocks,8.4/9,reference_code/flight_core.hpp,DELIVERED_DESIGN,Hardware qualification remains pending
+4.6,HIL/walk/drop accuracy campaign,11.2,TEST_EVIDENCE_TEMPLATE.csv,DELIVERED_DESIGN,Hardware qualification remains pending
+5.1,Per-board production-oriented structure/key modules/keep-change-remove,7.2/10.1,IMPLEMENTATION_STATUS.md,DELIVERED_DESIGN,Reference blocks delivered; full board applications/builds are not claimed
+5.2,Library versions and GitHub links,10.2,SOURCE_REGISTER.md,EVIDENCE_LIMITED,Team core versions unverified; hash-lock adopted driver sources before launch
+6.1,Read existing GCS/gateway and specify mission changes,10.3–10.4,GCS_HANDOFF.md,DELIVERED_DESIGN,GUI/firmware protocol migration remains an implementation/qualification task
+F.1,Numeric citations and explicitly unverified values,Throughout,numeric_traceability.csv,DELIVERED_DESIGN,D entries are proposals; U entries remain unknown
+F.2,"Finish with A/B/C plan, launch checklist, team questions",13–15,ACTION_PLAN.md,DELIVERED_DESIGN,Team supplies named owners and closes acceptance evidence

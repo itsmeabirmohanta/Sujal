@@ -1,0 +1,4 @@
+log [29, 24, 28, 19, 21, 14, 14, 20, 20, 24, 22, 15, 11, 15, 9, 9, 7, 7, 7, 7]
+failed ['TX8_J', 'RX8_J', 'RX3', 'SCL', 'SDA', '+3V3_B']
+problems 4 ["point (37.410000000000004, 61.03) used by ['RX8_J', 'TX8_J']", "point (79.32, 48.330000000000005) used by ['RX3', 'SCL']", "point (84.4, 69.92) used by ['SCL', 'SDA']", "point (81.86000000000001, 44.52) used by ['+3V3_B', 'SCL']"]
+links 35

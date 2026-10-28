@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A visual research navigator for the VRITRA CanSat engineering handoff.">
+  <title>VRITRA / Research desk</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="masthead">
+      <a class="brand" href="#top" aria-label="VRITRA research desk home">
+        <span class="brand-mark">V</span>
+        <span><strong>VRITRA</strong><small>Research desk · 025</small></span>
+      </a>
+      <nav class="top-nav" aria-label="Main navigation">
+        <a href="#brief">Brief</a>
+        <a href="#route">Reading route</a>
+        <a href="#library">Library</a>
+        <a href="#open">Open work</a>
+      </nav>
+      <a class="pill-link" href="../README.md">Repository README <span>↗</span></a>
+    </header>
+
+    <main id="top">
+      <section class="hero" id="brief">
+        <div class="hero-kicker"><span class="live-dot"></span> Editorial research index <span>28 OCT 2026</span></div>
+        <div class="hero-grid">
+          <div>
+            <h1>The CanSat<br><em>handoff,</em><br>made legible.</h1>
+            <p class="hero-intro">A single front door to the VRITRA engineering review: what is designed, what is checked, what is still unknown, and where every supporting file lives.</p>
+            <div class="hero-actions">
+              <a class="button button-dark" href="../deliverables/VRITRA_ENGINEERING_REPORT.md">Read the canonical report <span>↗</span></a>
+              <a class="text-link" href="#library">Browse the library <span>↓</span></a>
+            </div>
+          </div>
+          <div class="hero-note">
+            <div class="note-label">Editorial note / 01</div>
+            <p>This is a research and design handoff, <strong>not flight-qualified firmware.</strong> Hardware results are not inferred from host tests.</p>
+            <div class="note-rule"></div>
+            <span class="note-meta">Team 2026-INSPACe-CAN-7USAT-025<br>India · review edition 01</span>
+          </div>
+        </div>
+        <div class="hero-stats" aria-label="Handoff summary">
+          <div><strong>45</strong><span>prompt outputs mapped</span></div>
+          <div><strong>20</strong><span>requirements traced</span></div>
+          <div><strong>812</strong><span>source files checked</span></div>
+          <div><strong>0</strong><span>credential patterns found</span></div>
+        </div>
+      </section>
+
+      <section class="route-section" id="route">
+        <div class="section-heading">
+          <span class="eyebrow">01 / Start here</span>
+          <h2>One story,<br><em>four stops.</em></h2>
+        </div>
+        <div class="route-grid">
+          <a class="route-card route-card-featured" href="../deliverables/DELIVERABLE_AUDIT.md">
+            <span class="route-number">01</span><span class="route-arrow">↗</span>
+            <h3>Get the editorial read</h3>
+            <p>Understand what the audit resolved, what it deliberately leaves open, and how the evidence boundary works.</p>
+            <span class="card-footer">Deliverable audit <b>MD</b></span>
+          </a>
+          <a class="route-card" href="../deliverables/ACTION_PLAN.md">
+            <span class="route-number">02</span><span class="route-arrow">↗</span>
+            <h3>See the next three days</h3>
+            <p>The launch-facing order of operations: freeze, bring up, rehearse, measure, and only then claim.</p>
+            <span class="card-footer">Action plan <b>MD</b></span>
+          </a>
+          <a class="route-card" href="../deliverables/IMPLEMENTATION_STATUS.md">
+            <span class="route-number">03</span><span class="route-arrow">↗</span>
+            <h3>Separate design from build</h3>
+            <p>A module-by-module view of what the reference code covers and what still needs a platform adapter.</p>
+            <span class="card-footer">Implementation status <b>MD</b></span>
+          </a>
+          <a class="route-card" href="../deliverables/TEAM_OPEN_QUESTIONS.md">
+            <span class="route-number">04</span><span class="route-arrow">↗</span>
+            <h3>Close the unknowns</h3>
+            <p>Ten questions only the team can answer with the real flight article, measurements, and sign-off.</p>
+            <span class="card-footer">Open questions <b>MD</b></span>
+          </a>
+        </div>
+      </section>
+
+      <section class="feature-section">
+        <div class="feature-copy">
+          <span class="eyebrow">02 / The through-line</span>
+          <h2>A careful design<br>with a visible<br><em>evidence line.</em></h2>
+          <p>The handoff pairs an engineering report with checked reference modules, traceability tables, operational checklists, and the original source snapshot. It is designed to help a new teammate answer “where did this come from?” without opening twenty tabs.</p>
+          <a class="text-link" href="../deliverables/VERIFICATION.md">See exactly what passed <span>↗</span></a>
+        </div>
+        <div class="evidence-board">
+          <div class="evidence-line"></div>
+          <div class="evidence-item"><span class="evidence-dot dot-coral"></span><div><b>Design</b><small>Report + architecture</small></div><strong>01</strong></div>
+          <div class="evidence-item"><span class="evidence-dot dot-blue"></span><div><b>Trace</b><small>Requirements + numbers</small></div><strong>02</strong></div>
+          <div class="evidence-item"><span class="evidence-dot dot-gold"></span><div><b>Check</b><small>Host tests + validators</small></div><strong>03</strong></div>
+          <div class="evidence-item"><span class="evidence-dot dot-green"></span><div><b>Qualify</b><small>Physical evidence still due</small></div><strong>04</strong></div>
+          <div class="board-caption">DESIGN → EVIDENCE → QUALIFICATION<br><span>Do not skip the middle.</span></div>
+        </div>
+      </section>
+
+      <section class="library-section" id="library">
+        <div class="library-header">
+          <div><span class="eyebrow">03 / The library</span><h2>Every file,<br><em>properly placed.</em></h2></div>
+          <div class="library-tools">
+            <label class="search-box"><span>⌕</span><input id="search" type="search" placeholder="Search the handoff..." aria-label="Search files"></label>
+            <div class="filters" role="group" aria-label="Filter files">
+              <button class="filter active" data-filter="all">All</button>
+              <button class="filter" data-filter="read">Read</button>
+              <button class="filter" data-filter="verify">Verify</button>
+              <button class="filter" data-filter="build">Build</button>
+              <button class="filter" data-filter="source">Source</button>
+            </div>
+          </div>
+        </div>
+        <div class="library-list" id="file-list"></div>
+        <p class="empty-state" id="empty-state" hidden>No files match that search. Try another term.</p>
+      </section>
+
+      <section class="open-section" id="open">
+        <div class="open-panel">
+          <span class="eyebrow">04 / The honest status</span>
+          <div class="open-grid">
+            <div>
+              <h2>Ready to read.<br><em>Not ready to fly.</em></h2>
+              <p>Host logic, packaging, links, hashes, and selected failure cases are checked. Complete platform firmware, device adapters, RF, deployment, endurance, and drop evidence remain integration work.</p>
+            </div>
+            <div class="status-list">
+              <div><span class="status status-checked"></span><b>Host verification</b><small>PASS · reproducible</small></div>
+              <div><span class="status status-checked"></span><b>Source integrity</b><small>812 files · verified</small></div>
+              <div><span class="status status-open"></span><b>Hardware acceptance</b><small>PENDING · team evidence</small></div>
+              <div><span class="status status-open"></span><b>Flight integration</b><small>PENDING · platform work</small></div>
+            </div>
+          </div>
+          <div class="open-actions">
+            <a class="button button-light" href="../deliverables/LAUNCH_DAY_CHECKLIST.md">Open launch checklist <span>↗</span></a>
+            <a class="button button-outline" href="../deliverables/TEST_EVIDENCE_TEMPLATE.csv">Fill test evidence sheet <span>↗</span></a>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <span>VRITRA / RESEARCH DESK</span><span>CAN-7USAT-025 · REVIEW 01</span><a href="#top">Back to top ↑</a>
+    </footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

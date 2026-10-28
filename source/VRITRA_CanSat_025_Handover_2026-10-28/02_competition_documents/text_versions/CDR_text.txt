@@ -1,0 +1,2438 @@
+Team ID: 2026-INSPACe-CAN-7USAT-025
+IN-SPACe CAN-7USAT
+INDIA STUDENT COMPETITION 2026
+3rd Edition
+PRELIMINARY DESIGN REVIEW (PDR) DOCUMENT
+TEAM- VRITRA
+INSTITUTE - LOVELY PROFESSIONAL UNIVERSITY
+TEAM ID- 2026-INSPACe-CAN-7USAT-025
+1
+Team ID: 2026-INSPACe-CAN-7USAT-025
+INDEX
+1. Mission Overview--------------------------------------------------------------------------------------------------9
+2. Team Description---------------------------------------------------------------------------------------------------9
+2.1 Faculty Advisor and Mentor----------------------------------------------------------------------------------9
+2.2 Team Members-------------------------------------------------------------------------------------------------9
+2.3 Project Milestone Chart---------------------------------------------------------------------------------------10
+3. List of Acronyms---------------------------------------------------------------------------------------------------11
+4. System Overview---------------------------------------------------------------------------------------------------12
+4.1 Brief Summary of the mission-------------------------------------------------------------------------------12
+4.1.1 Mission flow------------------------------------------------------------------------------------------12
+4.2 Changes made from PDR stage------------------------------------------------------------------------------13
+4.3 Overview of system level Requirements-------------------------------------------------------------------13
+4.4 CANSAT physical layout------------------------------------------------------------------------------------15
+4.5 Entire CAN-7USAT Activities - Design Stage Through Launch, Recovery & Data Retrieval---22
+4.5.1 Design and Fabrication (Mechanical, CDH, Sensor, Comms, EPS, Descent & Recovery,
+Ground Station) ------------------------------------------------------------------------------------22
+4.6 Material Procurement Details------------------------------------------------------------------------------39
+4.6.1 Procurement Strategy------------------------------------------------------------------------------39
+4.6.2 Budget Compliance--------------------------------------------------------------------------------39
+4.6.3 Mass Budget----------------------------------------------------------------------------------------41
+4.6.4 Procurement Risk Mitigation---------------------------------------------------------------------42
+4.7 System and subsystem level Analysis and Test results--------------------------------------------------42
+4.7.1 Mechanical Subsystem -Base Plate, Middle Plate, CANSAT Assembly--------------------43
+4.7.2 Command and data Handling (CDH)- Analysis and test----------------------------------------51
+4.7.3 Sensor subsystem- Analysis and test--------------------------------------------------------------52
+4.7.4 Communication subsystem – Link Analysis and test-------------------------------------------57
+4.7.5 Electrical power subsystem- Analysis and test---------------------------------------------------60
+4.7.6 Descent and recovery Readiness-------------------------------------------------------------------62
+4.8 Flight Readiness Parameters----------------------------------------------------------------------------------64
+4.8.1 Structural & Mechanical Readiness----------------------------------------------------------------64
+4.8.2 Electrical Power Readiness--------------------------------------------------------------------------64
+4.8.3 Communication and Telemetry Readiness--------------------------------------------------------64
+4.8.4 Flight Software & State Readiness-----------------------------------------------------------------65
+4.8.5 Descent & Recovery Readiness---------------------------------------------------------------------65
+4.9 Pre-Flight Analysis---------------------------------------------------------------------------------------------65
+4.9.1 Descent Trajectory & Wind Drift Analysis--------------------------------------------------------65
+2
+Team ID: 2026-INSPACe-CAN-7USAT-025
+4.9.2 Communication Link Prediction------------------------------------------------------------------66
+4.9.3 Sensor Calibration Strategy------------------------------------------------------------------------66
+5. Sensor Systems Summary, Characterization and Test Results-----------------------------------------------67
+5.1 Pressure & Temperature Sensor (BMP585) ----------------------------------------------------------------67
+5.2 6-Axis IMU------------------------------------------------------------------------------------------------------69
+5.3 9-Axis IMU------------------------------------------------------------------------------------------------------69
+5.4 GNSS Module---------------------------------------------------------------------------------------------------70
+5.5 Power Monitor--------------------------------------------------------------------------------------------------71
+5.6 Particulate Matter sensor--------------------------------------------------------------------------------------72
+5.7 Lighting Sensor-------------------------------------------------------------------------------------------------72
+5.8 UV light sensor-------------------------------------------------------------------------------------------------73
+5.9 Ozone gas sensor-----------------------------------------------------------------------------------------------74
+5.10 CO2 Sensor--------------------------------------------------------------------------------------------------74
+5.11 Real time clock RTC---------------------------------------------------------------------------------------75
+5.12 SPI Flash-----------------------------------------------------------------------------------------------------76
+5.13 Consolidated Test Verification Matrix------------------------------------------------------------------77
+6. Actuator Summary--------------------------------------------------------------------------------------------------78
+6.1 Control Mechanism of Actuator------------------------------------------------------------------------------78
+6.2 Descent Control Mechanism Incorporated in CANSAT--------------------------------------------------81
+6.2.1 Sensing and Error Computation---------------------------------------------------------------------82
+6.2.2 Off-Course Decision Gate---------------------------------------------------------------------------82
+6.2.3 Differential Brake Actuation------------------------------------------------------------------------82
+6.2.4 Stabilization and Termination Check---------------------------------------------------------------82
+7. Block Diagram of Altitude control loop and actuator control loop-------------------------------------------83
+7.1 Attitude control loop-----------------------------------------------------------------------------------------83
+7.2 Actuator control loop-----------------------------------------------------------------------------------------85
+8. Detailed Description of Realized Subsystem--------------------------------------------------------------------86
+8.1 Payload Subsystem-------------------------------------------------------------------------------------------86
+8.1.1 Imaging Payload--------------------------------------------------------------------------------------86
+8.1.2 Innovation payload-----------------------------------------------------------------------------------87
+8.2 Housekeeping subsystem------------------------------------------------------------------------------------87
+8.2.1 Mechanical subsystem--------------------------------------------------------------------------------87
+8.2.2 Actuators-----------------------------------------------------------------------------------------------88
+8.2.3 Communication and data handling subsystem----------------------------------------------------90
+8.2.4 Electrical power subsystem--------------------------------------------------------------------------94
+8.2.5 Sensor subsystem-------------------------------------------------------------------------------------98
+8.2.6 Parachute Deployment and recovery -------------------------------------------------------------100
+3
+Team ID: 2026-INSPACe-CAN-7USAT-025
+9. CANSAT Algorithm, Final test results and deviations------------------------------------------------------103
+10. TTLC link margin realized--------------------------------------------------------------------------------------104
+10.1 Radio Interference Mitigation Plan--------------------------------------------------------------------105
+11. Ground station final test results and deviations---------------------------------------------------------------106
+12. Mission operation and analysis---------------------------------------------------------------------------------109
+12.1 Launch day sequence-----------------------------------------------------------------------------------109
+13. Pre- Flight Requirement check analysis-----------------------------------------------------------------------110
+14. Logistics and transportation------------------------------------------------------------------------------------112
+14.1 CANSAT transportation and handling----------------------------------------------------------------112
+14.1.1 Pre-transport preparation---------------------------------------------------------------------112
+14.1.2 Transport method-----------------------------------------------------------------------------112
+15. CANSAT ready to launch and final comment------------------------------------------------------------112
+16. Conclusion-----------------------------------------------------------------------------------------------------113
+4
+Team ID: 2026-INSPACe-CAN-7USAT-025
+TABLE INDEX
+Table 1. Mentor details---------------------------------------------------------------------------------------------9
+Table 2. Team Members details----------------------------------------------------------------------------------10
+Table 3. Project milestone chart---------------------------------------------------------------------------------10
+Table 4. List of acronyms-----------------------------------------------------------------------------------------11
+Table 5. Mission requirement------------------------------------------------------------------------------------12
+Table 6. System level requirements-----------------------------------------------------------------------------13
+Table 7. Primary parachute parameters-------------------------------------------------------------------------34
+Table 8. Secondary parachute summary------------------------------------------------------------------------36
+Table 9. Secondary parachute parameters----------------------------------------------------------------------36
+Table 10. Budget sheet--------------------------------------------------------------------------------------------39
+Table 11. Mass budget--------------------------------------------------------------------------------------------41
+Table 12. Power budget-------------------------------------------------------------------------------------------60
+Table 13. Structural & Mechanical Readiness-----------------------------------------------------------------64
+Table 14. Electric Power Readiness-----------------------------------------------------------------------------64
+Table 15. Communication and telemetry Readiness----------------------------------------------------------64
+Table 16. Flight Software & State Readiness------------------------------------------------------------------65
+Table 17. Descent & Recovery Readiness ---------------------------------------------------------------------65
+Table 18. Pressure & Temperature Sensor (BMP585) -------------------------------------------------------67
+Table 19. 6-Axis IMU (LSM6DSO32) -------------------------------------------------------------------------69
+Table 20. 9-Axis IMU (ICM-20948) ---------------------------------------------------------------------------70
+Table 21. GNSS Module (L89HA) -----------------------------------------------------------------------------71
+Table 22. Power Monitor (INA226) ----------------------------------------------------------------------------71
+Table 23. Particulate Matter Sensor (BMV080) --------------------------------------------------------------72
+Table 24. Lightning Sensor (SEN0290-AS3935) -------------------------------------------------------------73
+Table 25. UV Light Sensor (GYML8511) ---------------------------------------------------------------------73
+Table 26. Ozone Gas Sensor (MQ131) -------------------------------------------------------------------------74
+Table 27. CO2 Sensor (SCD41) ---------------------------------------------------------------------------------75
+Table 28. Real-Time Clock (DS3231M) -----------------------------------------------------------------------75
+Table 29. SPI flash (7 Semi) -------------------------------------------------------------------------------------76
+Table 30. Consolidated Test Verification Matrix-------------------------------------------------------------77
+Table 31. Imaging Payload (XIAO ESP32S3 Camera Module) -------------------------------------------86
+Table 32. Innovation Payload (Biochemical Characterization of Atmospheric Bacterial Isolates) ---87
+5
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Table 33. AGFRC A20BHM (x2) Parafoil Brake-Line Steering------------------------------------------88
+Table 34. MG90S #1 Parachute Bay Lid Servo--------------------------------------------------------------89
+Table 35. 2205 2300KV BLDC Motor – Stabilization Flywheel------------------------------------------89
+Table 36. Communication and Data Handling Subsystem (CDH) ----------------------------------------90
+Table 37. Onboard Data Storage ------------------------------------------------------------------------------91
+Table 38. Telemetry Radio (LR1121 LoRa) ----------------------------------------------------------------91
+Table 39. T – Antenna 865 MHz-------------------------------------------------------------------------------92
+Table 40. Molicel INR-21700-P50B Battery Pack-----------------------------------------------------------94
+Table 41. Battery Protection (3S 40A Li-ion BMS) ---------------------------------------------------------95
+Table 42. 5V Power Regulation (AP64500 Buck Converter – 7Semi) ------------------------------------95
+Table 43. 3.3V Power Regulation (AP62301 Buck Converter – 7Semi) ----------------------------------96
+Table 44. Power-On Control (External Switch & LED Indicator) ----------------------------------------96
+Table 45. Power Budget-----------------------------------------------------------------------------------------96
+Table 46. Sensor Bus Allocation-------------------------------------------------------------------------------98
+Table 47. Telemetry Field Mapping---------------------------------------------------------------------------98
+Table 48. Mission Operations & Analysis--------------------------------------------------------------------109
+Table 49. Pre-Flight Requirement-Check Analysis----------------------------------------------------------110
+6
+Team ID: 2026-INSPACe-CAN-7USAT-025
+FIGURE INDEX
+Fig 1. CANSAT Figure Layout--------------------------------------------------------------------------------17
+Fig 2. Parachute Bay Design-----------------------------------------------------------------------------------18
+Fig 3. CANSAT Schematic Design---------------------------------------------------------------------------19
+Fig 4. Rod Design-----------------------------------------------------------------------------------------------20
+Fig 5. Parachute Bay Schematic Design----------------------------------------------------------------------21
+Fig 6. Gyro Wheel Schematic Design-------------------------------------------------------------------------29
+Fig 7. Primary Telemetry Schematic----------------------------------------------------------------------------30
+Fig 8. Backup Telemetry Schematic----------------------------------------------------------------------------31
+Fig 9. Power System----------------------------------------------------------------------------------------------32
+Fig 10. Descent Schematic----------------------------------------------------------------------------------------33
+Fig 11. Primary Parachute----------------------------------------------------------------------------------------35
+Fig 12. Ground Station-------------------------------------------------------------------------------------------38
+Fig 13. Meshing of Base Plate-----------------------------------------------------------------------------------43
+Fig 14. Stress Analysis of Base Plate---------------------------------------------------------------------------44
+Fig 15. Total Deformation Analysis of Base Plate------------------------------------------------------------44
+Fig 16. FOS Analysis of Base Plate-----------------------------------------------------------------------------45
+Fig 17. Meshing of Middle Plate--------------------------------------------------------------------------------46
+Fig 18. Stress Analysis of Middle Plate-------------------------------------------------------------------------47
+Fig 19. Total Deformation Analysis of Middle Plate---------------------------------------------------------47
+Fig 20. FOS Analysis of Middle Plate--------------------------------------------------------------------------48
+Fig 21. Meshing of CANSAT Assembly-----------------------------------------------------------------------49
+Fig 22. Stress Analysis of CANSAT Assembly---------------------------------------------------------------50
+Fig 23. Total Deformation Analysis of CANSAT Assembly------------------------------------------------50
+Fig 24. Buckling Analysis of CANSAT Assembly-----------------------------------------------------------51
+Fig 25. Command and Data Handling Subsystem------------------------------------------------------------52
+Fig 26. Sensor Board---------------------------------------------------------------------------------------------53
+Fig 27. FSM Test--------------------------------------------------------------------------------------------------54
+Fig 28. Data Output-----------------------------------------------------------------------------------------------55
+Fig 29. Packet Transmission Result-----------------------------------------------------------------------------56
+Fig 30. MicroSD Card Storage Data----------------------------------------------------------------------------56
+Fig 31. Communication Range Test-----------------------------------------------------------------------------57
+Fig 32. Telemetry Distance Test (Spot 1) ----------------------------------------------------------------------58
+7
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 32. Teleetry Distance Test (Spot 2) -----------------------------------------------------------------------59
+Fig 33. Telemetry Packet Received-----------------------------------------------------------------------------60
+Fig 34. Ram-Air Parachute Drop Test--------------------------------------------------------------------------62
+Fig 35. Secondary Mechanism-----------------------------------------------------------------------------------63
+Fig 36. Secondary Mechanism Control-------------------------------------------------------------------------63
+Fig 37. MATLAB Parachute Testing---------------------------------------------------------------------------66
+Fig 38. Ground Level BMP Testing-----------------------------------------------------------------------------68
+Fig 39. BMP Testing from a Specific Height------------------------------------------------------------------68
+Fig 40. IMU Testing-----------------------------------------------------------------------------------------------70
+Fig 41. RTC Check------------------------------------------------------------------------------------------------76
+Fig 42. SPI Flash Test---------------------------------------------------------------------------------------------77
+Fig 43. Actuator for Petri-dish-----------------------------------------------------------------------------------78
+Fig 44. Servo Flip--------------------------------------------------------------------------------------------------79
+Fig 45. Parachute Bay Actuator Design------------------------------------------------------------------------80
+Fig 46. Descent Control Mechanism Actuator Loop----------------------------------------------------------81
+Fig 47. Altitude Control Loop-----------------------------------------------------------------------------------83
+Fig 48. Actuator Control Loops---------------------------------------------------------------------------------85
+Fig 49. Radio Master T-Antenna--------------------------------------------------------------------------------93
+Fig 50. Power Subsystem-----------------------------------------------------------------------------------------94
+Fig 51. Parachute Dead Weight--------------------------------------------------------------------------------101
+Fig 52. CANSAT Algorithm-----------------------------------------------------------------------------------103
+Fig 53. Communication Subsystem----------------------------------------------------------------------------106
+Fig 54. Ground Station Test------------------------------------------------------------------------------------108
+8
+Team ID: 2026-INSPACe-CAN-7USAT-025
+1. CAN-7USAT MISSION OVERVIEW
+We are team VRITRA with a team ID as 2026-INSPACe-CAN-7USAT-025 of Lovely Professional University.
+We are developing a CAN-7USAT for the IN-SPACe CAN-7USAT India Student Competition 2026 which
+includes designing, fabrication and flight of CANSAT. The CAN sized satellite will be carried to an altitude of
+1000 m or ±100 m above the ground level (AGL) through a launch vehicle. It will be ejected from the rocket at
+the apogee and should have a two-stage recovery system while transmitting real time telemetry to a ground
+station.
+Primary Mission Objective: This is the primary descent control system which is a hemispherical parachute
+connected to the outer body with no ejection mechanism and is deployed by the atmospheric drag. It will be
+activated directly after the ejection of CANSAT from the rocket having the descent rate of 20m/s with deviation
+of ±5m/s.
+Secondary Mission Objective: This is the secondary descent control system with a secondary deployment of a
+RAM-air parachute at an altitude of 600 m AGL. This reduces the descent rate to 1-3 m/s at touchdown. It is
+also an optional objective which covers precision, controlled flight and targeted landing and is demonstrated by
+GPS guided RAM air parafoil which enables active recovery at the target landing point near launch pad.
+This document presents the Comprehensive Design Review (CDR) of a CAN sized satellite designed by team
+VRITRA.
+2. TEAM DESCRIPTION
+2.1 Faculty Advisor and Mentor
+NO. NAME ROLE DESIGNATION
+1 Mr. Mandeep Singh Faculty Advisor Assistant Professor and Assistant Dean
+2 Mr. Ruhul Amin Choudhury Mentor Innovation Officer
+3 Dr. Elaya Perumal Mentor Assistant Professor
+Table 1: Mentor details
+2.2 Team Members
+NO. NAME ACADEMIC BRANCH ROLE
+YEAR
+1 Numaan Aslma 4th year B. Tech – Aerospace Structural & Mechanical
+Khan Engineering Systems Design
+2 Atharv Taralkar 3rd year B. Tech –Electronics and Electrical power subsystem
+Communication Engineering (EPS) design
+9
+Team ID: 2026-INSPACe-CAN-7USAT-025
+3 Sujal Kalbhor 3rd year B. Tech –Electronics and System and hardware
+Communication Engineering integration
+4 Vaishnavi Mahadik 3rd year B. Tech –Electronics and Communication and data
+Communication Engineering handling subsystem (CDH)
+5 Rishav Raj 2nd year B. Tech – Robotics & Fight software design
+Automation
+6 Aakanksha Rathore 2nd year B. Tech – Robotics & AI (CSE) Ground control subsystem
+(GCS)
+7 Jasmeen Judge 3rd year B. Tech – Aerospace Descent control design
+Engineering
+8 Ninad Nilesh 3rd year B. Tech – Aerospace Can-Sat integration and test
+Mestry Engineering
+Table 2: Team Members details
+Since the PDR stage, a new member is added in our team which is highlighted in the table. This was to fill the
+gap which was created due to the absence of previous member.
+2.3 Project Milestone Chart
+PHASE / ACTIVITY START DATE END DATE RESPONSIBLE
+PDR document preparation & submission May 16, 2026 June 15, 2026 All members
+Component Purchasing Jun 15, 2026 Jul 5, 2026 Sujal Kalbhor,
+Atharv Taralkar
+PCB design & fabrication Ju1, 2026 Jul 30, 2026 Vaishnavi Mahadik,
+Atharv Taralkar
+Mechanical fabrication (body, bays) Jul 15, 2026 Aug 15, 2026 Ninad Mestry,
+Numaan Aslma Khan
+Flight software development (Teensy FSM) Jul 18, 2026 Jul 28, 2026 Rishav Raj,
+Aakanksha Rathore
+Parafoil & servo integration Jul 25, 2026 Aug 1, 2026 Rishav Raj, Numaan
+Aslma Khan
+Ground station software development Jul 20, 2026 Jul 25, 2026 Aakanksha Rathore,
+Jasmeen Judge
+Subsystem-level testing Jul 20, 2026 Aug 5, 2026 Atharv Taralkar,
+Ninad Mestry
+CDR document preparation Jul 28, 2026 Aug 8, 2026 Vaishnavi Mahadik,
+Jasmeen Judge
+10
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Full integration & functional test Jul 25, 2026 Aug 30, 2026 Atharv Taralkar,
+Sujal Kalbhor
+Flight Readiness Review (FRR) Sep 1, 2026 Oct 15, 2026 Jasmeen Judge, Sujal
+Kalbhor
+Launch & competition Oct 25, 2026 Nov 30, 2026 All members
+Table 3: Project milestone chart
+3. LIST OF ACRONYMOUS
+ACRONYM EXPANSION
+BMS Battery Management System
+CDH Command & Data Handling
+CFRP Carbon Fibre Reinforced Polymer
+CSV Comma-Separated Values
+DOF Degrees of Freedom
+EPS Electrical Power Subsystem
+FSM Finite State Machine
+GCS Ground Control Station
+GNSS Global Navigation Satellite System
+GPIO General Purpose Input/Output
+GPS Global Positioning System
+GS Ground Station
+I2C Inter-Integrated Circuit (serial bus)
+IMU Inertial Measurement Unit
+ISM Industrial Scientific Medical (radio band)
+LoRa Long Range (radio modulation)
+LOS Line of Sight
+MCU Microcontroller Unit
+NavIC Navigation with Indian Constellation
+PCB Printed Circuit Board
+PDR Preliminary Design Review
+PID Proportional-Integral-Derivative (controller)
+PM Particulate Matter
+PWM Pulse-Width Modulation
+RF Radio Frequency
+11
+Team ID: 2026-INSPACe-CAN-7USAT-025
+RTC Real-Time Clock
+SPI Serial Peripheral Interface
+UART Universal Asynchronous Receiver/Transmitter
+VCC Voltage Common Collector (power supply)
+CEP Circular Error Probable
+Table 4: List of acronymous
+4. SYSTEM OVERVIEW
+4.1 Brief summary of the mission
+CAN-7USAT is the entry for team VRITRA in IN-SPACe CAN-7USAT India student Competition 2026
+which focuses on building a CAN sized satellite with two stage guided descent and full real time telemetry.
+PARAMETER TARGET
+Deployment altitude 1000 m (±100 m) AGL
+Ejection shock survival ≥ 30G
+Primary descent rate 20 m/s (±5 m/s)
+Secondary activation altitude 600 m (±10 m) AGL
+Secondary descent rate 1–3 m/s
+Telemetry rate ≥1 Hz over LoRa
+Stabilization Mechanical gyroscopic wheel
+Table 5: Mission requirement
+4.1.1 Mission flow
+1. Ejection and Stabilization: In this stage the CANSAT separates from the rocket at apogee by surviving the
+ejection shock and stabilizes itself using a mechanical gyroscopic wheel.
+2. Primary Descent: After ejection from the rocket, the hemispherical shaped parachute is opened due to the
+atmospheric drag without any ejection mechanism making the descent rate to 20 m/s ±5 m/s.
+3. Guided secondary descent: At 600 meters above the ground level, a GPS guided RAM air parafoil is
+deployed with the help of a servo-based ejection mechanism from the parachute bay. This design of parachute
+is made in such way that it cuts down the descent rate from 20 m/s to 1-3 m/s and is actively steering towards
+the launch site through the dual axis break line servo control.
+4. Continuous telemetry: All 15 mandatory parameters are transferred with the help od LR1121 a LoRa at the
+rate of 1 Hz. It also has a backup microSD card for storing of data in case of packet or link loss.
+12
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Throughout the flight, the CAN-7USAT continuously acquires data from its onboard sensor stack and transmits
+all 15 mandatory telemetry parameters over a LoRa link at a minimum rate of 1 Hz, while simultaneously logging
+the complete dataset to an onboard microSD card as a backup in case of telemetry loss. The avionics architecture
+is built around a Teensy 4.1 primary flight computer running an 8-state finite state machine, supported by a
+secondary backup avionics board with an independent processing board to ensure telemetry continuity in the
+event of a primary processor failure.
+Beyond the core mission, Team VRITRA also focusses on additional objectives of the mission which can help
+us in scoring additional points. The bonus capabilities for extra jury weightage are:
+• Onboard video capture (descent + ejection)
+• NavIC-enabled multi-GNSS positioning
+• Environmental sensor suite — PM2.5/PM10, lightning, UV, ozone, CO₂
+• Innovation payload: biochemical characterization of atmospheric bacterial isolates collected
+• Custom Python ground station for live telemetry, command uplink, and mission logging
+4.2 Any changes made from PDR stage
+1. Onboard CANSAT telemetry antenna has been changed from Rubber duck omnidirectional antenna
+(AEACAC049018-S868) to Radio master T antenna of 865 MHz. This change was done due to dual band
+requirement of frequency during telemetry. Team VRITRA has its primary frequency as 867.0 MHz and the
+backup frequency as 86.75 MHz, which is important for telemetry transmission without any interference. T
+antenna from Radio Master is a dual antenna which makes it easy for us to switch the frequency whenever
+required.
+2. Material of CANSAT has been changes which were Carbon fiber rods and glass fiber body. The body
+material which is selected is Acrylonitrile Butadiene Styrene (ABS) filament which is a tough, impact-
+resistant thermoplastic polymer. The plates are of aluminium and the rods are of glass fiber. This are changes
+made in material procurement which was done after the design testing on Ansys. According to the results
+the selected material gave better results as compared to the pervious in perspective of stress, etc.
+3. The gyro wheel motor was changed from N20 to 2205 2300KV brushless DC motor. This was done after
+testing our RAM air parachute. To avoid spinning of CANSAT after parachute deployment we needed
+higher RPM motor than the N20.
+The required test results are given below to justify about the changes made in CDR stage.
+4.3 Overview of System Level Requirement
+The CANSAT design is made by considering specific conditions and rules as given in the rulebook which covers
+mass, dimensions, structural survivability, descent performance, telemetry, and power performance.
+Parameter Required Value Design Target Margin
+13
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Total mass ≤ 1000 g ±50 g ~920 g ±65g 80 g
+Diameter ≤ 150 mm 130 mm OD (fits rocket fairing) 20mm
+Height ≤ 400 mm 232 mm 168
+Launch acceleration 15G Rated > 30G (Al standoffs + CFRP 2×
+survival body)
+Shock survival 30G LSM6DSO32 rated ±32g range; PCBs —
+on M3 standoffs
+Primary descent rate 20 m/s ±5 m/s 18–22 m/s Within band
+Secondary activation 600 m ±10 m BMP585, 5-sample average, ±3 m ±7 m
+altitude accuracy
+Secondary descent rate 1–3 m/s 1.5–2.5 m/s under parafoil Within band
+Telemetry rate ≥ 1 Hz 1 Hz (Teensy 4.1) —
+Battery endurance on ≥ 2 hours ~6 hours at avg. 750 mA draw 3×
+pad
+Audio beacon SPL ≥ 92 dB SFM20 beacon: ≥ 95 dB 3 dB
+Table 6: System level requirements
+This table has the design target with the required values in which each has a proper margin set so that it can
+tolerate manufacturing and flight variabilities. The key design considerations are:
+• Modular stacked design — Base Plate, 3 Mid Plates, and a Parachute Bay connected by 4 continuous
+fiberglass rods, giving a rigid, serviceable structure (130 × 281 mm overall).
+• Payload bay — 110 mm internal working diameter housing 3 stacked PCB layers for avionics, power, and
+mechanisms, within the 140 mm mechanical envelope constraint.
+• Parachute bay/shell — hexagonal-lattice perforated cylinder (70 mm) for reduced mass and clean
+deployment-bag ejection.
+• Materials — ABS for the shell/parachute bay (lightweight, printable), fiberglass rods for the primary load
+path (high strength-to-weight), and Aluminium 6061 plates for rigidity and mounting stability at joint
+interfaces.
+• Load path — the fiberglass rods carry the full stack's structural loads through to the base plate, sized to
+handle the recovery system's peak opening shock (up to 11.1 G).
+14
+Team ID: 2026-INSPACe-CAN-7USAT-025
+4.4 CANSAT physical layout
+15
+Team ID: 2026-INSPACe-CAN-7USAT-025
+16
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 1: CANSAT Figure Layout
+17
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 2: Parachute Pay design
+This is the CANSAT physical layout in which all the parts are labelled properly. It consists of a
+cylindrical body having multiple subsystems inside it. Starting with the parachute bay which is
+designed for the Secondary descent GPS guided RAM air parafoil and the control mechanism to control
+the flow of parachute.
+Next, we have designed a plate for the placement of gyro wheel and its motor to adjust properly.
+Followed by the gyro wheel we have electronics plates with all our telemetry components and backup
+board. The other mid plate after electronics is for battery holding purpose with a self-designed battery
+pack and can be easily replaced. Shell is designed to cover the CANSAT from external environment
+and to secure electronics as it has been instructed in the guidelines.
+Below are some of the drawings of each part of our CANSAT with their dimensions:
+18
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 3: CANSAT Schematic design
+19
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 4: Rod Design
+20
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 5: Parachute Bay Schematic Design
+21
+Team ID: 2026-INSPACe-CAN-7USAT-025
+4.5 Entire CAN-7USAT Activities- Design Stage Through Launch, Recovery and Data Retrieval
+The CANSAT mission consist of five different phases which goes from ground design and fabrication to post
+fight data recovery. Each phase carries its own verification checkpoints to ensure the system is flight-ready
+before proceeding to the next.
+4.5.1 Design and Fabrication
+Different subsystems such as the sensor subsystem, power subsystem, communication and data handling
+subsystem (CDH), etc have been designed as per the project milestone chart given above.
+1. Mechanical subsystem
+Reaction-Wheel Geometry and Moment of Inertia:
+1.1 A Thin Ring (PRIMARY DESIGN)
+The primary design assumes the reaction wheel is constructed as a thin ring (rim-weighted geometry).
+Formula: I = mr²
+Where: m = wheel mass = 0.070 kg
+r = wheel radius = 0.035 m
+Calculation:
+r² = (0.035) ² = 0.001225 m²
+I_wheel, ring = m × r²
+I_wheel, ring = 0.070 × 0.001225
+I_wheel, ring = 0.00008575 kg·m²
+Final Result: I_wheel, ring = 8.575000e-5 kg·m² = 85.75 × 10⁻⁶ kg·m²
+This is the primary moment of inertia used throughout the calculation report.
+1.2 Theoretical Motor No-Load RPM
+Formula: RPM = KV × V
+Condition 1: 3S Nominal Voltage (11.1 V)
+Nominal cell voltage: 3.7 V per cell
+3 cells in series: V = 3 × 3.7 = 11.1 V
+Calculate theoretical no-load RPM:
+RPM = KV × V
+22
+Team ID: 2026-INSPACe-CAN-7USAT-025
+RPM = 1590 × 11.1
+RPM = 17,649 RPM
+Theoretical RPM at 11.1 V = 17649 RPM
+Condition 2: 3S Fully Charged Voltage (12.6 V)
+Full charge cell voltage: 4.2 V per cell
+3 cells in series: V = 3 × 4.2 = 12.6 V
+Calculate theoretical no-load RPM:
+RPM = KV × V
+RPM = 1590 × 12.6
+RPM = 20,034 RPM
+Theoretical RPM at 12.6 V = 20034 RPM
+1.3 RPM Margin Above Target Operating Speed
+Target wheel speed: N_required = 10000 RPM
+Condition 1: Margin at 11.1 V (3S Nominal)
+Theoretical RPM = 17,649 RPM
+Required RPM = 10,000 RPM
+RPM margin = 17,649 − 10,000 = 7,649 RPM
+Percentage margin = (7,649 / 10,000) × 100 = 76.49%
+At 11.1 V: RPM margin = 7649 RPM (76.49% above target)
+Target represents 56.66% of theoretical no-load speed.
+Condition 2: Margin at 12.6 V (3S Fully Charged)
+Theoretical RPM = 20,034 RPM
+Required RPM = 10,000 RPM
+RPM margin = 20,034 − 10,000 = 10,034 RPM
+Percentage margin = (10,034 / 10,000) × 100 = 100.34%
+23
+Team ID: 2026-INSPACe-CAN-7USAT-025
+At 12.6 V: RPM margin = 10034 RPM (100.34% above target)
+Target represents 49.92% of theoretical no-load speed.
+1.4 Angular Velocity Conversion
+Formula: ω = 2πN / 60
+Condition 1: 5000 RPM
+Step 1: N_rev/s = 5000 / 60 = 83.3333 rev/s
+Step 2: ω = 2 × 3.14159265 × 83.3333 = 523.5988 rad/s
+Condition 2: 7500 RPM
+Step 1: N_rev/s = 7500 / 60 = 125.0000 rev/s
+Step 2: ω = 2 × 3.14159265 × 125.0000 = 785.3982 rad/s
+Condition 3: 10000 RPM
+Step 1: N_rev/s = 10000 / 60 = 166.6667 rev/s
+Step 2: ω = 2 × 3.14159265 × 166.6667 = 1047.1976 rad/s
+Condition 4: 12000 RPM
+Step 1: N_rev/s = 12000 / 60 = 200.0000 rev/s
+Step 2: ω = 2 × 3.14159265 × 200.0000 = 1256.6371 rad/s
+1.5 Moment of Inertia Summary
+Primary design uses thin-ring geometry:
+I_wheel, ring = 8.575000e-5 kg·m²
+I_wheel, ring = 85.75 × 10⁻⁶ kg·m²
+1.6 Angular Momentum
+Formula: L = Iω
+Angular Momentum at 5000 RPM
+ω = 523.5988 rad/s
+L = 8.575000e-5 × 523.5988 = 4.4899e-2 kg·m²/s
+24
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Angular Momentum at 7500 RPM
+ω = 785.3982 rad/s
+L = 8.575000e-5 × 785.3982 = 6.7348e-2 kg·m²/s
+Angular Momentum at 10000 RPM
+ω = 1047.1976 rad/s
+L = 8.575000e-5 × 1047.1976 = 8.9797e-2 kg·m²/s
+Angular Momentum at 12000 RPM
+ω = 1256.6371 rad/s
+L = 8.575000e-5 × 1256.6371 = 1.0776e-1 kg·m²/s
+1.7 Rotational Kinetic Energy
+Formula: E = (1/2)Iω²
+Rotational Energy at 5000 RPM
+ω = 523.5988 rad/s
+ω² = 274155.677808 rad²/s²
+E = 0.5 × 8.575000e-5 × 274155.677808 = 11.754425 J
+Rotational Energy at 7500 RPM
+ω = 785.3982 rad/s
+ω² = 616850.275068 rad²/s²
+E = 0.5 × 8.575000e-5 × 616850.275068 = 26.447456 J
+Rotational Energy at 10000 RPM
+ω = 1047.1976 rad/s
+ω² = 1096622.711232 rad²/s²
+E = 0.5 × 8.575000e-5 × 1096622.711232 = 47.017699 J
+Rotational Energy at 12000 RPM
+ω = 1256.6371 rad/s
+ω² = 1579136.704174 rad²/s²
+25
+Team ID: 2026-INSPACe-CAN-7USAT-025
+E = 0.5 × 8.575000e-5 × 1579136.704174 = 67.705486 J
+At 10,000 RPM, the wheel stores 47.0177 J of rotational energy.
+1.8 Centripetal Acceleration
+Formula: a = ω²r
+Centripetal Acceleration at 5000 RPM
+a = 523.5988² × 0.035 = 274155.677808 × 0.035 = 9595.4487 m/s²
+a_g = 9595.4487 / 9.81 = 978.1293 g
+Centripetal Acceleration at 7500 RPM
+a = 785.3982² × 0.035 = 616850.275068 × 0.035 = 21589.7596 m/s²
+a_g = 21589.7596 / 9.81 = 2200.7910 g
+Centripetal Acceleration at 10000 RPM
+a = 1047.1976² × 0.035 = 1096622.711232 × 0.035 = 38381.7949 m/s²
+a_g = 38381.7949 / 9.81 = 3912.5173 g
+Centripetal Acceleration at 12000 RPM
+a = 1256.6371² × 0.035 = 1579136.704174 × 0.035 = 55269.7846 m/s²
+a_g = 55269.7846 / 9.81 = 5634.0249 g
+1.9 Battery Theoretical Energy Storage
+Battery Specification:
+Type: 3S Li-ion
+Nominal voltage: 11.1 V
+Capacity: 5000 mAh = 5 Ah
+Calculate theoretical stored energy:
+Formula: E_battery = V × Ah
+E_battery = 11.1 × 5 = 55.5 Wh
+Convert to joules:
+1 Wh = 3600 J
+E_battery = 55.5 × 3600 = 199,800 J
+26
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Final result:
+Battery theoretical stored energy = 55.5 Wh = 199,800 J
+This represents total electrical energy available from a fully charged pack. Actual deliverable energy
+depends on discharge rate, temperature, cycle life, and battery C-rating.
+1.10 Reaction-Wheel / CANSAT Moment of Inertia Ratio
+Calculate: I_wheel / I_cansat = 8.575000e-5 / 7.969063e-3 = 1.076036e-2
+Inertia ratio = 1.076036e-2 = 1.0760%
+The reaction wheel's moment of inertia is approximately 1.076% of the CANSAT moment of inertia. This
+small ratio indicates that significant wheel torque is needed to produce CANSAT Altitude changes, typical
+for CubeSat-class satellites with limited actuators.
+Gyro wheel design:
+27
+Team ID: 2026-INSPACe-CAN-7USAT-025
+28
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 6: Gyro Wheel Schematic design
+2. Command and Data Handing (CDH) Subsystem
+• Teensy 4.1 was selected as the primary flight computer after comparing multiple microprocessors. The
+optional microprocessors which were compared a
+• re Raspberry pi 0, ESP 32 P4, STM 32, Teensy 4.0, etc. Teensy 4.1 was choose because of its specification
+which were good as compared to other such as processor speed, memory, pin count, footprint.
+• 8-state flight software FSM architected and coded in C++ (Arduino/Teensyduino framework), running a 10
+Hz sensor/control loop with 1 Hz telemetry sub-rate.
+• XIAO ESP32S3 camera module is added as an independent recording subsystem (isolated from flight-
+critical control, so a camera failure cannot affect mission success).
+• DS3231M RTC and onboard EEPROM is included for mission-time and flight-state persistence across any
+processor reset.
+• SanDisk Ultra MicroSDHC selected for onboard data logging after comparing read/write speed and cost
+against SanDisk Extreme Pro and Kingston alternatives.
+3. Sensor Subsystem
+• All sensors are selected through comparative trade studies based on the accuracy, power draw, interface
+compatibility, etc for each measurement type:
+• BMP585 - barometric pressure/altitude (±0.5 Pa accuracy).
+29
+Team ID: 2026-INSPACe-CAN-7USAT-025
+• LSM6DSO32 -6-DOF IMU for Secondary parachute control (±32g, ±4000 dps range).
+• ICM-20948 -9-DOF IMU/magnetometer for acceleration and spin-rate sensing.
+• L89HA GNSS - multi-constellation GPS with NavIC support, dual-band L1+L5 for <1.8 m CEP
+accuracy.
+• INA226 - real-time bus voltage/current/power monitoring.
+• Bonus payload sensors -BMV080 (PM), SEN0290 (lightning), ML8511 (UV), MQ131 (ozone),
+SCD41 (CO₂).
+• Telemetry packet format (15 mandatory and other bonus fields) defined and mapped to source sensors,
+with resolution/units specified per Interface Control Document.
+• Sensor interfacing finalized across I2C, SPI, and UART buses, with bus-conflict mitigation planned (e.g.,
+BMP585 moved to SPI or watchdog-recovery routine if I2C contention arises with the RTC).
+Fig 7: Primary telemetry Schematic
+30
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 8: Backup Telemetry Schematic
+This is the schematic design for all the important telemetry required from the CANSAT. All sensors are attached
+with a coupling capacitor to avoid current spikes in the circuit. Teensy 4.1 is the main processor of the CANSAT
+through which all other sensors are connected.
+This is the Schematic design of CANSAT’s backup system and also about the additional environmental sensors
+used for bonus jury weightage. Backup system has a different processor which is Teensy 4.1. This will help us
+in getting the data even when the main processor shuts down.
+4. Communication & Data Handling Subsystem
+• LR1121 multi-band transceiver is selected over SX1262/SX1280 for its dual Sub-GHz + 2.4 GHz flexibility
+and lower power draw.
+• Configured as LoRa at 867 MHz (India ISM band) with team-specific NETID/PANID (0x98) to prevent
+cross-team packet collision.
+• Bandit 915/868 MHz T antenna is selected for onboard transmission based on gain, frequency match, and
+connector compatibility.
+• Radio interference mitigation plan defined: orthogonal spreading factor (SF10) selection, directional
+ground antenna gain, and packet-counter-based loss detection.
+• Secondary/backup LR1121 link designed on the backup avionics board for failover telemetry continuity.
+31
+Team ID: 2026-INSPACe-CAN-7USAT-025
+5. Electrical Power Subsystem (EPS)
+• 3S Li-ion battery pack (Molicel INR-21700-P50B, 5000 mAh) is selected and sized against the full mission
+power budget.
+• 3S 40A BMS is used for overcharge/over-discharge/overcurrent/short-circuit protection and cell balancing.
+• Dual buck converter architecture is designed by using 7Semi AP64500 (5V/5A rail) and AP62301 (3.3V/2A
+rail), sized against actuator and sensor current draw respectively.
+• INA226 power monitor and status LED incorporated for real-time health telemetry and visual power-on
+confirmation.
+• Power budget is calculated as per mission phase such as standby, pre-launch, ascent, descent, peak, etc to
+operate for 2-hour pad-endurance requirement and the design achieves roughly 6 hours of margin.
+Fig 9: Power System
+This schematic is about the power subsystem which is required for complete operation of CANSAT. It consists
+of 3 molicel 21700 lithium-ion batteries connected in series. This power schematic also consists of BMS and
+INA226. It has 5V and 3.3 V buck converters for power rails as required. A mandatory switch and a LED is
+connected through the power supply for the purpose of indication.
+32
+Team ID: 2026-INSPACe-CAN-7USAT-025
+6. Descent & Recovery Subsystem
+Fig 10: Descent Schematic
+This schematic is about the descent subsystem. Team VRITRA’s secondary descent subsystem is about GPS
+guided RAM air parafoil which includes a different processor independent from any other which is used for
+telemetry. Teensy 4.0 has been selected for Descent control, so that any error in telemetry side will not affect
+the descent mechanism of parachute.
+Primary Parachute Design:
+A flat circular vented canopy is selected for primary parachute on the basis of:
+• Fastest and most reliable deployment (critical for primary)
+• No preferred orientation required
+• Established drag coefficient data
+Drag coefficient referenced to constructed (nominal) area = 0.75
+At equilibrium descent, aerodynamic drag equals gravitational force:
+1
+𝜌1𝑉2 𝑆 𝐶 = 𝑚𝑔
+2 𝑠,𝑃1 𝑃1 𝐷,𝑃1
+Solving for plan area 𝑆 :
+𝑃1
+33
+Team ID: 2026-INSPACe-CAN-7USAT-025
+2𝑚𝑔
+𝑆 =
+𝑃1 𝜌1𝑉2 𝐶
+𝑠,𝑃1 𝐷,𝑃1
+Substituting values (𝑉 = 15 m/s):
+𝑠,𝑃1
+2×1.000×9.810 19.620
+𝑆 = = =0.1045 𝑚2
+𝑃1 1.112×152×0.75 187.65
+Canopy diameter from plan area:
+4𝑆 ,𝑑𝑒𝑠𝑖𝑔𝑛
+𝐷 = √ 𝑃1 = 0.383 𝑚
+𝑃1 3.14
+Central vent diameter:
+d = 0.12 × D = 0.12 × 380 = 45.6 mm
+v P1
+Shroud Line length:
+L = 1.5 × D = 1.5 × 380 = 570 mm
+s P1
+Parameters Symbols Values
+Canopy type - Flat circular, vented
+Plan area 𝑆 0.1134 𝑚2
+𝑃1
+Canopy diameter 𝐷 380 mm
+𝑃1
+Central vent diameter 𝑑 45 mm
+𝑣
+Drag coefficient 𝐶 0.75
+𝑑,𝑃1
+Equilibrium sink rate 𝑉 14.4 m/s at 1000 m AGL
+𝑠,𝑃1
+Number of shroud lines 𝑛 8
+𝑠
+Shroud line length 𝐿 570 mm
+𝑠
+Line spacing on canopy edge Δ𝑠 149 mm
+Line rated strength - 133 N (30 lb)
+Table 7: Primary parachute parameters
+34
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 11 : Primary Parachute
+Secondary Parachute design:
+A ram-air parafoil is selected for P2 because:
+1. It can be steered — two brake lines controlled by servos.
+2. Its low equilibrium sink rate satisfies R-02.
+3. Forward glide capability allows landing point adjustment.
+A rectangular planform with low aspect ratio (AR = 2.30) is chosen for:
+• Maximum collapse resistance (critical for autonomous control)
+• Stable deployment without feedback
+• Forgiving response to asymmetric brake inputs
+Basic concept behind the RAM-air parachute idea is:
+• Autonomous multi-stage descent controller for mission execution.
+• Sensor-fusion-based altitude estimation using barometer and IMU data.
+• GPS-guided navigation with wind compensation for target-oriented descent.
+• Controlled flare and braking mechanism for safe and accurate landing.
+• Real-time telemetry, onboard logging, and fault-recovery capabilities for mission reliability.
+Minimum Canopy Area Derivation:
+35
+Team ID: 2026-INSPACe-CAN-7USAT-025
+2𝑚𝑔
+𝑆 =
+𝑃2 𝜌2𝑉2𝐶 (1+𝐺𝑅2)
+𝑠 𝐿
+19.620
+=
+1.155×6.250×0.90×7.250
+= 0.415𝑚2
+Performance verification:
+2𝑚𝑔
+𝑉 = √
+𝑡𝑜𝑡𝑎𝑙 𝜌 𝑆 𝐶
+2 𝑝2 𝐿
+2×1.000×9.810
+= √
+1.155×0.40×0.90
+19.620
+= √ = √47.19 = 6.87 𝑚/𝑠
+0.4158
+Forward speed:
+V = GR × V = 2.50 × 2.55 = 6.37 m/s
+f s
+Canopy Loading:
+𝑊 𝑚𝑔 1.000×9.810
+= =
+𝑆 𝑆 0.40
+𝑃2 𝑃2
+𝑁
+= 24.5 = 2.50 𝑘𝑔/𝑚2
+𝑚2
+Profile Feature Ratio (% chord) Formula Dimension
+Max thickness 14% 0.14 × 420 58.8 mm ≈ 59 mm
+Position of max thickness 32% from LE 0.32 × 420 134 mm from LE
+Max camber (upper surface) 9% 0.09 × 420 37.8 mm ≈ 38 mm
+Position of max camber 35% from LE 0.35 × 420 147 mm from LE
+Leading edge radius 2.5% 0.025 × 420 10.5 mm ≈ 11 mm
+Trailing edge thickness 1.5% 0.015 × 420 6.3 mm ≈ 7 mm
+Table 8: Secondary parachute summary
+Parameter Symbol Value
+36
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Canopy type - Ram-air parafoil, rectangular, 7
+cells
+Plan area 𝑆 0.400 m2
+𝑃2
+Span b 960 mm
+Mean chord C 420 mm
+Aspect ratio AR 2.30
+Number of cells 𝑛 7
+𝑐𝑒𝑙𝑙
+Number of ribs 𝑛 8
+𝑟𝑖𝑏
+Cell width 𝑤 137 mm
+𝑐𝑒𝑙𝑙
+Max profile thickness 𝑡 134mm
+𝑚𝑎𝑥
+Max camber 𝑓 147 mm
+𝑚𝑎𝑥
+Entry mouth height per cell ℎ 30mm
+𝑖𝑛𝑙𝑒𝑡
+Lift coefficient 𝐶 0.90
+𝐿
+Glide ratio GR 2.50
+Equilibrium sink rate 𝑉 2.55 m/s at 600 m AGL
+𝑠
+Forward speed 𝑉 6.37 m/s
+𝑓
+Total trim airspeed 𝑉 6.87 m/s
+𝑡𝑜𝑡𝑎𝑙
+Canopy loading W/S 24.5 N/m2
+Main line length 𝐿 870 mm
+𝑙𝑖𝑛𝑒
+Brake line length 𝐿 1050 mm
+𝑏𝑟𝑎𝑘𝑒
+Riser length 𝐿 90mm
+𝑟𝑖𝑠𝑒𝑟
+Total suspension length 𝐿 960 mm
+𝑡𝑜𝑡𝑎𝑙
+Total lines - 16 (14 main + 2 brake)
+Brake drag force - 0.661 N per side
+Table 9: Secondary parachute parameters
+37
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Parachute material:
+Selected material Selection reason
+• Lightweight and compact for CanSat parachutes
+• High tear resistance due to ripstop weave
+• Good strength-to-weight ratio
+• Water-resistant and weather-resistant
+• Easy to fold and deploy
+Ripstop Nylon 40D
+Parachute threads:
+Selected thread Selection reason
+• High tensile strength for parachute suspension lines
+• Lightweight and flexible
+• Good resistance to wear and abrasion
+• Easy to stitch and handle during assembly
+Nylon Thread • Cost-effective and readily available
+7. Ground Station
+• Ground hardware architecture is defined as laptop, LR1121 receiver via ESP32-WROOM bridge, Radio
+master omnidirectional T antenna 865 MHz.
+• Ground software developed in Python (PyQt5 + Matplotlib) for real-time telemetry display, live plotting of
+all 15 fields and additional telemetry data, CSV logging, command uplink (TX ON/OFF, calibrate), and
+GPS track visualization.
+Fig 12: Ground Station
+38
+Team ID: 2026-INSPACe-CAN-7USAT-025
+4.6 Material Procurement details
+All components of team VRITRA are sources from combination of different domestic electronics suppliers and
+international distributers. The main preference is given to the Indian manufactured parts where precision is better
+as compared to other international components because according to the guidelines of competition, Make-in-
+India components are given additional points.
+4.6.1 The procurement strategy
+• Primary domestic suppliers: Robu.in, Amazon India and local Indian electronics vendors for sensors,
+connectors, and mechanical hardware.
+• International/specialty suppliers: Digikey for components not readily available domestically (e.g., specific
+IMU breakout variants, precision servos).
+• Direct manufacturer sourcing: A significant share of the sensor and power-regulation stack such as
+BMP585, ICM-20948, BMV080, AP64500, AP62301, and others, is sourced directly from 7Semi
+Technologies, an Indian company based in Navi Mumbai specializing in embedded sensors and wireless
+communication modules — these components are highlighted in the BOM as Make-in-India contributions.
+• Structural materials: Glass fiber rods, plates, and sheet stock procured separately for the shell, base plate,
+and internal structural elements.
+• Procurement timeline: Component purchasing is scheduled as a dedicated milestone immediately after PDR
+submission, ahead of PCB fabrication and mechanical fabrication, to avoid schedule slip on integration and
+testing.
+4.6.2 Budget Compliance
+COMPONENT PURPOSE QTY SOURCE TOTAL
+. COST (₹)
+BMP585 Pressure & Altitude Sensor 3 7 Semi 1,675.20
+LSM6DSO32 6-DOF IMU + Gyroscope 1 Digikey 1705.00
+ICM-20948 9-DOF IMU + Magnetometer 2 7 Semi 1,536.00
+SCD41 CO₂, Temperature & Humidity Sensor 1 7 Semi 6,224.00
+SEN0290 (AS3935) Lightning Detection Sensor 1 Digikey 2,199.00
+ML8511 UV Sensor 1 Robu.in 2,099.00
+MQ131 Ozone (O₃) Sensor 1 Robu.in 1,449.00
+BMV080 PM2.5 Air Quality Sensor 1 7 Semi 1,092.00
+TPL5010 Watchdog Timer 1 Digikey 4067.00
+W25Q64 SPI Flash Data Backup Memory 1 7 Semi 111.20
+INA226 Voltage & Current Monitor 2 Robu.in 219
+SN74LV4052A Analog Multiplexer 1 Digikey 290.00
+39
+Team ID: 2026-INSPACe-CAN-7USAT-025
+DS3231N RTC Real-Time Clock 1 Think Robotics 299.00
+Teensy 4.1 Primary & Backup Flight Controller 2 Robu.in 7998.00
+ESP32-S3 Ground Station Processor 1 Robu.in 2,709.00
+XIAO ESP32-S3 Camera Module 2 Robocraze 2,011.00
+LR1121 LoRa Telemetry Transceiver 2 Think Robotics 2450
+T antenna 865 MHz Onboard and ground station 2 Radio master 3700
+omnidirectional antenna
+L89 GPS NavIC/GPS/GLONASS GNSS 2 7 Semi 1,598.40
+NavIC GPS Antenna Active GNSS Patch Antenna 2 Edge hex 1,500.00
+AGFRC A20BHM Parafoil Line Control 2 9000
+MG90S Servo Secondary Deployment Mechanism 2 Robu.in 444.00
+EMAX2205 2300kv Gyroscope Wheel Motor 1 Robu.in 750
+Bi directional ESC Motor Driver 1 7 Semi 1167
+40A
+3S 40A Li-ion BMS Battery Protection Circuit 1 Amazon India 817.00
+DFR1015 Multi-Output Buck Converter 2 Digikey 1,000.00
+AP64500 5V 5A Servo Power Supply 3 7 Semi 1,675.20
+Buck
+AP62301 3.3V 2A Sensor Power Supply 3 7 Semi 235.20
+Buck
+Teensy 4.0 Secondary descent MCU 1 Robu.in 2,549.00
+NEO M9N GPS module 1 2,000.00
+XT30 Connector Battery Connection 5 7 Semi 245.00
+Capacitors 470 µF & 0.1 µF Set Amazon India 100.00
+Resistors Various Values Set Amazon India 125.00
+Glass Fibre Rod Structural Component 4 1700.00
+SD Cards Camera & MCU Storage 2 Amazon India 2503.00
+2104-SM400204-1- Buzzer 1 7 Semi 930.00
+ND
+MAX98357A Audio Amplifier 1 730.00
+Parachute Material Recovery System - 12000
+PCB Custom Main & Secondary PCB 2 5000
+Fabrication
+LEDs Status Indicators 2 Amazon India 10.00
+Power Switch Main Power Control 1 7 Semi 252.00
+40
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Molicel 21700 power Battery pack 6 Robu.in 3500
+cells
+Aluminium Structure - Locally Sourced 2000
+ABS Outer Body - 1200
+Contingency Reserve - - 6,000
+Total 99212
+Table 10: Budget sheet
+Make-in-India components from 7 Semi are highlighted in the budget sheet. Source of the components are
+mentioned with it. 7 Semi which is an Indian Manufacturing company, has helped team VRITRA by providing
+20 per cent of discount during our CANSAT preparation.
+4.6.3 Mass budget
+COMPONENT/PART PURPOSE WEIGHT (g)
+BMP585 Pressure and altitude sensing 3 (Quantity-2)
+LSM6DSO32 (Adafruit) 6-DOF IMU and gyroscope 2
+ICM-20948 7Semi 9-DOF IMU and magnetometer 8 (Quantity-2)
+SCD41 CO₂, temperature, and humidity sensing 8
+SEN0290 DFRobot AS3935 Lightning detection 8
+ML8511 UV radiation sensing 2
+MQ131 Ozone (O₃) gas sensing 8
+BMV080 7Semi Fanless laser PM sensor 1
+TPL5010 Watchdog timer 2
+W25Q64 SPI Flash In-flight data backup 1.5
+INA226 Voltage and current monitoring 5
+SN74LV4052A Multiplexer switch 2
+DS3231N RTC Real-time clock 3
+Teensy 4.1 Primary and backup flight controller MCU 12 (Quantity-2)
+XIAO ESP32-S3 Sense Camera module 5.6
+Teensy 4.0 Secondary ejection control MCU 10
+LR1121 LoRa Transceiver Telemetry communication 2
+Bandwidth T antenna 865 MHz CanSat antenna 22
+L89 GPS NavIC, GPS, and GLONASS GNSS module 6.7
+NavIC GPS Antenna Active GNSS patch antenna 28
+AGFRC A20BHM Paraglider line control 18 (Quantity-2)
+MG90S Servo Secondary deployment/ Bio gel lid 12.5 (Quantity-2)
+2205 2300KV BLDC Motor Gyroscope wheel motor 30
+41
+Team ID: 2026-INSPACe-CAN-7USAT-025
+40A ESC Motor Motor control 30
+AP64500 5V 5A Buck Servo power regulator 0.6
+AP62301 3.3V 2A Buck Sensor power regulator 0.4
+AMS1117-1.8 LDO 1.8V voltage regulation 0.5
+XT30 Connector Battery connection 3
+Capacitors (470µF + 0.1µF) Power filtering and stabilization —
+Resistors (0.1Ω, 4.7kΩ, 330Ω, 10kΩ) Signal conditioning and protection —
+Diodes Protection and switching —
+Molicell 21700 5000mAh Lithium-ion battery 72 (Quantity-3)
+M9N GPS module Secondary mechanism GPS 12
+Rods Structural weight 35.1
+Base plate Structural weight 77.11
+Descent parachute bay Structural weight 62.4
+Bay lid Structural weight 15.5
+Outer shell Structural weight
+Petri plate Innovation idea 10
+Primary Descent Parachute 33
+Secondary Descent RAM-air Parachute 105
+Total 897+shell
+Table 11: Mass budget
+4.6.4 Procurement Risk Mitigation
+Critical long-lead items such as Teensy 4.1, LR1121, GNSS modules and other important telemetry sensors are
+prioritized for early ordering to prevent delays to PCB design and integration testing. Dual-sourcing or set orders
+considered for common passive components such as capacitors, resistors, connectors, etc to avoid single-supplier
+bottlenecks. A contingency budget of ₹6,000 is reserved specifically to overcome price fluctuations or
+replacement needs identified during subsystem testing.
+4.7 System and sub-system level Analysis and Test Results
+This section presents the analytical basis for CAN-7USAT's design margins across each subsystem, paired with
+the test plan defined to verify those margins on hardware. As of CDR stage the analytical work is complete and
+hardware test execution is scheduled as per the project milestone chart. Subsystem level testing is done according
+to the requirement for CDR stage and the rest results which needs upgradation will be shown in FRR.
+42
+Team ID: 2026-INSPACe-CAN-7USAT-025
+4.7.1 Mechanical Subsystem (Structural Analysis)
+4.7.1.1 Base Plate
+Software Used: Ansys
+Material Selection: Aluminium Alloy
+Boundary Conditions: Fixed support applied at rod mounting bosses
+Acceleration application: 30G in longitudinal axis
+Mesh Setup
+Fig 13: Meshing of Base Plate
+Type: Tetrahedral meshing.
+Refinement: Finer mesh applied to critical areas, including the holes and thrust pad.
+Parameters Simulated: Von Mises Stress, Total Deformation
+Results:
+43
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 14: Stress Analysis of Base Plate
+Fig 15: Total Deformation Analysis of Base Plate
+44
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 16 : FOS Analysis of Base Plate
+Conclusion
+After simulating, the results prove that the structure of the base plate is sound at the applied loads. The stress
+falls under the acceptable range of selected material’s strength and the deformation value is close to zero. Thus,
+the component can be considered safe for all the required operations.
+Further mass was reduced by removing non critical material while preserving the load path. Topology
+optimization was used to identify these regions. The optimized design achieves a lower structural mass while
+satisfying all structural requirements.
+4.7.1.2 Middle Plate
+Software Used: Ansys
+Material Selection: Aluminium Alloy
+Boundary Conditions: Fixed support applied to the inner faces of rod mounting bosses
+Acceleration application: 30G in longitudinal axis
+Mesh Setup
+45
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 17: Meshing of Base Plate
+Type: Tetrahedral meshing.
+Refinement: Finer mesh applied to critical areas, including the holes and thrust pad.
+Parameters Simulated: Von Mises Stress, Total Deformation
+Results
+46
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig18: Stress Analysis of Middle Plate
+Fig 19: Total Deformation Analysis of Middle Plate
+47
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 20: FOS Analysis of Middle Plate
+Conclusion
+The results prove that the plate has enough structural stability to withstand applied loads. The level of stress
+induced is far below the maximum acceptable strength of the material and the deformation in the structure is
+miniscule.
+Topology optimization was done to remove materials from areas not critical for load paths. San enhanced
+strength to weight ratio is maintained without compromising on structural performance.
+4.7.1.3 CANSAT Assembly
+Software Used: Ansys
+Material Selection: Aluminium Alloy for base and middle plates
+• Fiberglass for rods
+• FR 4 for PCB plates
+Boundary Conditions: Fixed support applied at rod mounting bosses at the base plate.
+Acceleration application: 30G in longitudinal axis
+Component mass representation: The masses of integrated electronic components and other onboard hardware
+were added as distributed masses in respective places to accurately simulate the real loading conditions.
+48
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Mesh Setup
+Fig 21: Meshing of CANSAT Assembly
+Type: Tetrahedral meshing.
+Refinement: Finer mesh applied to critical areas, including the holes and thrust pad.
+Parameters Simulated: Von Mises Stress, Total Deformation, Buckling analysis
+Results
+49
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 22: Stress Analysis of CANSAT Assembly
+Fig 23: Total Deformation Analysis of CANSAT Assembly
+50
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 24: Buckling analysis of CANSAT Assembly
+Conclusion
+A full-scale structural analysis was performed under simulated launch environment conditions to determine the
+structural behaviour of the assembly. It is found there is good stress distribution and negligible deformation.
+Buckling analysis was also done to ensure the assembly is structurally sound, since the critical buckling load is
+far more than anticipated loads the structure would face. This shows that there is sufficient margin to avoid
+instability during launch.
+Final verdict
+Overall, the results of structural analysis have shown that the CANSAT structure complies with all necessary
+requirements of strength, rigidity and stability under given loads. The optimised structure is validated for
+fabrication, integration and mission deployment.
+4.7.2 Command & Data Handling (CDH) (Analysis & Test)
+Downlink data path (CANSAT to ground station)
+Sensors Sensor Packet GS Display &
+Sample Fusion Assembly LoRa TX Receive Log
+BMP585, Baro & 15 live
+IMU GPS alt 15 fields LR1121 T-antenna plots
+GPS, IMU 1 Hz rate 865 MHz CSV to
+INA226 filtering disk
+51
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Uplink command path (ground station to CANSAT)
+Command
+FSM State
+GS
+Operator
+LoRa TX LoRa RX Parser
+Transition
+Manual T-antenna LR1121 Validate Execute
+command on CANSAT & decode command
+Data Handling subsystem
+LoRa LR1121
+RF 867 Ground Station
+865 MHz, 1 Hz, SPI MHz PyQt5, T-antenna, 15
+plots
+I2C / SPI
+Up
+lin
+FLIGHT COMPUTER
+Navigation Sensors
+Teensy 4.1, ARM Cortex-M7,
+BMP585 Baro / Alt
+600 MHz
+LSM6DSO32 6-axis IMU
+Actuators
+ICM-20948 9-axis AHRS 8-State FSM (10 Hz main
+L89 GPS/NavIC lSoeonps)o r Fusion & Data PWM A20BHM Parafoil
+INGAN22S6S Power monitor PPrIoDc eHsesaindgin g Controller xM2G 90S #1 Bay lid
+MG90S #2 Bio gel
+GPIO
+UART Uplink Command Parser 2205 Flywhe
+Watchdog Timer (1s B23u0z0zkerv Beaecl on
+Science Sensors timeout)
+SCD41, BMV080, MQ131,
+ML8511, SEN0290
+I2C
+Power Supply
+3S Li-ion, 12V,
+SD Card Backup MCU
+54Wh CSV @ 1 Hz Teensy 4.1,
+SPI UART
+Fig 25: Command and Data handling subsystem
+4.7.3 Sensor Subsystem (Analysis & Test)
+To test about the sensor subsystem, we have assembled all the important components which are required for
+transmitting the necessary telemetry data. All of it is assembled on a zero board to test the compatibility of the
+52
+Team ID: 2026-INSPACe-CAN-7USAT-025
+sensors and also to test proper power supply. The diameter of the board is 11 cm which will in future be placed
+on a Printed circuit board as a plate in our CANSAT.
+The image given below is the board consisting of all the sensors on a single plate. The backup system designed
+will be have all its sensors on other such board. From this we have tried to test the working of sensors which is
+shown below in the following sections.
+Fig 26: Sensor Board
+The flight-state machine (FSM) was tested on Teensy 4.1 hardware using a synthetic telemetry injection test in
+which a pre-scripted flight profile such as height and vertical rate pairs was given to the state machine in place
+of live sensor data to work all state transitions perfectly. The given profile simulated a full mission status and
+provided with the results as given in the image below. The FSM correctly detected:
+• Launch on provided height
+• Triggered primary parachute deployment at apogee (1000.0 m peak)
+53
+Team ID: 2026-INSPACe-CAN-7USAT-025
+• Fired the secondary parafoil at 599.3 m AGL
+• Correctly registered landing
+This confirms the altitude/state-decision logic (Gates 1–3 of the altitude control loop which is given below)
+works correctly across the full mission timeline independent of physical sensor noise, isolating the FSM logic
+itself as a verified component ahead of closed-loop hardware-in-the-loop testing.
+Fig 27: FSM test
+The telemetry packet format was tested end-to-end by transmitting a live sample packet from the Teensy 4.1
+through the ground-station serial link and confirming correct field-by-field decoding. The captured packet
+correctly explains into all 17 defined fields:
+1. Team ID
+2. Mission time (167 s)
+3. Packet count (8)
+4. Barometric altitude (−0.9 m, ground-level offset within calibration)
+5. Pressure (97398 Pa)
+6. Temperature (29.8°C)
+7. Bus voltage (10.09 V)
+8. GNSS time
+9. Latitude/longitude (31.2510490°, 75.7052917°)
+10. GPS altitude (229.9 m)
+54
+Team ID: 2026-INSPACe-CAN-7USAT-025
+11. Satellite count (4 locked)
+12. 3-axis acceleration
+13. Mechanical gyro spin rate (0.4°/s)
+14. Flight software state
+This confirms the packet structure, field ordering, resolution/scaling, and CSV-style analysing all match the
+defined telemetry, and that GNSS locks 4 satellites and sensor data are being correctly calculated and transmitted
+over the downlink prior to flight.
+Fig 28: Data Output
+Our packet length is 99 bytes. So, in this we limit data input by taking the mandatory 15 fields and the remaining
+fields which is optional data is actually divided in different packets so each time we get different optional sensor
+data and in that we use base encoding so that all data is actually compressed and reduced in size. And then it is
+transmitted using our LoRa module LR1121 of size 99 bytes which actually take around 971 milliseconds of a
+time to transmit. After that we pause for few milliseconds to listen for the command which are sent from our
+ground stations. In our ground station that specific command is transmitted three times. Suppose that we are
+transmitting our current packet then the ground station will try to send that command 3 time as soon as it receives
+the packet and we actually encode the specific packet field according to the standard encoding that encodes and
+properly compresses the information. Then that is transmitted in the base station and it decodes that packet and
+bring it to its original form. We can also check by that packet received is proper or not and if we have missed
+anything or corrupt. That millisecond gap can be also be utilized for sending and receiving acknowledgement
+signal.
+55
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 29: Packet Transmission result
+After collecting all the data required, it is transmitted and even stored in MicroSD card for backup purpose so
+that the telemetry loss could not affect the sensor data readings for even a second. All the stored data in MicroSD
+is arranged in an Excel sheet in systematic order so that we can directly handover the Card to jury post flight
+period. The given image shows the data arrangement in a single Excel sheet:
+56
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 30: MicroSD Card storage Data
+4.7.4 Communication Subsystem (Link Analysis & Test)
+For testing communication subsystem, we are using 865 MHz Rubber duck omnidirectional antenna and a LoRa
+module having as LR1121. First, we made the circuit connections required for communication testing. A basic
+ground station platform was used to see the reading and telemetry data transfer. After finalising the circuit
+connections, we moved forward from breadboard and designed a PCB board for proper testing.
+Fig 31: Communication Range Test
+After testing the new selected antenna which is Dual band T-antenna from Radio master the results we got are:
+57
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 32: Telemetry Distance Test (Spot 1)
+58
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 32: Telemetry Distance Test (Spot 2)
+59
+Team ID: 2026-INSPACe-CAN-7USAT-025
+We tested our communication subsystem with both the antennas which are rubber duck 865 MHz antenna and
+Radio master dual band T antenna 867 MHz. According to the result we understood that it has high signal
+connectivity as we tested it with the distant of 1.6 KM. The received data packets were proper as shown in image
+given below. It was also tested on our Ground station software and the results are attached below in the upcoming
+sections.
+Fig 33: Telemetry Packet Received
+4.7.5 Electrical Power Subsystem (Analysis & Test)
+Component Voltag Current Maximum Duty Average Power Source
+e Power Cycle
+(%)
+Teensy 4.1 5 0.18 1.8 100 1.8 Existing
+ESP32-S3 5 0.18 1.8 70 1.26 Existing
+LR1121 LoRa (TX) 3.3 0.055 0.1815 20 0.0363 Existing
+L89 GNSS 3.318 0.032 0.106176 100 0.106176 Existing
+ICM-20948 IMU 3.322 0.0045 0.029898 100 0.029898 Existing
+SCD41 CO2 5 0.018 0.09 100 0.09 Existing
+AS3935 Lightning 3.3 0.0001 0.00033 100 0.00033 Datasheet
+60
+Team ID: 2026-INSPACe-CAN-7USAT-025
+AS7343 Spectral 3.3 0.0x98 0.00825 100 0.00825 Datasheet
+HDC3020 3.3 0.0008 0.00264 100 0.00264 Datasheet
+Temp/Humidity
+ML8511 UV 3.3 0.0003 0.00099 100 0.00099 Existing
+MQ131 Ozone 5 0.15 0.75 50 0.375 Existing
+BMV080 PM 3.3 0.018 0.0594 100 0.0594 Existing
+TPL5010 Timer 2.5 0.00000 8.75E-08 100 8.75E-08 Datasheet
+0035
+W25Q64 Flash 3.3 0.025 0.0825 20 0.0165 Datasheet
+INA226 3.3 0.0012 0.00396 100 0.00396 Existing
+SN74LV4052A MUX 3.3 0.00008 0.000264 100 0.000264 Datasheet
+DS3231 RTC 3.3 0.00011 0.000363 100 0.000363 Datasheet
+Hobbywing XRotor 10.8 0.1 1.08 30 0.324 Datasheet
+40A ESC
+2205 2300KV BLDC 10.8 4 43.2 30 12.96 Datasheet
+Motor
+AGFRC A20BHM 7.4 1.5 11.1 20 2.22 Datasheet
+Servo #1
+AGFRC A20BHM 7.4 1.5 11.1 20 2.22 Datasheet
+Servo #2
+Teensy 4.0 (DCS) 5 0.08 0.4 100 0.4 Existing
+BMP585 3.3 0.001 0.0099 100 0.0099
+7.4V BEC 7.4 0.02 0.296 100 0.296 Existing
+7Semi AP62301 Buck 5 0.02 0.2 100 0.2 Existing
+3.3V 2A
+7Semi AP64500 Buck 10.8 0.03 0.648 100 0.648 Estimate
+5V 5A
+Total 72.9501709
+Maximum
+Power
+Total 23.06797109
+Average
+Power
+Battery Capacity 5000
+(mAh)
+61
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Battery Voltage (V) 10.8
+Battery Energy (Wh) 54
+Estimated Endurance 2.341
+(Hours)
+Table 12: Power budget
+4.7.6 Descent & Recovery Subsystem (Analysis & Test)
+During our parachute testing, we first started with understanding the idea behind RAM air parachute which
+controls the direction with the help of servos. So, we calculated about the dimensions of the parachute given
+above.
+This parachute testing was done from a heighted building of around 120 feet. According to the test results, the
+RAM air parachute has a proper shape and nodes attachment. It carried 840 g of dead weight and the parachute.
+It had proper opening without any entanglement with in the codes.
+Improvement done after testing: Length of the cord is reduced according to the calculations.
+Fig 34: Ram-Air Parachute Drop Test
+62
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Electronics part for controlled RAM air parachute was tested through a simulated panel. The panel shows about
+the rotation of servos with respect to the direction of flow of air in virtual environment. The image given below
+shows about the test:
+Fig 35: Secondary Mechanism
+Fig 36: Secondary Mechanism Control
+63
+Team ID: 2026-INSPACe-CAN-7USAT-025
+4.8 Flight Readiness Parameters
+Flight readiness for CANSAT is assessed against a defined set of quantitative parameters spanning structural
+integrity, power, communication, descent performance, and software state. Each parameter carries a pass/fail
+threshold that must be verified during pre-launch checkout before the CANSAT is cleared for integration into
+the rocket payload bay. The important Go readiness parameters required are:
+• All mandatory telemetry fields streaming and logging correctly at GS and onboard SD card.
+• Bus voltage, structural fit, and mass should be within specified limits.
+• GNSS fix acquired and target waypoint recorded.
+• Primary and secondary descent systems are packed and mechanically verified.
+• FSM is confirmed in TEST_MODE with successful calibration response.
+4.8.1 Structural & Mechanical Readiness
+PARAMETER READINESS THRESHOLD VERIFICATION METHOD
+Total mass ≤ 1000 g (±50 g) Pre-integration weigh-in
+Envelope fit ≤ 150 mm diameter × 400 mm height Fit-check in mock rocket fairing
+Structural integrity No visible damage, cracks, or loose Visual inspection post-vibration test
+standoffs
+Gyro-wheel spin-up 5000 ±500 RPM within 30 s Hall-sensor RPM verification
+Shell/lid closure Secure latch, no exposed electronics Physical inspection
+Table 13: Structural & Mechanical Readiness
+4.8.2 Electrical Power Readiness
+PARAMETER READINESS THRESHOLD VERIFICATION METHOD
+Bus voltage at power-on ≥ 8.0 V INA226 reading on GS dashboard
+Battery endurance margin ≥ 2 hours remaining at current charge Pre-flight SOC estimate
+Power indicator LED Illuminates on power-on Visual check
+Voltage rail stability 5.0 V and 3.3 V rails within ±5% Multimeter/INA226 cross-check
+Table 14: Electric Power Readiness
+4.8.3 Communication and telemetry Readiness
+PARAMETER READINESS THRESHOLD VERIFICATION METHOD
+LR1121 link status Packets received at GS, RSSI > GS dashboard link indicator
+−120 dBm
+Telemetry rate ≥ 1 Hz sustained GS packet-rate counter
+64
+Team ID: 2026-INSPACe-CAN-7USAT-025
+All 15 mandatory TM fields Present, correctly formatted GS live field display
+CMD_TX_ON / Uplink command acknowledged GS command panel confirmation
+CMD_CALIBRATE
+GNSS fix ≥ 6 satellites locked GS GNSS status panel
+SD card logging CSV row count incrementing at 1 GS/onboard log cross-check
+Hz
+Table 15: Communication and telemetry Readiness
+4.8.4 Flight Software & State Readiness
+PARAMETER READINESS THRESHOLD VERIFICATION METHOD
+FSM state TEST_MODE confirmed before CMD_TX_ON GS state field
+Sensor self-test All sensors initialized without fault Boot-sequence telemetry
+Calibration Baro altitude, gyro, accel zeroed at pad level Post-CMD_CALIBRATE readback
+Backup avionics Standby, heartbeat signal nominal Failover monitor status
+Target waypoint Launch pad GPS coordinates set GS waypoint confirmation
+Table 16: Flight Software & State Readiness
+4.8.5 Descent & Recovery Readiness
+PARAMETER READINESS THRESHOLD VERIFICATION METHOD
+Primary parachute packing Z-fold secured Visual/physical inspection
+Parafoil packing Deployment bag pinned, no line tangle Visual/physical inspection
+Brake-line servo range Full deflection without stall Bench actuation check
+Audio beacon ≥ 92 dB SPL on trigger Pre-flight beacon test
+Table 17: Descent & Recovery Readiness
+4.9 Pre-Flight Analysis
+Pre-Fight Analysis talks about the expected performance envelope of CANSAT prior to launch by using
+analytical models and simulation to predict system behaviour under different conditions.
+4.9.1 Descent Trajectory & Wind Drift Analysis
+A MATLAB-based simulation was run against expected launch-site wind conditions to understand about the
+parafoil's guided descent trajectory. The simulation output shows a top-down ground track and altitude-vs-time
+profile which is used to:
+• Predict the parafoil's glide path and expected landing dispersion radius under the PID waypoint-steering
+logic.
+65
+Team ID: 2026-INSPACe-CAN-7USAT-025
+• Verify that the glide ratio (2.50) and forward speed (6.37 m/s) provide sufficient cross-range authority to
+pay for given wind drift between 600 m activation and descent.
+• Get an expected recovery search radius around the target waypoint for the ground recovery test.
+Fig 37: MATLAB parachute testing
+4.9.2 Communication Link Prediction
+• Calculated link margin of 71.6 dB at 1 km (867 MHz, SF10) and is well above the 10 dB minimum needed
+for reliable LoRa telemetry.
+• No packet loss expected under nominal line-of-sight conditions between CanSat and ground station.
+• Sufficient headroom to tolerate antenna misalignment, multipath, and orientation changes near touchdown.
+• NETID/PANID isolation (0x98) and SF10 orthogonality expected to prevent cross-interference with other
+teams' radios at the shared launch site.
+4.9.3 Sensor Calibration Strategy
+• Ground calibration (CMD_CALIBRATE) zeroes barometric altitude, gyroscope offset, and accelerometer
+bias at pad level, immediately before flight.
+• Eliminates day-to-day atmospheric pressure drift from affecting the 600 m secondary-deployment trigger.
+• Removes IMU bias accumulated during transport and handling, ensuring gyro-wheel stabilization and
+apogee detection operate against a true zero reference.
+• Calibration is deliberately timed as late as possible in the pre-launch sequence to minimize the window in
+which drift could re-accumulate before flight.
+66
+Team ID: 2026-INSPACe-CAN-7USAT-025
+5. SENSOR SYSTEMS SUMMARY, CHARACTERIZATION AND TEST RESULTS
+CANSAT carries 11 sensors in total in which each sensors have its own flight-critical measurements such as
+altitude, orientation, GPS, power and some bonus sensors such as air quality, lightning, UV, ozone and CO₂,
+which can help team VRITRA with better scoring points. Each sensor was selected through a comparative study
+against its alternatives and each one carries a defined characterization method and test plan which is in detail
+below.
+5.1 Pressure & Temperature Sensor (BMP585)
+The BMP585 is a barometric pressure and temperature sensor from 7 Semi, which acts as the primary altitude
+measurement sensor for CANSAT. It was selected over the BMP390 and BMP581 for its better pressure
+accuracy and ultra-low power consumption which are important for proper performance, drift-free altitude
+detection throughout the descent. Onboard CANSAT will be having two units of BMP585 in which one will be
+for primary telemetry and other for the backup subsystem if required.
+PARAMETER VALUE
+Model BMP585
+Sensor Type Barometric Pressure & Temperature
+Interface I²C, SPI
+Pressure Range 300–1250 hPa
+Accuracy ±0.5 Pa
+Supply Voltage 1.71–3.6 V
+Power Consumption 2.5 µA
+Quantity 2
+Table 18: Pressure & Temperature Sensor (BMP585)
+The BMP585 barometer was tested in a two-phase validation such as a ground-level reference position and then
+followed by a controlled height to verify AGL tracking. The results which can after testing are visible in the
+image given below.
+67
+Team ID: 2026-INSPACe-CAN-7USAT-025
+This confirms the barometric altitude pipeline is correctly zeroed at the launch pad and responds accurately to
+small real-world height changes, validating it ahead of integration with the combination of BMP585, GPS
+module and Kalman filter altitude estimate used in the flight-state machine.
+Fig 38: Ground level BMP testing
+68
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 39: BMP testing from a specific height
+5.2 6-Axis IMU (LSM6DSO32)
+The LSM6DSO32 is the sensor manufactured by Adafruit which is used for inertial measurement which provides
+3-axis acceleration and 3-axis angular rate data. It is used for controlling secondary descent mechanism of GPS
+guided RAM air parafoil. It was chosen over the MPU6050 and BMI270 for its wide measurement range,
+ensuring the sensor stays within range and does not break during the 30G ejection shock event.
+PARAMETER VALUE
+Model LSM6DSO32
+Sensor Type 6-DOF IMU (Accelerometer + Gyroscope)
+Interface I²C, SPI
+Accelerometer Range ±4/8/16/32 g
+Gyroscope Range ±125/250/500/1000/2000/4000 dps
+Supply Voltage 1.71–3.6 V
+Quantity 1
+Table 19: 6-Axis IMU (LSM6DSO32)
+5.3 9-Axis IMU (ICM-20948)
+The ICM-20948 from 7 Semi, provides orientation and motion sensing on the avionics board which is about
+combining accelerometer, gyroscope, and magnetometer in a single module. It was selected over the MPU9250
+and BNO055 for its lower cost at 9-DOF capability. Onboard CANSAT will be having two units of BMP585 in
+which one will be for primary telemetry and other for the backup subsystem if required.
+69
+Team ID: 2026-INSPACe-CAN-7USAT-025
+PARAMETER VALUE
+Model ICM-20948 (7Semi)
+Sensor Type 9-DOF IMU (Accel + Gyro + Magnetometer)
+Interface I²C, SPI
+Accelerometer Range ±2/4/8/16 g
+Gyroscope Range ±250/500/1000/2000 dps
+Magnetometer Yes (3-axis)
+Quantity 2
+Table 20: 9-Axis IMU (ICM-20948)
+The IMU which is the combination of accelerometer and orientation, was tested across four static orientations
+such as home position (0°), and 90° tilts left, right, and front, with 5 continuous samples logged per orientation
+to characterize both mean reading and sample-to-sample noise.
+Fig 40: IMU Testing
+5.4 GNSS Module (L89HA)
+The L89HA GNSS from 7 Semi is a module which provides real-time position, altitude, speed, and timing data
+throughout the mission. It was selected over the NEO-M8N and L86-M33 for its NavIC (IRNSS) feature and
+70
+Team ID: 2026-INSPACe-CAN-7USAT-025
+also is an earning bonus jury weightage. It is along with dual-band L1+L5 operation for faster achievement and
+greater positioning accuracy.
+PARAMETER VALUE
+Model L89HA (7Semi)
+GNSS Support GPS, NavIC, GLONASS, BeiDou, Galileo, QZSS
+Frequency Bands L1 + L5
+Interface I²C, UART
+Position Accuracy < 1.8 m CEP
+Supply Voltage 3.3 V
+Quantity 1
+Table 21: GNSS Module (L89HA)
+5.5 Power Monitor (INA226)
+The INA226 is selected because of its features such as it continuously monitors bus voltage, current, and power
+draw across the CANSAT power system. This helps in tracking real-time battery health and power telemetry
+throughout flight. It was selected over the INA219 and ACS712 for its wider bus voltage range and continuous
+voltage/current/power measurement over a digital I²C interface. It also reduces noise exposure compared to
+analog current-sensing sensor.
+PARAMETER VALUE
+Model INA226
+71
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Sensor Type Power Monitor
+Interface I²C
+Bus Voltage Range 0–36 V
+Current Measurement Yes (Shunt-based)
+Power Calculation Yes
+Quantity 2
+Table 22: Power Monitor (INA226)
+5.6 Particulate Matter Sensor (BMV080)
+The BMV080 sensor is an ultra-compact air quality sensor used for measuring PM1.0, PM2.5, and PM10
+concentrations using laser scattering technology. This sensor is used as an extra additional telemetry as part of
+the bonus environmental payload. It was chosen over the PMSA003I and SPS30 for being the world's smallest
+particulate matter sensor with the lowest power consumption which makes it well suited to CANSAT's tight
+mass and power budget.
+PARAMETER VALUE
+Model BMV080 (7Semi)
+Sensor Type PM Sensor
+Interface I²C
+Particle Size Detection PM1, PM2.5, PM10
+Power Consumption 55 mW
+Supply Voltage 1.8–3.3 V
+Quantity 1
+Table 23: Particulate Matter Sensor (BMV080)
+5.7 Lightning Sensor (SEN0290-AS3935)
+The SEN0290 is a Gravity Lightning Sensor which detects lightning activity up to 40 km away and gives data
+about the distance, intensity, and strike frequency. This sensor is used as an extra additional telemetry as part of
+the bonus environmental payload. It uses intelligent noise filtering to minimize false detections from onboard
+electrical interference which makes it perfect for use CANSAT's active RF and motor-driven subsystems.
+72
+Team ID: 2026-INSPACe-CAN-7USAT-025
+PARAMETER VALUE
+Model SEN0290 (AS3935)
+Sensor Type Lightning Detector
+Interface I²C, SPI
+Detection Range Up to 40 km
+Operating Voltage 2.4–5.5 V
+Features Lightning distance & storm warning
+Quantity 1
+Table 24: Lightning Sensor (SEN0290-AS3935)
+5.8 UV Light Sensor (GYML8511)
+The GYML8511 sensor is an analog-output ultraviolet light sensor covering the Ultraviolet B and most of the
+UVA spectrum. This sensor is used as an extra additional telemetry as part of the bonus environmental payload.
+It has a output of a voltage linearly proportional to UV intensity which provides a simple and easy way to capture
+UV index data during descent without added interface complexity.
+PARAMETER VALUE
+Model GYML8511
+Sensor Type UV Sensor
+Interface Analog
+Spectral Range 280–390 nm
+73
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Supply Voltage 3.0–5.0 V
+Output Type Analog Voltage
+Quantity 1
+Table 25: UV Light Sensor (GYML8511)
+5.9 Ozone Gas Sensor (MQ131)
+The MQ131 sensor is a metal-oxide gas sensor whose conductivity decreases in the presence of ozone and allows
+ozone concentration to be indirect from the resulting signal change. It was selected for its wide detection range
+and fitness for atmospheric ozone sampling during descent. This sensor is used as an extra additional telemetry
+as part of the bonus environmental payload.
+PARAMETER VALUE
+Model MQ131
+Sensor Type Ozone Sensor
+Interface Analog, Digital
+Detection Range 10–1000 ppm
+Supply Voltage 5 V
+Power Consumption 750 mW
+Quantity 1
+Table 2: Ozone Gas Sensor (MQ131)
+5.10 CO₂ Sensor (SCD41)
+The SCD41 sensor is a small environmental sensor that is used to measure carbon dioxide concentration with
+temperature and humidity. This sensor is used as an extra additional telemetry as part of the bonus environmental
+payload. It was chosen over the SCD30 and ENS160+SHT40 for providing true CO₂ readings with strong
+accuracy at low power draw, communicating over the same I²C bus as the rest of the sensor stack.
+74
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Parameter Value
+Model SCD41
+Sensor Type CO₂, Temperature, Humidity
+Interface I²C
+CO₂ Range 400–5000 ppm
+Accuracy ±(40 ppm + 5%)
+Supply Voltage 2.4–5.5 V
+Quantity 1
+Table 2: CO Sensor (SCD41)
+2
+5.11 Real-Time Clock (DS3231M)
+The DS3231M RTC maintains mission time independently of the flight computer which makes sure that the
+mission clock continues uninterrupted even if the Teensy 4.1 experiences a processor reset mid-flight. This
+directly supports the competition's requirement for steady one-second-resolution mission timing and correct
+flight-state recovery after any onboard reset event.
+PARAMETER VALUE
+Model DS3231M
+Sensor Type Real-Time Clock
+Interface I²C
+Function Mission timekeeping across resets
+Quantity 1
+Table 28: Real- Time Clock (DS3231M)
+75
+Team ID: 2026-INSPACe-CAN-7USAT-025
+The onboard RTC module was tested for correct timekeeping and battery-backed time holding power cycles.
+The results of RTC are given below in the image. This confirms the RTC is correctly wired, battery-backed, and
+suitable as the CANSAT determined time source for telemetry timestamping independent of GNSS lock.
+Fig 41: RTC check
+5.12 SPI flash (7 Semi)
+Parameter Specification
+Manufacturer 7Semi
+Flash IC Winbond W25Q-series (16 Mbit / 64 Mbit / 128 Mbit variants)
+Interface Standard SPI; Dual/Quad SPI on 64/128 Mbit variants
+Max Clock Speed Up to 104 MHz (16/64 Mbit) / 133 MHz (128 Mbit)
+Operating Voltage 3.3 V (some variants down to 3.0 V)
+Erase Granularity 4 KB sector / 32 KB / 64 KB block / full-chip erase
+Mounting Solder-free breakout, standard pin headers
+Typical Use in CanSat Onboard non-volatile black-box data logging, backup to LoRa downlink
+Compatibility Arduino, Teensy, STM32, ESP32, Raspberry Pi
+Table 29: SPI flash (7 Semi)
+76
+Team ID: 2026-INSPACe-CAN-7USAT-025
+The 7Semi SPI flash breakout was tested as a crash-survivable black-box data logger by continuously streaming
+barometric telemetry such as pressure, temperature, ASL/AGL altitude, running mean, and noise spread while
+a simulated crash/power-loss event was triggered mid-log ("Sensor Read finished (Simulated Crash)"). The
+results are shown in the image given below. This confirms the SPI flash successfully preserves and recovers
+logged flight data across an unplanned reset/power-interruption event, validating it as a viable non-volatile
+backup store for flight telemetry independent of the live LoRa downlink.
+Fig 42: SPI Flash Test
+5.13 Consolidated Test Verification Matrix
+TEST PASS CRITERION STATUS
+Barometer accuracy Within ±5 m of known elevation Planned
+Barometer 600 m simulation Deploy servo fires within 100 ms Planned
+IMU shock test No sensor lock-up, FSM continues Planned
+GPS fix test ≥6 sats, 0.0001° position stability Planned
+77
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Vibration test No PCB loosening, no sensor error post-test Planned
+Power monitor validation Accurate V/I/P readback under load Planned
+Bonus sensor functional checks Correct telemetry field population Planned
+Table 30: Consolidated Test Verification Matrix
+6. ACTUATOR SUMMARY
+6.1 Control mechanism of actuator
+Actuator are used in three different places in our CANSAT. The very first application for which it is used is the
+Innovation part of Team VRITRA for extra jury points weightage. It is about the Biochemical Characterization
+of Atmospheric Bacterial Isolates. The petri dish will be closed during the fight till the ejection of CANSAT.
+This will be done with a servo attached to the lead. The mechanism and placement are shown in the image given
+below.
+Fig 43: Actuator for Petri-dish
+78
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 44: Servo Flip
+The second actuator is used for parachute bay. The drug chute will be kept above the CANSAT during the flight
+readiness and the secondary RAM air parachute will be folded properly according to the steps given in further
+sections and kept in parachute bay. At an altitude of 600 m, the servo would flip the lead to allow RAM air to
+open. It also has a spring at opposite side of servo to avoid the back flip of led. The images for the same are
+given below.
+79
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 45: Parachute Bay Actuator design
+80
+Team ID: 2026-INSPACe-CAN-7USAT-025
+The third actuators used in our CANSAT is for controlling secondary descent GPS guided RAM-air parachute.
+Two servos are attached parallelly in opposite direction. The servo test results have been performed in are shown
+below with a ground station software.
+6.2 Descent control mechanism incorporated in CAN-7USAT
+START
+Read Sensors
+IMU orientation + GPS
+position
+Compute Heading
+Error
+Off No Keep Straight
+course
+Hold servos neutral
+? Yes
+Repeat
+every Run PID Controller
+100 ms
+Calculate servo
+Left
+Turn Pull Left Line
+which
+Left servo actuates
+Right
+Pull Right Line
+Right servo
+Stabilize with Gyro
+Wheel
+Still
+LANDED
+Yes flying? No
+Fig 46: Descent Control Mechanism Actuator Loop
+81
+Team ID: 2026-INSPACe-CAN-7USAT-025
+1. Sensing and error computation
+The loop begins at START and, every cycle, executes:
+• Read Sensors data of IMU orientation and GPS and gets current heading (IMU) and position (GPS).
+• Compute Heading Error compares current heading/track against the target bearing to the landing point,
+producing the error signal that drives the control decision.
+2. Off-course decision gate
+• If No: It is kept Straight and no correction is applied and the loop proceeds directly to the stabilization
+stage.
+• If Yes: It falls through to the correction path and Run PID Controller by Calculating servo, which calculates
+the required servo command from the heading error.
+3. Differential brake actuation
+Tells about turning to which branches on the sign of the PID output:
+• If Left: Then pull the left line (left brake servo pulls down, right stays at/near trim) which is a asymmetric
+drag induces a left turn.
+• If Right: Then pull the right line (mirror case).
+4. Stabilization and termination check
+• The stabilize with Gyro Wheel happen after any steering command or after "Keep Straight" command.
+Spinning the mechanical gyro to constant RPM before secondary parachute deployment so no reaction
+torque acts during guided flight, and countering any residual yaw. If it is still flying:
+• If Yes: Then the loop returns back to Read Sensors, repeating the whole cycle at 100 ms (10 Hz),
+and matching the cadence of altitude-determination loop.
+• If No: It is dismissed and landed.
+82
+Team ID: 2026-INSPACe-CAN-7USAT-025
+7. BLOCK DIAGRAM OF ALTITUDE CONTROL LOOP AND ACTUATOR CONTROL LOOP
+7.1 Altitude Control Loop
+Start
+Initialize BMP585 Is altitude Yes Set State:
+& increasing ASCENT
+L89 GNSS ? Monitor Peak
+Sensors Altitude
+Read Barometric
+Pressure
+(BMP585)
+No
+Calculate Set State:
+Barometric DESCENT
+Altitude Primary Parachute
+(Hypsometric) Active
+Read GPS Altitude
+Altitude Set State:
+Yes
+from L89 GNSS
+≤ 600m AEROBREAK_R
+AGL? ELEASE
+Deploy RAM-Air
+Sensor Fusion:
+Baro + GPS
+Altitude
+No
+Activate PID
+Steering
+Apply Kalman (GPS-Guided
+Filter Descent)
+Altitude ≤ Yes
+& Noise
+ground
+Reduction
+level?
+Transmit Altitude
+Telemetry (LoRa 1 Set State:
+Hz) IMPACT
+No
+Activate Audio
+Beacon
+← Loop (100 ms
+cycle)
+End
+Fig 47: Altitude Control Loop
+The altitude descent control loop known as ADCL have multiple steps within it. The steps are:
+83
+Team ID: 2026-INSPACe-CAN-7USAT-025
+1. Sensor acquisition and altitude estimation:
+The loop starts at Start and initializes the two altitude sensors which are the BMP585 barometer and the L89
+GNSS module. Each 100 ms cycle then performs the process as:
+• Read Barometric Pressure (BMP585) and calculate barometric altitude, converting raw pressure to altitude
+through the standard barometric formula.
+• Read GPS Altitude from L89 GNSS independently of the barometric path.
+• Sensor data fusion of BMP585 and GPS Altitude. This further combines the two independent altitude
+values, giving idleness against single sensor failure (e.g., GPS dropout or barometer drift) and improving
+accuracy over either source alone.
+• Apply Kalman Filter & Noise [rejection] is used to smoothen the fused altitude estimate by rejecting sensor
+noise and reducing estimation lag which matters for the timing-critical events downstream (600 m release,
+ground impact).
+• Transmit Altitude Telemetry (LoRa, 1 Hz) downlinks the filtered altitude at 1 Hz regardless of flight state,
+so ground station tracking is continuous even though the decision logic runs faster (100 ms).
+• Loop (100 ms cycle) closes the sensor-acquisition loop back to the pressure read by giving a 10 Hz internal
+rate against a 1 Hz telemetry rate.
+2. Flight-state decision chain
+The filtered altitude provides three sequential decision diamonds in which each gating a distinct mission phase:
+Gate 1: Is altitude increasing?
+• If Yes: It is still ascending under boost/coast. State is set to ASCENT: Monitor Peak which then automatically
+goes to DESCENT: Primary Parachute once apogee is detected in which the ascent state itself watches for
+the peak and hands off to the descent state this is deployment trigger event from our recovery subsystem.
+• If No: The altitude is not increasing (past apogee, under descent), so control falls through to Gate 2.
+Gate 2: Altitude ≤ 600 m AGL?
+• If Yes: State is set to AEROBRAKE_RELEASE, which triggers Activate PID Steering (GPS-Guided) that
+is the software-side trigger for releasing primary parachute and enabling the guided parafoil descent under
+closed-loop GPS/PID control.
+• If No: It is still above 600 m, loop back through the "No" path to re-check on the next altitude update.
+Gate 3: Altitude ≤ ground level?
+• If Yes: The landing is detected. State is set to IMPACT: Activate Audio (locator beacon), and the state
+machine terminates at End.
+84
+Team ID: 2026-INSPACe-CAN-7USAT-025
+• If No: It is not yet at ground level and the control returns to the sensor-acquisition loop for the next 100 ms
+cycle.
+7.2 Actuators Control Loop
+Read All Evaluate
+START
+Sensors FSM State
+IMU + GPS Which
+EJECTION DESCENT AEROBREAK IMPACT
+(State 4) (State 5) (State 6) (State 7)
+Deploy Servo
+Center All
+fires
+Servos
+Gyro Wheel Bay Lid Servo
+MG90S #2
+Motor ON OPEN
+PID Steering
+Gyro Wheel
+GA12-N20 via
+Activates
+Motor OFF
+Primary chute
+deploys
+Spin-up Left Brake
+flywheel Servo Bio Gel Lid
+Servo
+Altitude
+Gyro wheel
+stabilization maintains Right Brake
+Servo
+Audio Beacon
+ON
+GPS-guided
+descent
+Loop back to Read Sensors (100 ms cycle)
+Fig 48: Actuator Control loops
+The actuator control loop tells how CAN-7USAT's flight computer changes the current FSM state into physical
+actuator commands. Running on the same 100 ms (10 Hz) cycle as the main sensor loop, the FSM evaluates its
+current state after every sensor read and branches into one of four actuator response paths which are Ejection,
+Descent, Aerobrake, and Impact.
+85
+Team ID: 2026-INSPACe-CAN-7USAT-025
+8. DETAILED DESCRIPTION OF REALIZED SUBSYSTEM
+8.1 Payload Subsystem
+Team VRITRA has included two payload elements other than the required telemetry data in our CAN-7USAT.
+One of the payloads is an imaging payload for capturing video of ground from the height of 1 KM and for
+descent/ejection documentation. The second additional payload is an innovation payload for atmospheric
+biosciences sampling. Both of this are selected to earn bonus jury weightage while remaining fully different
+from flight-critical control so that a payload fault cannot affect the primary mission.
+8.1.1 Imaging Payload (XIAO ESP32S3 Camera Module)
+The imaging payload captures video footage of two types such as one for the ejection till the CANSAT recovery
+stage and the other is for video capturing. This captured video will be saved in MicroSD card and will be later
+used for AI-based Urban planning system. It operates on an entirely independent processing path as XIAO
+Camera has its own processor as ESP32S3 which was selected over MIPI CSI-2 for real-time image acquisition.
+PARAMETER DETAIL
+Module XIAO ESP32S3 Sense
+Function Onboard video capture
+Interface MIPI CSI-2 (to ESP32-P4 companion computer)
+Offload Wi-Fi 6, post-flight
+Mission criticality Non-critical (isolated from flight control/telemetry)
+Mass 5.6 g
+Resolution 1600x1200 pixels
+Table 31: Imaging Payload (XIAO ESP32S3 Camera Module)
+Design rationale: By keeping the camera subsystem fully different from the FSM, telemetry chain, and descent
+control loop, a camera or main processor failure which is teensy 4.1, has zero impact on flight safety, telemetry
+data transfer, or descent operation.
+86
+Team ID: 2026-INSPACe-CAN-7USAT-025
+8.1.2 Innovation Payload (Biochemical Characterization of Atmospheric Bacterial Isolates)
+Team VRITRA has a unique innovation payload which is the biochemical characterization of atmospheric
+bacterial isolates that will be present during the CANSAT descent through the atmosphere. Petri dishes with
+culture media are exposed during flight and are tested after the recovery. This is to identify and characterize
+bacterial isolates collected at specific altitude.
+PARAMETER DETAIL
+Payload type Passive biological sampling (Petri plate with media)
+Mounting location Dedicated Petri dish bay within the electronics stack
+Analysis method Gram staining, biochemical test panel, carbohydrate fermentation
+Isolates characterized 5 (ATB-01 through ATB-05)
+Mission criticality Non-critical (innovation/bonus scoring element)
+Mass 10 g
+Table 32: Innovation Payload (Biochemical Characterization of Atmospheric Bacterial Isolates)
+Design rationale: The Petri dish is placed below the electronics bay housing (as shown in physical structure)
+but structurally kept different from sensitive electronics to avoid contamination risk during handling. After
+recovery, isolates undergo standard microbiological characterization such as morphology, Gram reaction,
+catalase/oxidase, carbohydrate fermentation as per the methodology and baseline results.
+8.2 Housekeeping Subsystem
+The housekeeping subsystem have the six supporting systems that keep CAN-7USAT structurally sound,
+powered, communicating, sensing, actuating, and recovering. Full design and specifications for each are
+presented in their respective sections given below.
+8.2.1 Mechanical Subsystem
+• Manufacturing approach — Shell and parachute bay are additively manufactured (3D printed) for
+complex lattice geometry, while plates and rods are machined/cut for dimensional precision at load-bearing
+interfaces.
+• Assembly & maintainability — the rod-and-plate stack allows tool-less or minimal-tool disassembly,
+enabling individual PCB layers to be pulled for testing, rework, or replacement without disturbing the rest
+of the stack.
+• Mass efficiency — the lattice/perforated shell pattern removes non-structural material to minimize weight
+while the load-bearing members (rods, plates) retain full cross-section, keeping the structure light without
+under-designing the critical path.
+• Thermal/venting consideration — the perforated shell and lattice pattern also aid passive airflow around
+internal electronics and allow clean strip-away of the parachute deployment bag without snag points.
+87
+Team ID: 2026-INSPACe-CAN-7USAT-025
+• Alignment & repeatability — the four-rod symmetric layout constrains all plates to a fixed radial position,
+ensuring consistent PCB stack alignment across builds and simplifying connector/wiring routing between
+layers.
+• Interface with recovery system — the parachute bay geometry and internal lid/spring mechanism is
+mechanically hosted at the top of this stack, so the structure directly interfaces with the release device (R1)
+and P2 deployment bag housing.
+8.2.2 Actuators
+CAN-7USAT has five actuator functions across four actuator types: dual brake-line servos for parafoil steering,
+two independent MG90S servos for bay lid and bio-gel lid release, a brushless DC motor driving the stabilization
+flywheel, and a buzzer for post-landing recovery.
+1. AGFRC A20BHM (×2) Parafoil Brake-Line Steering
+The AGFRC A20BHM is a high-voltage-compatible brushless micro servo which will be used in pairs for
+differential brake-line deflection during GPS-guided parafoil steering. Its brushless motor design (the first of its
+kind in a 12 mm-thick RC servo form factor) gives it significantly higher torque and speed than a traditional
+coreless servo of the same size, which is necessary to overcome brake-line tension under load during active
+steering corrections.
+PARAMETER VALUE
+Model AGFRC A20BHM
+Motor type Brushless
+Torque 11.4 kg-cm at 8.4 V
+Speed 0.068 sec/60° at 8.4 V
+Operating voltage 4.8–8.4 V (HV compatible)
+Gear material Steel gear, CNC aluminium case
+Weight 21 g
+Quantity 2 (left brake, right brake)
+Table 33: AGFRC A20BHM (x2) Parafoil Brake-Line Steering
+88
+Team ID: 2026-INSPACe-CAN-7USAT-025
+2. MG90S #1 Parachute Bay Lid Servo
+The first MG90S micro servo actuates the parachute bay lid latch. Its compact size and adequate torque for a
+lightweight latch mechanism make it well suited to this single-shot, low-load release function.
+PARAMETER VALUE
+Model MG90S
+Motor type Coreless DC, metal gear
+Torque 1.8 kg-cm @ 4.8 V / 2.2 kg-cm @ 6 V
+Speed 0.1 sec/60° @ 4.8 V
+Operating voltage 4.8–6 V
+Weight 13.4 g
+Quantity 1
+Table 34: MG90S #1 Parachute Bay Lid Servo
+3. MG90S #2 Bio-Gel Lid Servo
+The second MG90S servo actuates the bio-gel plate lid, exposing the Petri dish sampling surface for the
+biochemical characterization payload. This actuation is purposely sequenced into the IMPACT state, ensuring
+the sampling plate is only exposed to the atmosphere for its intended descent-through-landing collection window
+rather than throughout the entire flight.
+4. 2205 2300KV BLDC Motor — Stabilization Flywheel
+The 2205 2300KV brushless DC motor works for CAN-7USAT's reaction flywheel, spinning up during the
+EJECTION state to provide gyroscopic Altitude stabilization ahead of parachute deployment shock. Its brushless
+design offers substantially higher achievable RPM and torque density than a brushed DC motor of similar size,
+giving the flywheel a faster spin-up time and greater stored angular momentum for stabilization authority.
+PARAMETER VALUE
+89
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Model 2205, 2300KV
+Motor type Brushless (outrunner)
+KV rating 2300 KV (RPM per volt)
+Compatible cells 3–4S LiPo
+Stator dimensions 22 mm diameter × 5 mm length
+Max continuous current 32 A
+Max continuous power ~500 W
+Weight ~28–30 g
+Quantity 1
+Table 35: 2205 2300KV BLDC Motor- Stabilization Flywheel
+5. Buzzer Recovery Beacon
+The onboard buzzer serves as CAN-7USAT's audio recovery beacon, activating continuously upon reaching the
+IMPACT state to guide the ground recovery team to the landed CANSAT. It is a general-purpose magnetic
+speaker rather than a piezo element, giving it a broad audible frequency range suited to reliable detection in
+open-field recovery conditions.
+8.2.3 Communication and Data Handling Subsystem (CDH)
+The CDH subsystem is the main subsystem of CAN-7USAT which is used to collects data from every onboard
+sensor and manages telemetry transmission and onboard logging. It is built with the help of a primary flight
+computer, an independent camera and recording path, and storage layer.
+1. Primary Flight Computer (Teensy 4.1)
+PARAMETER DETAILS
+Role Central processing unit
+90
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Core ARM Cortex-M7, 600 MHz
+Interfaces 55 Digital I/O, 35 PWM, 8 UART, 3 SPI, 3 I²C
+Memory 8 MB Flash, 1 MB RAM, 4284 KB EEPROM
+Operating voltage 3.3–5 V
+Boot time 0.005 s
+Loop rate 100 ms (10 Hz) main loop, 1 Hz telemetry sub-rate
+Deployment One unit primary, one unit backup (secondary avionics board)
+Table 36: Communication and Data Handling Subsystem (CDH)
+Teensy 4.1 was chosen because of the fastest boot time and clock speed. It is the largest available memory for
+telemetry, sufficient I/O count for the full sensor/actuator connections. The footprint is small enough not to strain
+the mass budget.
+2. Onboard Data Storage
+PARAMETER DETAILS
+Role Continuous onboard backup
+Hardware SanDisk Ultra MicroSDHC, 16 GB
+Interface SPI1
+Logging rate 1 Hz, CSV format
+Purpose Recovers full mission dataset even if telemetry link is lost mid-flight
+Table 37: Onboard Data Storage
+3. Telemetry Radio (LR1121 LoRa)
+Parameter Details
+Role Bidirectional telemetry downlink and telecommand uplink
+91
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Device type Multi-band LoRa transceiver (Sub-GHz + 2.4 GHz)
+Configured mode LoRa, 865 MHz (India ISM sub-band)
+Network ID NETID/PANID set to team number — 0x98
+Transmit power +10 dBm pad / +14 dBm flight
+Receiver sensitivity ~ −130 dBm (SF9, 125 kHz)
+Fallback mode Reconfigurable to 2.4 GHz LoRa if sub-GHz band congested
+Deployment One primary unit, one backup unit (independent failover link)
+Table 38: Telemetry Radio (LR1121 LoRa)
+4. T- Antenna 865 MHz
+The RadioMaster Bandit T Antenna is a omnidirectional whip antenna selected as an alternative to the team's
+primary onboard antenna, covering the 860–930 MHz band that fully includes CAN-7USAT's 867 MHz LoRa
+telemetry frequency. It uses the same heavy-duty RG402 coaxial line and 360° swivel RP-SMA connector as
+the rest of the Bandit antenna series, in a lighter, smaller housing suited to onboard mounting.
+PARAMETER VALUE
+Model RadioMaster Bandit 915/868MHz T Antenna
+Bandwidth 860–930 MHz
+Polarisation Linear
+Radiation direction Omnidirectional
+Gain 2.7 dBi
+VSWR ≤ 1.5:1
+Connector RP-SMA
+Input impedance 50 Ω
+Cable RG402 coax, 80 mm
+Dimensions 107 × 98 mm
+Weight 14.00 g
+Table 39: T – Antenna 865 MHz
+92
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 49: Radio Master T-Anteena
+93
+Team ID: 2026-INSPACe-CAN-7USAT-025
+8.2.4 Electrical Power Subsystem
+The EPS helps us with stable, protected power to every onboard subsystem by converting raw battery voltage
+into regulated rails while providing real-time health monitoring and multi-layer protection against overcharge,
+over-discharge, and short-circuit conditions.
+Fig 50: Power Subsytem
+1. Molicel INR-21700-P50B Battery Pack
+PARAMETER DETAILS
+Role Primary energy source for the entire CAN-7USAT power system
+Configuration 3 × Molicel INR-21700-P50B cells (3S)
+Nominal voltage 10.8 V
+Fully charged voltage 12.6 V
+Capacity 5000 mAh
+Total energy 54 Wh (3 × 18 Wh)
+Usable energy (80% DoD) ~43.2 Wh
+Deployment Single pack, feeding VBAT rail
+Table 40: Molicel INR-21700-P50B Battery Pack
+94
+Team ID: 2026-INSPACe-CAN-7USAT-025
+2. Battery Protection (3S 40A Li-ion BMS)
+PARAMETER DETAILS
+Role Safeguards the battery pack during charge and discharge operation
+Protection functions Overcharge, over-discharge, overcurrent, short-circuit
+Current rating 40 A
+Additional feature Built-in cell balancing for extended battery life
+Interface In line with battery pack, upstream of power distribution
+Table 41: Battery Protection (3S 40A Li-ion BMS)
+3. 5V Power Regulation (AP64500 Buck Converter-7Semi)
+PARAMETER DETAILS
+Role Converts battery voltage to a stable 5V rail
+Input range 7–40 V
+Output 5.0 V, up to 5 A
+Efficiency Up to 95%
+Consumers powered Teensy 4.1, servos, XIAO ESP32S3 camera module, gyro motor driver
+Interface Direct 5V power rail (5V_MAIN)
+Table 42: 5V Power Regulation (AP64500 Buck Converter – 7Semi)
+95
+Team ID: 2026-INSPACe-CAN-7USAT-025
+4. 3.3V Power Regulation (AP62301 Buck Converter-7Semi)
+PARAMETER DETAILS
+Role Converts battery voltage to a stable 3.3V rail
+Output 3.3 V, up to 2 A
+Consumers powered LR1121, BMP585, ICM-20948, INA226, DS3231M RTC, L89 GPS
+Interface Direct 3.3V power rail (3V3_MAIN)
+Advantage over linear regulation Higher efficiency than AMS1117-type LDOs
+Table 43: 3.3V Power Regulation (AP62301 buck Converter -7Semi)
+5. Power-On Control (External Switch & LED Indicator)
+PARAMETER DETAILS
+Role Manual power control and visual power-state confirmation
+Switch type External SPST switch (SW1)
+Indicator LED (illuminates when supply is active, off when no current flows)
+Requirement External power switch with visual on/off indication
+satisfied
+Table 44: Power-On Control (External Switch & LED Indicator)
+6. Power Budget
+Component Voltag Current Maximum Duty Average Power Source
+e Power Cycle (%)
+Teensy 4.1 5 0.18 1.8 100 1.8 Existing
+96
+Team ID: 2026-INSPACe-CAN-7USAT-025
+ESP32-S3 5 0.18 1.8 70 1.26 Existing
+LR1121 LoRa (TX) 3.3 0.055 0.1815 20 0.0363 Existing
+L89 GNSS 3.318 0.032 0.106176 100 0.106176 Existing
+ICM-20948 IMU 3.322 0.0045 0.029898 100 0.029898 Existing
+SCD41 CO2 5 0.018 0.09 100 0.09 Existing
+AS3935 Lightning 3.3 0.0001 0.00033 100 0.00033 Datasheet
+AS7343 Spectral 3.3 0.0x98 0.00825 100 0.00825 Datasheet
+HDC3020 3.3 0.0008 0.00264 100 0.00264 Datasheet
+Temp/Humidity
+ML8511 UV 3.3 0.0003 0.00099 100 0.00099 Existing
+MQ131 Ozone 5 0.15 0.75 50 0.375 Existing
+BMV080 PM 3.3 0.018 0.0594 100 0.0594 Existing
+TPL5010 Timer 2.5 0.00000 8.75E-08 100 8.75E-08 Datasheet
+0035
+W25Q64 Flash 3.3 0.025 0.0825 20 0.0165 Datasheet
+INA226 3.3 0.0012 0.00396 100 0.00396 Existing
+SN74LV4052A MUX 3.3 0.00008 0.000264 100 0.000264 Datasheet
+DS3231 RTC 3.3 0.00011 0.000363 100 0.000363 Datasheet
+Hobbywing XRotor 10.8 0.1 1.08 30 0.324 Datasheet
+40A ESC
+2205 2300KV BLDC 10.8 4 43.2 30 12.96 Datasheet
+Motor
+AGFRC A20BHM 7.4 1.5 11.1 20 2.22 Datasheet
+Servo #1
+AGFRC A20BHM 7.4 1.5 11.1 20 2.22 Datasheet
+Servo #2
+Teensy 4.0 (DCS) 5 0.08 0.4 100 0.4 Existing
+BMP585 3.3 0.001 0.0099 100 0.0099
+7.4V BEC 7.4 0.02 0.296 100 0.296 Existing
+7Semi AP62301 Buck 5 0.02 0.2 100 0.2 Existing
+3.3V 2A
+7Semi AP64500 Buck 10.8 0.03 0.648 100 0.648 Estimate
+5V 5A
+Total 72.9501709
+Maximum
+Power
+97
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Total 23.06797109
+Average
+Power
+Battery Capacity 5000
+(mAh)
+Battery Voltage (V) 10.8
+Battery Energy (Wh) 54
+Estimated Endurance 2.341
+(Hours)
+Table 45: Power Budget
+8.2.5 Sensor Subsystem
+The sensor subsystem provides CAN-7USAT with all mandatory flight-critical measurements such as altitude,
+orientation, position, and power state. Additionally, Team VRITRA have added five-sensor bonus
+environmental payload for atmospheric characterization during descent.
+1. Sensor Bus Allocation
+BUS SENSORS ON BUS
+I2C0 BMP585, DS3231M RTC, SCD41, SEN0290, BMV080
+Backup I2C0 ICM-20948
+UART1 L89HA GNSS
+Analog GYML8511, MQ131
+SPI (shared with LR1121/SD) LSM6DSO32
+Table 46: Sensor Bus Allocation
+2. Telemetry Field Mapping
+SR NO. TM PARAMETER SENSOR FUNCTION RESOLUT
+ION/
+FORMAT
+1. <TEAM ID> - Team Name 2026-IN-
+SPACeCA
+N-7USAT-
+0x98
+2. <TIME STAMPING> DS3231M Time since the initial power Seconds
+RTC
+3. <PACKET COUNT> EEPROM Count of transmitted packets
+counter
+98
+Team ID: 2026-INSPACe-CAN-7USAT-025
+4. <ALTITUDE> BMP585 Altitude in units of meters and 0.1 meters
+must be relative to ground
+5. <PRESSURE> BMP585 Measurement of atmospheric 1 pascal
+pressure
+6. <TEMP> BMP585 Temperature in Celsius 0.1 oC
+7. <VOLTAGE> INA226 Voltage of the CAN-7USAT 0.01 Volts
+power bus
+8. <GNSS TIME> L89_GPS Time generated by the GNSS Seconds
+receiver
+9. <GNSS LATITUDE> L89_GPS Latitude generated by the GNSS 0.0001
+receiver degrees
+10. <GNSS LONGITUDE> L89_GPS Longitude generated by the GNSS 0.0001
+receiver degrees
+11. <GNSS ALTITUDE> L89_GPS Altitude generated by the GNSS 0.1 meters
+receiver
+12. <GNSS SATS> L89_GPS GNSS satellites connected integer
+number
+13. <ACCELEROMETER LSM6DSO32 Data received from the gyroscopic m/s2
+DATA> sensor
+14. <GYRO SPIN RATE> Spin rate of Mechanical Gyro wrt. deg/s
+CAN-7USAT
+15. <FLIGHT SOFTWARE Teensy FSM Operating state of the software (boot, idle,
+STATE> launch
+detect,
+deploy,
+etc.)
+16. < AIR QUALITY BMV080 Measures fine particulate matter PM1.0,
+SENSING> concentration PM2.5, and
+PM 10
+17. <GRAVITY SEN0290 Measures lightning distance, 21-bit
+LIGHTNING SENSOR> intensity, and frequency resolution
+18. <UV LIGHT SENSOR GYML8511 Detects ultraviolet light in the 280 peak
+MODULE> nm – 390 nm wavelength sensitivity
+at 365 nm
+19. <OZONE GAS MQ131 Detects Ozone particles 10 – 1000
+SENSOR> ppm
+20. <CARBON DIOXIDE SCD41 Measure carbon dioxide (CO₂), 400 – 5000
+CONCENTRATION> temperature, and humidity ppm
+Table 47: Telemetry Field Mapping
+99
+Team ID: 2026-INSPACe-CAN-7USAT-025
+8.2.6 Parachute deployment and recovery
+Stage 1 Stage 2
+Stage 3 Stage 4
+Stage 5 Stage 6
+100
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Stage 7 Stage 8
+Stage 9
+Above is the step-by-step process of folding a RAM air parachute. This folding method is done for proper
+adjustment of parachute in parachute bay and to avoid entanglement of cords during deployment.
+This parachute testing was done from a heighted building of around 120 feet. According to the test results, the
+RAM air parachute has a proper shape and nodes attachment. It carried 840 g of dead weight and the parachute.
+It had proper opening without any entanglement with in the codes.
+Improvement done after testing: Length of the cord is reduced according to the calculations.
+Fig 51: Parachute dead weight
+101
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Stage 1 Stage 2
+Stage 3 Stage 4
+Stage 5 Stage 6
+102
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Above given is the step-by-step guid of folding out primary parachute.
+9. CAN-7USAT ALGORITHM, FINAL TEST RESULTS, ALONG WITH ANY DEVIATIONS
+No No
+POWER
+HW INIT SELF
+Yes All
+TEST
+CMD
+3S OLiN-i on Sensors, TAESllT Pass? CMaliObDraEte TX_ON?
+LoRa, SD subsystems sensors
+Yes
+No
+Apogee
+ASCENTY
+Yes Launch LAUNCH
+detect? Log &transmit detect? ArmePdA, wDa iting
+es
+No
+Yes
+No
+Yes
+ROCKET
+DEPLOY DESCENT Alt < Y PARAFOIL PID STEER
+SDepEaPrLatOioYn PrCimHaUrTy Ed rag ~20 m/s 600m? e RAM-air GPS to target
+deploy
+Yes
+IMPACT
+Buzzer and Landing
+GPS Yes ? No
+Fig 52: CANSAT Algorithm
+103
+Team ID: 2026-INSPACe-CAN-7USAT-025
+10. TTLC LINK MARGIN REALIZED
+Given Parameters according to the datasheet and instruction manual:
+TX Power = 22 dBm
+Onboard Antenna Gain = 2.7 dBi
+Ground Antenna Gain = 2.7 dBi
+Frequency (f) = 867 MHz
+Distance (d) = 1 km
+Spreading Factor = SF10
+Bandwidth = 125 kHz
+Receiver Sensitivity at SF10
+Sensitivity at SF7, BW 125 kHz = −127 dBm
+Sensitivity at SF12, BW 125 kHz = −141 dBm
+−141−(−127)
+Sensitivity per SF step =
+(12−7)
+Sensitivity per SF step = −14 / 5 = −2.8 dB per step
+S_RX (SF10) = S_RX (SF7) + (SF10 − SF7) × (−2.8)
+S_RX (SF10) = −127 + (10 − 7) × (−2.8)
+S_RX (SF10) = −127 − 8.4
+S_RX = −135.4 dBm
+Free Space Path Loss (FSPL)
+FSPL = 20 𝑙𝑜𝑔₁₀(d) + 20 𝑙𝑜𝑔₁₀(f) + 32.44
+FSPL = 20 𝑙𝑜𝑔₁₀(1) + 20 𝑙𝑜𝑔₁₀(867) + 32.44
+FSPL = 0 + 58.76 + 32.44
+FSPL = 91.2 dB
+Received Power
+104
+Team ID: 2026-INSPACe-CAN-7USAT-025
+P_RX = P_TX + G_TX + G_RX − FSPL
+P_RX = 22 + 2.7 + 2.7 − 91.2
+P_RX = −63.8 dBm
+Link Margin
+Link Margin = P_RX − S_RX
+Link Margin = −63.8 − (−135.4)
+Link Margin = 71.6 dB
+Results: The calculated received signal strength of around −63.8 dBm is higher than the LR1121 receiver
+sensitivity of −135.4 dBm at SF10, 125 kHz bandwidth. This results in an estimated link margin of 71.6 dB is
+confirming that the telemetry system holds large signal headroom for proper communication between CAN-
+7USAT and the ground station over the full 1 km design range.
+10.1 Radio Interference Mitigation Plan:
+• NETID/PANID unique to team number (provided as team number-25) prevents packet collision with other
+teams' LR1121 units. (PANID- 0x98)
+• Pre-launch RF checks will be performed using the ground station receiver to verify signal quality and
+identify nearby interference sources before launch.
+• Critical telemetry packets will include packet counters and status information to help detect packet loss
+during communication.
+• Ground station T-antenna provides better gain, reducing off-axis interference
+• LR1121 LoRa SF10 spreading factor is orthogonal to SF7/SF8.
+105
+Team ID: 2026-INSPACe-CAN-7USAT-025
+11. GROUND STATION FINAL TEST RESULTS, ALONG WITH ANY DEVIATIONS
+The VRITRA Ground Control Station was tested end-to-end against a simulated flight by performing all six
+operational tabs while decoding live telemetry at 3.8 Hz over the 867 MHz downlink. The Flight tab confirms
+correct 3D CANSAT visualization, real-time Altitude /heading display, GPS fix, and full flight-sequence state
+tracking. Across all tabs the GCS correctly reflected realistic degraded-link without crashing or losing packet
+sync, confirming the ground software is stable and ready to support live flight operations.
+Fig 53: Communication Subsystem
+106
+Team ID: 2026-INSPACe-CAN-7USAT-025
+107
+Team ID: 2026-INSPACe-CAN-7USAT-025
+Fig 54: Ground Station Test
+108
+Team ID: 2026-INSPACe-CAN-7USAT-025
+12. MISSION OPERATIONS & ANALYSIS
+This section defines how Team VRITRA is going to operates CAN-7USAT across the mission timeline from
+ground preparation through flight execution to recovery.
+Phase Duration (approx.) Primary Operator Role
+Ground station setup 30–45 min GCS lead + antenna crew
+Pre-flight checkout & calibration 20–30 min Avionics lead
+Pad wait Up to 2 hours Full team, telemetry monitoring
+Powered ascent ~15–30 s Passive monitoring
+Primary descent ~50–70 s (est.) Telemetry monitoring
+Secondary guided descent ~120–200 s (est.) Telemetry monitoring + recovery team staging
+Recovery Beacon-guided Recovery team
+Table 48: Mission Operations & Analysis
+12.1 Launch Day Sequence
+1. Arrive at launch site ≥ 3 hours before launch slot
+2. Set up ground station: laptop, LR1121 receiver, and antenna
+3. Power on GS laptop — open Python GS software, verify LR1121 receiver detected on COM port
+4. Install CANSAT batteries — verify voltage reading on INA226 (≥ 8.0 V), close battery hatch
+5. Power on CANSAT via external switch — green LED illuminates, GS software shows BOOT packets
+6. Send CMD_CALIBRATE from GS — CANSAT zeros baro altitude, gyro offsets, accel offsets at pad level
+7. Verify TEST_MODE telemetry: all sensors reading correctly, GPS fix acquired (≥ 6 sats)
+8. Record launch pad GPS coordinates as target waypoint for parafoil PID (CMD_SET_WAYPOINT)
+9. Fold primary chute in Z-fold, secure against outer body with Velcro tab per packing procedure
+10. Pack parafoil in deployment bag, insert pin, place in Parachute Bay
+11. Hand CANSAT to launch crew for placement in rocket payload bay
+12. Send CMD_TX_ON from GS — CANSAT transitions to LAUNCH_PAD, confirms telemetry streaming
+13. Verify GS CSV is logging: Flight_[TEAM_ID].csv row count incrementing at 1 Hz
+14. Launch — monitor all TM fields in real-time on GS dashboard
+15. At AEROBREAK_RELEASE (state 6): observe GPS track converging toward launch pad waypoint
+16. At IMPACT (state 7): note final GPS position, move to recovery with audio beacon guidance
+17. Retrieve CANSAT — download full CSV and video from ESP32-P4.
+109
+Team ID: 2026-INSPACe-CAN-7USAT-025
+13. PRE-FLIGHT REQUIREMENT-CHECK ANALYSIS
+Before CAN-7USAT is cleared for integration into the launch vehicle, every mandatory competition requirement
+is checked against the as-built system through a defined verification method such as analysis, test, inspection,
+or demonstration.
+Sr. Category Requirement Status
+1 Structural No sharp edges on container body Checked
+2 Structural Fluorescent body color + Indian flag Checked
+3 Structural No use of rocket airframe as CanSat structure Checked
+4 Structural Team details in English, Hindi, and regional language Checked
+5 Structural Electronics enclosed/shielded (sensors excepted) Checked
+6 Structural Circuit boards hard-mounted (standoffs/screws) Checked
+7 Power External switch with LED and sound indicator Tested
+8 Power Battery type compliance (Li-ion) Checked
+9 Power Battery accessible/removable in <1 minute Planned
+10 Power No spring-contact battery connections Checked
+11 Descent & Primary descent parachute Tested
+Recovery
+12 Descent & Primary chute deploys immediately post-ejection Checked
+Recovery
+13 Descent & Primary chute attached to body, no separate ejection mechanism Planned
+Recovery
+14 Descent & No pyrotechnic/explosive/hazardous chemical deployment Checked
+Recovery
+15 Descent & Gyroscopic wheel stabilization during descent Planned
+Recovery
+16 Communication Radio XBEE or LoRa Tested
+17 Communication NETID/PANID set to team number Tested
+18 Communication No broadcast mode used Checked
+19 Communication No interference with other teams' radios Checked
+20 Communication RF-commanded telemetry start/stop capability Checked
+21 Communication Radio interference mitigation plan presented Checked
+22 Ground Station Own ground station developed by team Tested
+23 Ground Station Real-time telemetry display, SI units Tested
+24 Ground Station GS commands CanSat to start telemetry Tested
+110
+Team ID: 2026-INSPACe-CAN-7USAT-025
+25 Ground Station Elevated ground antenna Tested
+26 Ground Station CanSat does not transmit until commanded Tested
+27 Ground Station Ground calibration command (gyro/baro/accel zero) Checked
+28 Ground Station CSV generation, mission time resolution Tested
+29 Ground Station Mission clock/state persists across processor reset Tested
+30 Ground Station Portable ground station (<5 min setup) Checked
+31 Flight Software FSM state maintained and telemetered Checked
+32 Flight Software Correct state determination after processor reset Tested
+33 Flight Software All states described in review presentation Checked
+34 Telemetry Full mission telemetry saved as CSV on GS Tested
+35 Telemetry Onboard data storage utilized Tested
+Table 49: Pre-Flight Requirement-Check Analysis
+111
+Team ID: 2026-INSPACe-CAN-7USAT-025
+14. LOGISTICS AND TRANSPORTATION
+14.1 CAN-7USAT transportation and handling
+CAN-7USAT is designed to be transported and handled with minimum risk to its structural, electronic, and
+descent-system integrity between Lovely Professional University and the competition launch site in
+khushinagar, UP. The following handling protocol is followed by Team VRITRA:
+14.1.1 Pre-Transport Preparation
+• Battery will be disconnected/powered off via the external switch prior to transport, as per the competition's
+power-safety requirement.
+• Primary parachute and RAM-air parafoil will be packed into their respective bays and will be opened only
+at the launch site immediately before integration to avoid canopy compression damage or line tangling over
+an extended packed duration.
+• The CANSAT will be placed in a custom-fitted protective transport case with foam cutouts matching its
+dimensions, cushioning the structure against shock and vibration during vehicle transport.
+• All exposed sensor apertures (GPS antenna, air-quality sensor inlets, UV sensor window) will be covered
+with protective caps/tape during transit and removed only during final pre-launch checkout.
+• Spare batteries, tools, and the Petri dish culture media for the biochemical payload will be transported
+separately in a dedicated accessory case to avoid contamination or accidental damage to the primary
+structure.
+14.1.2 Transport Method
+CAN-7USAT and the ground station equipment are transported by road from LPU to the launch site by team
+members and mentors, using the protective case described above secured against movement in the vehicle.
+15. CAN-7USAT READY TO LAUNCH AND FINAL COMMENTS
+CAN-7USAT balances competition mandatory consistency such as redundant avionics, dual-confirmed
+deployment triggers, conservative structural margins and meaningful innovation in its atmospheric biosciences
+payload and NavIC-enabled navigation. With outstanding verification items completed, Team VRITRA is
+confident in CAN-7USAT's readiness to proceed toward full integrated testing and flight.
+112
+Team ID: 2026-INSPACe-CAN-7USAT-025
+16. CONCLUSION
+Team VRITRA's CAN-7USAT presents a Critical Design Review that carries forward and matures every design
+commitment made at PDR into a fabricated, analytically verified, and largely bench-tested flight vehicle. The
+two-stage descent architecture of a drag-deployed primary parachute followed by a GPS-guided RAM-air
+parafoil with dual-axis brake-line steering meets all mandatory descent-rate and activation-altitude requirements
+with demonstrated margin, while the Teensy 4.1 avionics architecture, dual LR1121 telemetry links, and dual-
+confirmed altitude triggers reflect a design cantered rather than single points of failure.
+The communication link comes as 71.6 dB margin at the full 1 km design range even under the competition-
+specified 867 MHz/SF10 configuration. Beyond mandatory compliance, CAN-7USAT differentiates itself
+through its innovation payload of biochemical characterization of atmospheric bacterial isolates collected during
+descent and also a five-sensor bonus environmental suite and NavIC-enabled dual-band GNSS, reflecting the
+team's intent to contribute genuine atmospheric science value beyond the competition's baseline mission profile.
+A small set of verification items such as full-scale vibration testing, field RF range confirmation, and power
+budget revalidation remain open ahead of the Flight Readiness Review. Team VRITRA views these not as
+design uncertainties but as the final confirmatory steps of a design that has already been carried through
+structural analysis, FEA simulation, link budget calculation, and subsystem-level bench testing.
+With eight team members contributing across aerospace, electronics, and robotics disciplines under faculty and
+mentor guidance from Lovely Professional University, Team VRITRA submits this Critical Design Review
+confident that CAN-7USAT is on track to meet every mission requirement of the IN-SPACe CAN-7USAT India
+Student Competition 2026, and looks forward to demonstrating its performance at launch.
+113

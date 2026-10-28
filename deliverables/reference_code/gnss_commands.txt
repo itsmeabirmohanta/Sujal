@@ -1,0 +1,92 @@
+GNSS GROUND CONFIGURATION TRANSACTION CHECKLIST - NOT AN AUTOMATIC SCRIPT
+Every line ends with CR LF. Send one command, wait for ACK, read back, then proceed.
+Confirm installed firmware compatibility. Never reconfigure the shared receiver in flight.
+
+$PQTMVERNO*58
+  expect: PQTMVERNO response
+  purpose: Identify; no PAIR001 assumed
+$PAIR067*3B
+  expect: $PAIR001,067,0*3A
+  purpose: Query constellation profile
+$PAIR050,1000*12
+  expect: $PAIR001,050,0*3E
+  purpose: Configure at 1 Hz
+$PAIR066,1,1,1,1,1,1*3A
+  expect: $PAIR001,066,0*3B
+  purpose: All-six trial, require ACK and fix test
+$PAIR070,0*21
+  expect: $PAIR001,070,0*3C
+  purpose: Disable static hold
+$PAIR072,10*12
+  expect: $PAIR001,072,0*3E
+  purpose: 10 degree elevation mask trial
+$PAIR410,1*22
+  expect: $PAIR001,410,0*3E
+  purpose: SBAS search
+$PAIR400,2*20
+  expect: $PAIR001,400,0*3F
+  purpose: SBAS correction source
+$PAIR062,0,1*3F
+  expect: $PAIR001,062,0*3F
+  purpose: GGA
+$PAIR062,1,0*3F
+  expect: $PAIR001,062,0*3F
+  purpose: disable GLL
+$PAIR062,2,1*3D
+  expect: $PAIR001,062,0*3F
+  purpose: GSA
+$PAIR062,3,5*38
+  expect: $PAIR001,062,0*3F
+  purpose: sparse GSV
+$PAIR062,4,1*3B
+  expect: $PAIR001,062,0*3F
+  purpose: RMC
+$PAIR062,5,0*3B
+  expect: $PAIR001,062,0*3F
+  purpose: disable VTG
+$PAIR062,6,0*38
+  expect: $PAIR001,062,0*3F
+  purpose: disable ZDA
+$PAIR062,7,0*39
+  expect: $PAIR001,062,0*3F
+  purpose: disable GRS
+$PAIR062,8,1*37
+  expect: $PAIR001,062,0*3F
+  purpose: GST if supported
+$PAIR864,0,0,115200*1B
+  expect: $PAIR001,864,0*31
+  purpose: Save/reboot before baud takes effect; collect ACK at prior rate
+$PAIR513*3D
+  expect: $PAIR001,513,0*3C
+  purpose: Save changed settings at 1 Hz
+$PAIR050,200*21
+  expect: $PAIR001,050,0*3E
+  purpose: 5 Hz trial; verify measured epoch cadence
+$PAIR003*39
+  expect: $PAIR001,003,0*38
+  purpose: Stop GNSS before high-rate save
+$PAIR513*3D
+  expect: $PAIR001,513,0*3C
+  purpose: Save high-rate settings while GNSS stopped
+$PAIR002*38
+  expect: $PAIR001,002,0*39
+  purpose: Restart GNSS; verify measured rate
+
+QUERY/RECOVERY COMMANDS - DELIBERATE GROUND USE ONLY
+$PAIR051*3E
+$PAIR063,-1*0F
+$PAIR067*3B
+$PAIR071*3C
+$PAIR073*3E
+$PAIR401*3F
+$PAIR411*3E
+$PAIR865,0,0*31
+$PAIR004*3E
+$PAIR005*3F
+$PAIR006*3C
+$PAIR007*3D
+$PAIR511*3F
+$PAIR490,1*2A
+$PAIR074,1*24
+$PAIR075*38
+$PAIR391,1*2C

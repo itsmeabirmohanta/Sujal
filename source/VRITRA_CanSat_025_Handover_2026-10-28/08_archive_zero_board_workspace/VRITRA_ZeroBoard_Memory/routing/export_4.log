@@ -1,0 +1,3 @@
+[4] D:\linux\Software\Claude\VRITRA_ZeroBoard_Memory\etch_pcb\BOARD4_PARACHUTE\BOARD4_PARACHUTE.kicad_pcb  118x83 mm  nets=25 track-runs=162 jumpers=8
+BOARD4_PARACHUTE: DRC violations=1 unconnected=0 pad-net mismatches=0 missing pads=0 F.Cu tracks=0  FAIL
+   ! starved_thermal - Thermal relief connection to zone incomplete (layer B.Cu; zone min spoke count 2; actual 1) ['Zone [GND] on B.Cu, priority 0', 'PTH pad 1 [GND] of J15']

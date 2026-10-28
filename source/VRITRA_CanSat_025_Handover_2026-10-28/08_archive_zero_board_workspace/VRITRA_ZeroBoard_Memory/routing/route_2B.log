@@ -1,0 +1,4 @@
+log [23, 22, 28, 21, 21, 21, 21, 30, 27, 28, 24, 21, 21, 21, 22, 20, 17, 17, 17, 17]
+failed ['TX8_J', 'RX8_J', 'CAM_TX_J', 'RX3', 'SCL', 'CAM_COM_RX', '+3V3_B', '+5V_LOGIC', 'GND']
+problems 6 ['+3V3_B: two link ends on one point', "point (38.68, 58.49) used by ['RX8_J', 'TX8_J']", "point (29.790000000000003, 72.46000000000001) used by ['CAM_COM_RX', 'CAM_TX_J']", "point (70.43, 85.16000000000001) used by ['+5V_LOGIC', 'RX3']", "point (99.64000000000001, 72.46000000000001) used by ['GND', 'SCL']", "point (104.72, 66.11) used by ['+3V3_B', 'GND']"]
+links 31
