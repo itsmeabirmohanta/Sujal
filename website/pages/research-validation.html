@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research validation / VRITRA Research desk</title><link rel="stylesheet" href="../reader.css"></head>
+<body><header class="reader-head"><a class="brand" href="../index.html#library"><span class="brand-mark">V</span><span><strong>VRITRA</strong><small>Research desk · 025</small></span></a><a class="back-link" href="../index.html#library">← Back to library</a></header>
+<main class="reader-shell"><div class="reader-kicker">VRITRA RESEARCH DESK / RUNNER</div><div class="reader-title"><h1>Research validation</h1><a class="source-link" href="../../research/validate_deliverables.py">Open source file ↗</a></div><article><pre><code>from pathlib import Path
+import csv, hashlib, json, re, subprocess, zipfile
+from bs4 import BeautifulSoup
+import markdown
+from urllib.parse import unquote
+
+out=Path(&#x27;deliverables&#x27;)
+report=(out/&#x27;VRITRA_ENGINEERING_REPORT.md&#x27;).read_text(encoding=&#x27;utf-8&#x27;)
+checks=[]
+def check(name,ok):
+    checks.append({&#x27;check&#x27;:name,&#x27;passed&#x27;:bool(ok)})
+    if not ok:raise AssertionError(name)
+
+check(&#x27;all 15 principal report sections&#x27;,all(f&#x27;## {i}.&#x27; in report for i in range(1,16)))
+check(&#x27;all requested priority tiers&#x27;,all(x in report for x in [&#x27;### A —&#x27;,&#x27;### B —&#x27;,&#x27;### C —&#x27;]))
+check(&#x27;explicit team clarification&#x27;,all(x in report for x in [&#x27;drogue deploys immediately&#x27;,&#x27;600 ±10 m&#x27;]))
+check(&#x27;flight qualification boundary&#x27;,&#x27;not a certified or fully compiled firmware image&#x27; in report)
+with (out/&#x27;requirements.csv&#x27;).open(encoding=&#x27;utf-8-sig&#x27;,newline=&#x27;&#x27;) as f: rows=list(csv.DictReader(f))
+check(&#x27;20 traced requirements&#x27;,len(rows)==20 and len({r[&#x27;Requirement_ID&#x27;] for r in rows})==20)
+check(&#x27;hardware results not invented&#x27;,all(r[&#x27;Status&#x27;].startswith(&#x27;PENDING&#x27;) for r in rows))
+with (out/&#x27;PROMPT_COVERAGE.csv&#x27;).open(encoding=&#x27;utf-8&#x27;,newline=&#x27;&#x27;) as f: coverage=list(csv.DictReader(f))
+check(&#x27;45 mapped prompt outputs&#x27;,len(coverage)==45 and len({r[&#x27;ID&#x27;] for r in coverage})==45)
+check(&#x27;coverage evidence limitations explicit&#x27;,all(r[&#x27;Status&#x27;] in {&#x27;DELIVERED_DESIGN&#x27;,&#x27;EVIDENCE_LIMITED&#x27;} and r[&#x27;Remaining&#x27;] for r in coverage))
+check(&#x27;coverage artifacts exist&#x27;,all((out/r[&#x27;Artifact&#x27;]).is_file() for r in coverage))
+with (out/&#x27;numeric_traceability.csv&#x27;).open(encoding=&#x27;utf-8&#x27;,newline=&#x27;&#x27;) as f: numeric=list(csv.DictReader(f))
+check(&#x27;32 numeric evidence families&#x27;,len(numeric)==32 and all(r[&#x27;Evidence_class&#x27;] and r[&#x27;Source_section_or_derivation&#x27;] for r in numeric))
+check(&#x27;INA260 configuration restored&#x27;,&#x27;0x6527&#x27; in report and &#x27;1.25 mA&#x27; in report)
+check(&#x27;version2 wire budget reconciled&#x27;,&#x27;maximum payload64 bytes&#x27; in report and &#x27;wire92 bytes&#x27; in report)
+calc=json.loads((out/&#x27;calculations.json&#x27;).read_text(encoding=&#x27;utf-8&#x27;))
+check(&#x27;selected radio schedule matches report&#x27;,calc[&#x27;one_hz_schedule_downlink_bytes&#x27;]==130 and calc[&#x27;one_hz_schedule_uplink_bytes&#x27;]==32 and calc[&#x27;one_hz_schedule_ms&#x27;]&lt;=1000)
+soup=BeautifulSoup((out/&#x27;VRITRA_ENGINEERING_REPORT.html&#x27;).read_text(encoding=&#x27;utf-8&#x27;),&#x27;html.parser&#x27;)
+check(&#x27;HTML tables and code rendered&#x27;,len(soup.find_all(&#x27;table&#x27;))&gt;=15 and len(soup.find_all(&#x27;pre&#x27;))&gt;=8)
+missing=[]
+for a in soup.find_all(&#x27;a&#x27;,href=True):
+    h=a[&#x27;href&#x27;]
+    if h.startswith((&#x27;http:&#x27;,&#x27;https:&#x27;,&#x27;#&#x27;,&#x27;mailto:&#x27;)):continue
+    target=(out/h.split(&#x27;#&#x27;)[0]).resolve()
+    if not target.exists():missing.append(h)
+check(&#x27;report local links resolve&#x27;,not missing)
+for p in [Path(&#x27;README.md&#x27;),*out.rglob(&#x27;*.md&#x27;)]:
+    html=markdown.markdown(p.read_text(encoding=&#x27;utf-8&#x27;),extensions=[&#x27;tables&#x27;,&#x27;fenced_code&#x27;])
+    for a in BeautifulSoup(html,&#x27;html.parser&#x27;).find_all(&#x27;a&#x27;,href=True):
+        h=a[&#x27;href&#x27;]
+        if h.startswith((&#x27;http:&#x27;,&#x27;https:&#x27;,&#x27;#&#x27;,&#x27;mailto:&#x27;)):continue
+        if not (p.parent/unquote(h.split(&#x27;#&#x27;)[0])).exists():missing.append(p.as_posix()+&#x27;: &#x27;+h)
+check(&#x27;all handoff Markdown links resolve&#x27;,not missing)
+manifest=json.loads((out/&#x27;HANDOFF_SHA256.json&#x27;).read_text(encoding=&#x27;utf-8&#x27;))
+check(&#x27;handoff hashes match&#x27;,all(hashlib.sha256((out/r[&#x27;path&#x27;]).read_bytes()).hexdigest()==r[&#x27;sha256&#x27;] for r in manifest))
+with zipfile.ZipFile(out/&#x27;VRITRA_RESEARCH_HANDOFF.zip&#x27;) as z:
+    check(&#x27;ZIP integrity&#x27;,z.testzip() is None)
+    check(&#x27;no third-party downloads or binaries in shareable ZIP&#x27;,all(not n.endswith((&#x27;.exe&#x27;,&#x27;.pyc&#x27;)) and not n.startswith((&#x27;source/&#x27;,&#x27;research/&#x27;)) for n in z.namelist()))
+check(&#x27;no placeholder TODOs&#x27;,not re.search(r&#x27;\b(TODO|TBD|PLACEHOLDER)\b&#x27;,report))
+print(json.dumps({&#x27;passed&#x27;:len(checks),&#x27;checks&#x27;:checks,&#x27;missing_local_links&#x27;:missing},indent=2))
+Path(&#x27;research/deliverable_validation.json&#x27;).write_text(json.dumps(checks,indent=2)+&#x27;\n&#x27;,encoding=&#x27;utf-8&#x27;)
+</code></pre></article></main>
+<footer><span>CAN-7USAT-025 · REVIEW 01</span><a href="../index.html#library">Research library ↑</a></footer></body></html>

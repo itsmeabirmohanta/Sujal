@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Action plan / VRITRA Research desk</title><link rel="stylesheet" href="../reader.css"></head>
+<body><header class="reader-head"><a class="brand" href="../index.html#library"><span class="brand-mark">V</span><span><strong>VRITRA</strong><small>Research desk · 025</small></span></a><a class="back-link" href="../index.html#library">← Back to library</a></header>
+<main class="reader-shell"><div class="reader-kicker">VRITRA RESEARCH DESK / NEXT</div><div class="reader-title"><h1>Action plan</h1><a class="source-link" href="../../deliverables/ACTION_PLAN.md">Open source file ↗</a></div><article><h1 id="three-day-action-plan">Three-day action plan</h1>
+<p>Generated from the <a href="VRITRA_ENGINEERING_REPORT.md">canonical engineering report</a>. All hardware results remain pending.</p>
+<h2 id="13-priority-list-for-the-next-three-days">13. Priority list for the next three days</h2>
+<h3 id="a-must-do-before-launch">A — must do before launch</h3>
+<p><strong>28 October:</strong> freeze the pins, radio protocol and two-stage descent sequence. Identify the actual canopy, ESC, Hall sensor and buck. Set the steering rail to7.4–8.0 V. Run board bring-up, identity/readbacks and pulse checks. Resolve release confirmation, petri crossing direction and beacon compliance. Start endurance testing early.</p>
+<p><strong>29 October:</strong> implement the smallest multi-board port: live GNSS validity, local P4 events,600 m bay,950 m petri deadline, progress watchdogs, hard TX cutoff, truthful CSV and atomic target update. Flash matching MAIN/GS/GCS versions. Test pressure ramps, resets, link loss, invalid commands and SD failures before connecting packed mechanisms.</p>
+<p><strong>30 October:</strong> rehearse with the actual battery, camera, radio, servo loads and deployment mechanics. Use authorised drops to measure inflation, sink, steering sign and latency. If steering is unqualified, retain proven stable trim and report precision landing as undemonstrated. Close mandatory descent/beacon failures before clearance. Freeze the tested builds, hashes, cards and CSV schema.</p>
+<h3 id="b-should-do-if-time-allows-after-a-passes">B — should do if time allows after A passes</h3>
+<p>Qualify tagged IMU FIFO, wind circle fitting, limited energy holding, turn-rate PI, better landing prediction, ambient temperature profiling, motor-on compass calibration and matching-protocol AGNSS assistance. Add them only when measured benefit justifies the complexity.</p>
+<h3 id="c-future">C — future</h3>
+<p>Develop an observable augmented EKF/UKF, optimized terminal trajectories, airspeed/canopy heading measurements, range-assisted flare, independent backup telemetry, release feedback and a statistically supported landing campaign.</p></article></main>
+<footer><span>CAN-7USAT-025 · REVIEW 01</span><a href="../index.html#library">Research library ↑</a></footer></body></html>

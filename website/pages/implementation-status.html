@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Implementation status / VRITRA Research desk</title><link rel="stylesheet" href="../reader.css"></head>
+<body><header class="reader-head"><a class="brand" href="../index.html#library"><span class="brand-mark">V</span><span><strong>VRITRA</strong><small>Research desk · 025</small></span></a><a class="back-link" href="../index.html#library">← Back to library</a></header>
+<main class="reader-shell"><div class="reader-kicker">VRITRA RESEARCH DESK / OPEN WORK</div><div class="reader-title"><h1>Implementation status</h1><a class="source-link" href="../../deliverables/IMPLEMENTATION_STATUS.md">Open source file ↗</a></div><article><h1 id="what-the-code-actually-implements">What the code actually implements</h1>
+<p>The original prompt asks for architecture, per-board code structure and key blocks. Those are delivered in the report and reference modules. They are not complete platform firmware or a migrated GUI. Hardware validation, achieved landing accuracy and inaccessible vendor documentation cannot be completed by inventing results.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Delivered behavior</th>
+<th>Remaining platform work</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pins.hpp</code></td>
+<td>Fixed MAIN/BACKUP/P4 constants</td>
+<td>Continuity and platform pin ownership checks</td>
+</tr>
+<tr>
+<td><code>flight_core.hpp</code>, <code>nmea_epoch.hpp</code></td>
+<td>Coherent checked GNSS epochs, validity/age/provenance, atomic target staging, bounded direct-course P, pulses, event crossings, TX cutoff</td>
+<td>Physical-only UART adapter, five-epoch reacquisition, area/innovation gates, session checks, reset reconciliation</td>
+</tr>
+<tr>
+<td><code>protocol.hpp</code></td>
+<td>Bounded COBS/CRC frame encode/decode, overflow resync</td>
+<td>Typed payload codecs from ICD, sequence/session checks, clock mapping, leases</td>
+</tr>
+<tr>
+<td><code>drivers.hpp</code></td>
+<td>BMP/LSM boot-write tables, bounded stepping interface, BMP/HDC conversion/CRC helpers</td>
+<td>HAL timeouts, identity/readbacks/status/settling, full ICM/INA/RTC/radio/camera drivers from report blocks</td>
+</tr>
+<tr>
+<td><code>scheduler.hpp</code></td>
+<td>No catch-up job scheduler and progress mask</td>
+<td>Actual task priorities/timers/watchdog peripheral and WCET measurement</td>
+</tr>
+<tr>
+<td><code>estimators.hpp</code></td>
+<td>Scalar Joseph-form position/velocity filter; geometry/residual-gated wind circle</td>
+<td>Attitude adapter, calibrated sensor-to-body transform, covariance/noise qualification, window management</td>
+</tr>
+<tr>
+<td><code>planner.hpp</code></td>
+<td>Measured origin, live-only homing, modeled reachability, circular energy phase, downwind approach entry, final latch, no flare</td>
+<td>Approved-area/geofence/path collision check, reachable safe-point selection, turn limits, reacquisition gate, tested canopy parameters</td>
+</tr>
+<tr>
+<td><code>control_pi.hpp</code></td>
+<td>PI with applied-command antiwindup, saturation and slew</td>
+<td>Measured inverse steering map, qualified rate measurement and gains, actuator adapter</td>
+</tr>
+<tr>
+<td><code>fsm.hpp</code></td>
+<td>States0–7, lift/descent/landing dwell, explicit release, restore consistency</td>
+<td>Ground TEST mode UI, persistence/time/reboot recovery, physical release evidence</td>
+</tr>
+<tr>
+<td><code>journal.hpp</code></td>
+<td>Explicit bytes/CRC/commit marker, dual-slot selection and ambiguity rejection</td>
+<td>NVS/EEPROM/NOR storage, power-loss timing and wear testing, mission clock restore</td>
+</tr>
+<tr>
+<td><code>logging.hpp</code></td>
+<td>SPSC bounded queue, CRC log codec</td>
+<td>SD/flash writer, preallocation, drop metrics, export</td>
+</tr>
+<tr>
+<td><code>telemetry.hpp</code></td>
+<td>Guideline-order decimal core, blanks for stale/invalid fields, CR, packet byte count</td>
+<td>RF scheduler, overflow policy, judge schema approval</td>
+</tr>
+<tr>
+<td><code>gcs_protocol.py</code></td>
+<td>Strict live-labelled parser, current marker expiry, CSV writer and target commands</td>
+<td>Serial adapter, gateway migration, GUI/map/plots, ACK/revision display</td>
+</tr>
+</tbody>
+</table>
+<p>All reference headers compile in the host test suite. This verifies C++ logic and selected failure cases, not peripheral APIs or flight integration. String/enum provenance is a guard within trusted software, not a way to detect someone feeding prerecorded NMEA into a physical UART. Do not claim hardware-authenticated position or spoof resistance.</p>
+<h2 id="board-assembly-contracts">Board assembly contracts</h2>
+<p>MAIN owns GNSS configuration, radio, camera, mission clock, BMP/ICM/INA/RTC, heartbeat and flash. BACKUP owns its BMP/environment sensors, independent raw GNSS parser, SD log and backup support. P4 owns local BMP/LSM, raw GNSS, all servo/ESC/Hall outputs, event latches and guidance. Board3 has no software. Camera and ground gateway keep their physical wiring and receive coordinated protocol changes.</p>
+<pre><code class="language-cpp">// Per-board wiring sketch; HAL methods below are contracts, not compiled adapters.
+// MAIN loop: consume physical bytes -&gt; coherent epoch -&gt; immutable snapshot.
+gnss.drainPhysicalUart(Serial2);  // fixed RX7/TX8; never open test input in flight
+sensorOwner.step(now); radio.serviceIrqAndDeadline(now);
+mission.step(now); link.publishOriginalSampleAge(snapshot);
+heartbeat.updateOnlyIfCriticalTasksProgressed(now); logger.tryDrainBudget(now);
+// BACKUP: RX0 is input only. SD cannot block its UART drain without detection.
+backupGnss.drainPhysicalUart(Serial1); backupSensors.step(now);
+backupLease.observeHeartbeatAndMainStatus(now); sd.tryDrainBudget(now);
+// P4: one actuator owner; final permit checks after every guidance calculation.
+localGnss.drainPhysicalUart(UART1); eventSafety.step(now);
+auto desired = planner.update(liveNav, activeTarget, now, gates, permit,
+                              agl, sink, baroValid, wind, qualifiedPlanner);
+if (!desired.valid || !areaGuard.accepts(desired) || !reacquisition.ready())
+    actuatorOwner.returnToMeasuredTrim();
+else actuatorOwner.applyBoundedCourse(desired.course_rad, liveNav, permit);
+</code></pre>
+<p><code>CourseController</code> directly homes to a target and does not consume planner course demands. To integrate energy/final phases, implement a desired-course adapter using report §8.3; do not compute a planner demand and then ignore it by calling direct homing. <code>RatePi</code> is optional until a measured canopy turn-rate signal is qualified. The reference planner's reachability flag is advisory and it has no safe-area polygon; an external path guard is mandatory before enabling it on hardware.</p>
+<h2 id="integration-order-and-acceptance">Integration order and acceptance</h2>
+<ol>
+<li>Freeze board/core/library identities; compile a separate MAIN/BACKUP/P4 application with fixed pin constants and grounded actuator inhibits.</li>
+<li>Implement bounded device/HAL readback and timeout state machines. Qualify samples and clock monotonicity before fusion.</li>
+<li>Implement typed version2 payloads, leases, journals and reset recovery. Corrupt/disconnect each source and test original sample age preservation.</li>
+<li>Migrate MAIN radio, gateway and GCS together; verify real RF core bytes/cadence and target commit/ACK across all endpoints.</li>
+<li>Qualify passive descent/events before enabling any steering. Connect calibrated pulse maps only after measured sign, current and travel checks.</li>
+<li>Run full-load timing, endurance and authorized drops. Record actual evidence in <code>TEST_EVIDENCE_TEMPLATE.csv</code>; update requirement status only from that evidence.</li>
+</ol></article></main>
+<footer><span>CAN-7USAT-025 · REVIEW 01</span><a href="../index.html#library">Research library ↑</a></footer></body></html>

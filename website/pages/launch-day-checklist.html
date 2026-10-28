@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Launch-day checklist / VRITRA Research desk</title><link rel="stylesheet" href="../reader.css"></head>
+<body><header class="reader-head"><a class="brand" href="../index.html#library"><span class="brand-mark">V</span><span><strong>VRITRA</strong><small>Research desk · 025</small></span></a><a class="back-link" href="../index.html#library">← Back to library</a></header>
+<main class="reader-shell"><div class="reader-kicker">VRITRA RESEARCH DESK / OPERATIONS</div><div class="reader-title"><h1>Launch-day checklist</h1><a class="source-link" href="../../deliverables/LAUNCH_DAY_CHECKLIST.md">Open source file ↗</a></div><article><h1 id="launch-day-checklist">Launch-day checklist</h1>
+<p>Generated from the <a href="VRITRA_ENGINEERING_REPORT.md">canonical engineering report</a>. All hardware results remain pending.</p>
+<h2 id="14-launch-day-checklist">14. Launch-day checklist</h2>
+<ul>
+<li>[ ] Record actual canopy/mass/rigging and secondary mechanism; confirm <strong>drogue immediately, ram-air600±10 m</strong>.</li>
+<li>[ ] Inspect fasteners,battery retention,connectors,antenna clearances and correct physical board revisions.</li>
+<li>[ ] Measure battery and steering/logic rails under a brief representative load;steering never exceeds8.4 V.</li>
+<li>[ ] Verify safe pulse positions with unloaded mechanisms,then pack/secure them;no automatic sweep on boot.</li>
+<li>[ ] Boot the exact frozen MAIN/BACKUP/P4/camera/GS/GCS versions;record build IDs and reset reasons.</li>
+<li>[ ] Confirm RF is silent before command and only authorised slot/channel/power will be used;camera Wi-Fi/BT remains off.</li>
+<li>[ ] Confirm L89 real coherent fix,actual update rate,quality/age and all three listener counters;no overflows.</li>
+<li>[ ] Capture pad p0/ambientT and stationary calibration;compare three barometers;lock the datum against in-flight changes.</li>
+<li>[ ] Verify DS3231 trustworthy time,mission epoch,event journal,new-mission status and non-resettable90-minute deadline.</li>
+<li>[ ] Set target26.717535N,84.301543E or the authorised adjustment;read <strong>P4's applied target/revision</strong> back.</li>
+<li>[ ] Confirm active release-confirmation procedure and its latency relative to950 m;do not confuse ARM with RELEASE.</li>
+<li>[ ] Confirm SD/flash capacity and write health;GCS judges'filename/header/plots/raw receive log ready.</li>
+<li>[ ] Start telemetry by command;verify actual RF CSV at≥1Hz and ACK channel;TX_OFF test completed earlier.</li>
+<li>[ ] Verify cameraREC acknowledgment and storage;beacon acoustic test and wheel/Hall guarded checks already passed.</li>
+<li>[ ] Arm mission only after readiness flags and physical mechanism checks;record operator actions.</li>
+<li>[ ] During lift/release:watch state,AGL,release latch,petri deadline,600 mbay event,GNSSage and supply/fault indicators.</li>
+<li>[ ] After landing: stop the wheel, activate the beacon, obtain recovery clearance, shut down RF and copy the received CSV to USB immediately.</li>
+<li>[ ] Preserve original logs and cards;record actual landing point,target revision,wind and anomalies before tuning anything.</li>
+</ul></article></main>
+<footer><span>CAN-7USAT-025 · REVIEW 01</span><a href="../index.html#library">Research library ↑</a></footer></body></html>

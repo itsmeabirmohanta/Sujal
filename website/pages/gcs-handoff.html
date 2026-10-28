@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GCS handoff / VRITRA Research desk</title><link rel="stylesheet" href="../reader.css"></head>
+<body><header class="reader-head"><a class="brand" href="../index.html#library"><span class="brand-mark">V</span><span><strong>VRITRA</strong><small>Research desk · 025</small></span></a><a class="back-link" href="../index.html#library">← Back to library</a></header>
+<main class="reader-shell"><div class="reader-kicker">VRITRA RESEARCH DESK / GROUND</div><div class="reader-title"><h1>GCS handoff</h1><a class="source-link" href="../../deliverables/GCS_HANDOFF.md">Open source file ↗</a></div><article><h1 id="ground-station-team-handoff">Ground-station team handoff</h1>
+<p>Read report §10.3–10.4 alongside the supplied <code>gcs/vritra_gcs.py</code> and <code>firmware/vritra_gs/vritra_gs.ino</code>. Their existing legacy parser/schema and command tables were inspected in this audit. The reference <code>gcs_protocol.py</code> is an offline-tested new protocol helper, not a replacement GUI or gateway image.</p>
+<table>
+<thead>
+<tr>
+<th>Existing behavior</th>
+<th>Required behavior</th>
+<th>Acceptance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Base36/83-field gateway expansion, optional values retained</td>
+<td>Transparent decimal core CSV with original sample validity; separate typed diagnostics</td>
+<td>RF capture and PC file agree; no old numeric data becomes current</td>
+</tr>
+<tr>
+<td>TX_ON also arms old FSM</td>
+<td>TX_ON controls radio only; explicit readiness/mission arm path</td>
+<td>Telemetry request cannot release or steer mechanisms</td>
+</tr>
+<tr>
+<td>int16 command argument, repeated bursts</td>
+<td>Signed int32e7 target coordinates; session/transaction deduplication; stage/commit</td>
+<td>Partial/wrong-session/out-of-area updates rejected; P4 ACK/revision visible</td>
+</tr>
+<tr>
+<td>Main map position</td>
+<td>Current valid marker plus age, track, target and separately styled prediction</td>
+<td>Unplug serial: marker expires; no substitute/default coordinates</td>
+</tr>
+<tr>
+<td>Generic status fields</td>
+<td>Guidance mode/owner/lease, board ages, GNSS quality, command and applied brake</td>
+<td>Missing board is shown as stale/fault, not connected</td>
+</tr>
+<tr>
+<td>No validated wind fit display</td>
+<td>N/E wind, uncertainty/residual/coverage/age or UNKNOWN</td>
+<td>Never display zero wind because no fit exists</td>
+</tr>
+<tr>
+<td>Simulation/replay in main application</td>
+<td>Separate test entrypoint/output directory; flight transport physical serial only</td>
+<td>Automated dependency/entrypoint check plus unplug/reconnect test</td>
+</tr>
+<tr>
+<td>Existing required plots/CSV</td>
+<td>Preserve SI telemetry plots and <code>Flight_2026-INSPACe-CAN-7USAT-025.csv</code></td>
+<td>Header, CR receive parsing, field order and missing values checked</td>
+</tr>
+</tbody>
+</table>
+<p>GUI target workflow: edit authorized coordinates → validate geographic/approved-area bounds → show pending transaction → transmit19/20/21 in available windows → await P4 applied target/revision → show ACTIVE. Timeout remains PENDING/FAILED, never optimistically active. Freeze changes below the qualified final-height gate. Keep UI responsive while waiting; no retry burst that monopolizes receive airtime.</p>
+<p>Predicted landing marker must carry model age/validity and label “prediction”. Initial constant-velocity projection is a diagnostic, not an achieved precision result. Do not append large wind/track/ACK payloads to every core packet: the SF9 budget is already nearly full. Select lower-rate diagnostics only through a schedule proved to preserve core telemetry and command access, or transmit extra details over the local USB log when available.</p>
+<p>Follow the original CSV order. Confirm accelerometer expansion/invalid blanks with the judge before final parser freeze. Keep a raw RF/USB receive log separate from the judges' CSV so corrupt/partial frames and reconnects can be audited. Host helper tests cover parser rejection, marker expiry, blank preservation and target byte bounds; real serial, GUI, RF and platform integration remain pending.</p></article></main>
+<footer><span>CAN-7USAT-025 · REVIEW 01</span><a href="../index.html#library">Research library ↑</a></footer></body></html>

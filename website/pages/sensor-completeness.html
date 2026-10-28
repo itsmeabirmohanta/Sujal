@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sensor completeness / VRITRA Research desk</title><link rel="stylesheet" href="../reader.css"></head>
+<body><header class="reader-head"><a class="brand" href="../index.html#library"><span class="brand-mark">V</span><span><strong>VRITRA</strong><small>Research desk · 025</small></span></a><a class="back-link" href="../index.html#library">← Back to library</a></header>
+<main class="reader-shell"><div class="reader-kicker">VRITRA RESEARCH DESK / EVIDENCE</div><div class="reader-title"><h1>Sensor completeness</h1><a class="source-link" href="../../deliverables/SENSOR_COMPLETENESS.md">Open source file ↗</a></div><article><h1 id="device-configuration-completeness-and-unavailable-evidence">Device configuration completeness and unavailable evidence</h1>
+<p>Canonical boot values and read sequences are in report §§4–6. This page makes the requested datasheet/application-note/driver/self-test coverage explicit. “Unavailable” never means a compatible-looking command can be substituted. All priorities are A unless marked B/C in the report.</p>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Controlling docs / driver</th>
+<th>Power, self-test and recovery decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L89HA</td>
+<td>Quectel hardware v1.2 and protocol v1.0; 7Semi library; source register links</td>
+<td>Scheduled RESET_N≥100 ms from hardware guide; MAIN-only ground configuration. No public verified AG3335M SDK or firmware-matched EPO/dynamic-model guide obtained. Warm retention and real sky/ACK tests precede optional assistance.</td>
+</tr>
+<tr>
+<td>BMP585</td>
+<td>Bosch datasheet DS003; BMP5 SensorAPI definitions/source</td>
+<td>Reset≥2 ms then NVM/identity/readback; DRDY burst and settling. No fabricated stimulated-test thresholds. Physical reference/ramp/noise test required.</td>
+</tr>
+<tr>
+<td>ICM-20948/AK09916</td>
+<td>TDK DS-000189, SparkFun register driver</td>
+<td>Scheduled reset100 ms D; identity/bank checks; ground stimulated self-test uses exact manufacturer limits, which are not independently fully verified here. Bypass mag path, DRDY/ST2 overflow, bus recovery and quarantine.</td>
+</tr>
+<tr>
+<td>LSM6DSO32</td>
+<td>ST datasheet/AN5473, ST PID driver/self-test example</td>
+<td>Poll reset completion with finite timeout, timestamp new data; self-test setup/limits in report §5.4. No INT pin needed. FIFO is B with tagged polling and overflow recovery.</td>
+</tr>
+<tr>
+<td>LR1121</td>
+<td>Semtech datasheet/SWDR001; RadioLib7.7.1; supplied RF switch table</td>
+<td>Check BUSY deadlines, boot/calibration/error returns, IRQ flags and CRC. No RF-ready claim from SPI success. Reset only with receive/TX state reconciled.</td>
+</tr>
+<tr>
+<td>INA260</td>
+<td><a href="https://www.ti.com/lit/ds/symlink/ina260.pdf">TI datasheet §§8.5–8.6</a>; Adafruit library</td>
+<td>Report row restored: ID, reset,0x6527 averaging/conversion, status/read/scales.10 ms startup deadline D; no stimulated self-test. Validate against meter; current does not include bypass branches.</td>
+</tr>
+<tr>
+<td>DS3231</td>
+<td>ADI datasheet/register map; <a href="https://github.com/adafruit/RTClib">RTClib</a> as community implementation</td>
+<td>Trust OSF/calendar, not compiled build date. No data FIFO/self-test. Do not read calendar until supply/bus is stable; a10 ms initial scheduler delay is D, not a guaranteed oscillator settling time. Compare UTC over pad wait; hung bus recovery cannot repair depleted backup power.</td>
+</tr>
+<tr>
+<td>HDC3020</td>
+<td>TI datasheet and SBOA631 programming note; Adafruit driver</td>
+<td>Identity+CRC, reset/heater off, auto mode; conversion and startup budgets in report. Discard first unsettled/CRC-failing sample. No assumed SHT4x interchangeability.</td>
+</tr>
+<tr>
+<td>W25Q64</td>
+<td>Winbond suffix-specific datasheet; direct SPI commands</td>
+<td>Actual suffix/voltage unknown. Read JEDEC/status; do not write until suffix-specific power-up/write timing is known. No FIFO; pre-erased append region, WIP timeout/readback/CRC. Maximum erase time intentionally unresolved.</td>
+</tr>
+<tr>
+<td>XIAO S3 Sense</td>
+<td>Seeed camera guide; esp32-camera SDK; supplied camera source</td>
+<td>Actual camera/PSRAM identity and initialization ACK required. Storage/memory tests and a decoded saved frame are the self-test. Restart camera independently; no blocking MAIN waits.</td>
+</tr>
+<tr>
+<td>Grove buzzer</td>
+<td>Seeed Grove-Buzzer specification</td>
+<td>Digital input has no registers/FIFO/SDK. Boot low; timed output test and acoustic measurement; software cannot remedy an under-rated sounder.</td>
+</tr>
+<tr>
+<td>P4/Teensy</td>
+<td>Espressif IDF5.5/Arduino3.3.x; PJRC core/API</td>
+<td>Use SDK peripheral abstractions, watchdog/reset-reason and timing tests. No hard-coded peripheral register boot sequence; HAL timeout and stack/heap checks required.</td>
+</tr>
+<tr>
+<td>B26CLM/MG90S</td>
+<td>Manufacturer product pages; MCU PWM APIs</td>
+<td>No readable actuator identity/status. Pulse endpoints, current, lost-signal and backdrive behavior unverified. Use measured safe positions; supply dips require electrical test.333 Hz only an optional qualified B26CLM setting.</td>
+</tr>
+<tr>
+<td>EMAX/ESC/Hall</td>
+<td>Motor brand known; ESC and Hall exact parts unidentified</td>
+<td>Register/SDK/startup/current/rating claims cannot be made from “40 A”/“A3144-type”. Team must identify labels and test stopped/armed/loss-of-signal/edge counts. C autonomous tuning is not assumed.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="polling-read-contract">Polling read contract</h2>
+<p>For every I²C/SPI transaction: record start, impose controller timeout, check complete transfer length/status, timestamp completion (or mapped sensor timestamp), convert units, attach sequence/validity, then publish. Ready flags are consumed once. A poll without new data cannot refresh sample time. Distinguish bus completion from sample freshness and signal integrity. No driver may silently provide cached good data as a new sample.</p>
+<p>After recovery, reidentify, reapply and read back configuration, discard settling data, then re-enter valid state. A per-device retry counter and total deadline bound recovery. The report's9-clock bus recovery only works if lines can rise. No wired per-device power switch is assumed. Device absence remains visible in logs and CSV.</p>
+<h2 id="exact-evidence-gaps">Exact evidence gaps</h2>
+<p>The prompt's demand for <em>every</em> official document and a fully verified value for every hardware behavior cannot be honestly closed with the accessible documents and unidentified parts. HA-specific assistance commands, AG3335M channel allocation/SDK, fitted ESC/Hall/buck/flash suffix, servo current/loss-of-signal and full target-platform builds remain evidence-limited. They are mapped explicitly in <code>PROMPT_COVERAGE.csv</code> and are not counted as verified launch capability.</p></article></main>
+<footer><span>CAN-7USAT-025 · REVIEW 01</span><a href="../index.html#library">Research library ↑</a></footer></body></html>

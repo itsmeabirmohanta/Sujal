@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verification results / VRITRA Research desk</title><link rel="stylesheet" href="../reader.css"></head>
+<body><header class="reader-head"><a class="brand" href="../index.html#library"><span class="brand-mark">V</span><span><strong>VRITRA</strong><small>Research desk · 025</small></span></a><a class="back-link" href="../index.html#library">← Back to library</a></header>
+<main class="reader-shell"><div class="reader-kicker">VRITRA RESEARCH DESK / HOST PASS</div><div class="reader-title"><h1>Verification results</h1><a class="source-link" href="../../deliverables/VERIFICATION.md">Open source file ↗</a></div><article><h1 id="verification-actually-performed">Verification actually performed</h1>
+<p>Review date: 28 October 2026, Asia/Calcutta. These are host checks, not physical acceptance results. Rerun <code>python research/run_checks.py</code> from the repository root; machine-readable command/output records are in <code>research/check_results.json</code>.</p>
+<h2 id="passed">Passed</h2>
+<ul>
+<li><code>test_core.cpp</code>: 41 grouped assertions covering live GNSS origin/coherence/quality/expiry, invalid/replayed epochs, target commit, brake limits, event deadlines and irreversible radio cutoff.</li>
+<li><code>test_modules.cpp</code>: all reference headers compiled with C++17 and <code>-Wall -Wextra -Werror -pedantic</code>; runtime checks cover frame corruption/overflow/recovery, journal corruption/uncommitted writes/selection, queue saturation, log CRC, same-epoch position plus velocity, covariance stability, stale wind windows, planner inhibition, PI limits, flight-state dwells/restore, stale CSV blanks, driver CRC/final settle delay and progress watchdog.</li>
+<li><code>test_gcs_protocol.py</code>: four test cases cover physical-live transport labels, invalid values, marker expiry, blank CSV preservation and target transactions within the32-byte uplink cap.</li>
+<li><code>engineering_checks.py</code>: independently checked NMEA checksum examples, LoRa payload boundaries and illustrative CSV length.130-byte downlink plus32-byte uplink plus40 ms guards totals984.128 ms under the declared SF9 assumptions; this is calculated, not measured.</li>
+<li>Coverage and package validation checks include45 prompt rows,20 traced mission requirements,32 numeric evidence families, report sections, local Markdown/HTML links, hashes and ZIP integrity. The validator runs after packaging and exits on failure; results are in <code>research/deliverable_validation.json</code>.</li>
+<li>Publication audit separately verified all812 supplied source files against their original SHA256 manifest and checked original ZIP integrity. A limited recognizable-credential-pattern scan found no hits; scope/limitations are recorded in <code>research/publication_audit.json</code>.</li>
+<li>This audit visually rechecked the supplied frequency PDF page2 row18 (team025:866.50/865.25 MHz,SF9,0x99) and guidelines page17 (state examples and telemetry order). Existing extracted page images remain available for review.</li>
+</ul>
+<h2 id="not-performed">Not performed</h2>
+<ul>
+<li>Complete Teensyduino/Arduino-ESP32/ESP-IDF application builds, firmware flashing or GCS GUI integration.</li>
+<li>Physical sensors, sky reception, RF cadence/range/power, servo/ESC, acoustic, endurance, deployment or drop tests.</li>
+<li>Measured loop jitter, GNSS-to-PWM latency, current/pulse endpoints, tuned PID gains or achieved landing accuracy.</li>
+<li>Independent full rebuild/inspection of historical Gerbers/STEP/CFD/FEA or every chat statement. Source coverage limits remain in SOURCE_REGISTER.md.</li>
+</ul>
+<p>Reference codecs and algorithms are implemented; device adapters, typed payload dispatch, clock synchronization, storage writes, complete planner constraints and board applications remain integration work listed in IMPLEMENTATION_STATUS.md. All hardware acceptance rows remain PENDING until actual evidence and reviewer signoff are supplied.</p></article></main>
+<footer><span>CAN-7USAT-025 · REVIEW 01</span><a href="../index.html#library">Research library ↑</a></footer></body></html>

@@ -30,19 +30,29 @@ function render() {
   const query = search.value.trim().toLowerCase();
   const matching = files.filter(file => {
     const matchesFilter = activeFilter === "all" || file.category === activeFilter;
-    const searchable = `${file.title} ${file.type} ${file.status} ${file.description}`.toLowerCase();
+    const indexed = window.VRITRA_SEARCH_INDEX?.find(item => item.title === file.title);
+    const searchable = `${file.title} ${file.type} ${file.status} ${file.description} ${indexed?.text || ""}`.toLowerCase();
     return matchesFilter && searchable.includes(query);
   });
   list.innerHTML = matching.map((file, index) => `
-    <a class="library-row" href="${file.href}">
+    <a class="library-row" href="${window.VRITRA_SEARCH_INDEX?.find(item => item.title === file.title)?.page || file.href}">
       <span class="row-number">${String(index + 1).padStart(2, "0")}</span>
       <span class="row-title">${file.title}</span>
-      <span class="row-description">${file.description}</span>
+      <span class="row-description">${query ? excerpt(window.VRITRA_SEARCH_INDEX?.find(item => item.title === file.title)?.text, query) : file.description}</span>
       <span class="row-type">${file.type}</span>
       <span class="row-status"><span class="status-tag tag-${file.category}">${file.status}</span></span>
     </a>
   `).join("");
   empty.hidden = matching.length > 0;
+}
+
+function excerpt(text, query) {
+  if (!text) return "Matching document";
+  const position = text.toLowerCase().indexOf(query);
+  if (position < 0) return text.slice(0, 150) + "…";
+  const start = Math.max(0, position - 55);
+  const end = Math.min(text.length, position + query.length + 95);
+  return `${start ? "…" : ""}${text.slice(start, end)}${end < text.length ? "…" : ""}`;
 }
 
 document.querySelectorAll(".filter").forEach(button => {

@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source register / VRITRA Research desk</title><link rel="stylesheet" href="../reader.css"></head>
+<body><header class="reader-head"><a class="brand" href="../index.html#library"><span class="brand-mark">V</span><span><strong>VRITRA</strong><small>Research desk · 025</small></span></a><a class="back-link" href="../index.html#library">← Back to library</a></header>
+<main class="reader-shell"><div class="reader-kicker">VRITRA RESEARCH DESK / PROVENANCE</div><div class="reader-title"><h1>Source register</h1><a class="source-link" href="../../deliverables/SOURCE_REGISTER.md">Open source file ↗</a></div><article><h1 id="source-register-and-coverage">Source register and coverage</h1>
+<p>Review date: 28 October 2026, Asia/Calcutta. The report distinguishes verified documentation from design proposals and unverified hardware behavior.</p>
+<h2 id="authority-and-local-evidence">Authority and local evidence</h2>
+<ol>
+<li>Current team clarification: passive drogue immediately after drone release; ram-air secondary at600 ±10 m. This overrides the initial interpretation of the brief.</li>
+<li>Current <code>01_PROJECT_BRIEF_AND_PARTS.md</code> plus current board BUILD_LIST/KiCad files control the fixed parts and pins. The older final-build memory contains superseded Teensy/P4 maps; do not choose its first map.</li>
+<li>Official mission guidelines control requirements. Relevant complete pages were extracted; pages15–18 were rendered. Radio assignment pages1–2 were visually inspected, including team025 row18. The supplied July radio plan is superseded.</li>
+<li>Current repository was inspected for drivers, telemetry packing, commands, mission state, logger, board tests, camera and GCS schema/parsing/simulation. Code line references refer to the supplied snapshot.</li>
+<li>Earlier chats, CDR, design reports and engineering-memory files explain history and conflicts; an AI answer or simulation is not device documentation or a passed test.</li>
+</ol>
+<h2 id="archive-coverage-and-limits">Archive coverage and limits</h2>
+<ul>
+<li>All <strong>812 supplied files</strong> were inventoried with byte count and SHA256. <strong>526 text/structured files</strong> were extracted, including <strong>16 PDFs</strong> and both Word files. Extracted material totals385981 lines. Nested ZIP member lists were recorded.</li>
+<li>All supplied chat text was scanned (about13.3 million characters), with targeted review of relevant decisions and current hardware discussions. This is not a claim of human-style line-by-line reading of every historical chat token or visual inspection of every archive image.</li>
+<li>Current board net/build lists and source drivers were checked against the brief. Historical Gerbers, CAD/STEP/STL meshes and all nested archive variants were not independently rebuilt, rendered or electrically/mechanically qualified. Empty DRC reports do not verify the soldered article.</li>
+<li>The original ZIP and extracted source were not changed. No physical board, GNSS sky reception, RF transmission, actuator, acoustic output, power endurance or drop test was available.</li>
+<li>Full-source manifests and extracted pages remain under <code>research/</code> in the workspace; downloaded third-party documents are excluded from the shareable handoff ZIP.</li>
+</ul>
+<h2 id="public-primary-sources-retrieved">Public primary sources retrieved</h2>
+<p>HTTP failures below are recorded rather than silently substituted with another part. Some documents could be read through web extraction even when the local download failed.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Source</th>
+<th>Retrieval</th>
+<th>Local evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gnss_protocol</td>
+<td><a href="https://quectel.com/content/uploads/2024/02/Quectel_L89_R2.0_GNSS_Protocol_Specification_V1.0.pdf">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/gnss_protocol.pdf</td>
+</tr>
+<tr>
+<td>bmp585_ds</td>
+<td><a href="https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp585-ds003.pdf">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/bmp585_ds.pdf</td>
+</tr>
+<tr>
+<td>bmp5_defs</td>
+<td><a href="https://raw.githubusercontent.com/boschsensortec/BMP5_SensorAPI/master/bmp5_defs.h">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/bmp5_defs.h</td>
+</tr>
+<tr>
+<td>bmp5_driver</td>
+<td><a href="https://raw.githubusercontent.com/boschsensortec/BMP5_SensorAPI/master/bmp5.c">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/bmp5_driver.c</td>
+</tr>
+<tr>
+<td>icm_ds</td>
+<td><a href="https://product.tdk.com/system/files/dam/doc/product/sensor/mortion-inertial/imu/data_sheet/ds-000189-icm-20948-v1.5.pdf">Official/vendor source</a></td>
+<td>403</td>
+<td>not downloaded</td>
+</tr>
+<tr>
+<td>lsm_ds</td>
+<td><a href="https://www.st.com/resource/en/datasheet/lsm6dso32.pdf">Official/vendor source</a></td>
+<td>ERROR</td>
+<td>not downloaded</td>
+</tr>
+<tr>
+<td>lsm_driver</td>
+<td><a href="https://raw.githubusercontent.com/STMicroelectronics/lsm6dso32-pid/master/lsm6dso32_reg.c">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/lsm_driver.c</td>
+</tr>
+<tr>
+<td>lsm_header</td>
+<td><a href="https://raw.githubusercontent.com/STMicroelectronics/lsm6dso32-pid/master/lsm6dso32_reg.h">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/lsm_header.h</td>
+</tr>
+<tr>
+<td>ina_ds</td>
+<td><a href="https://www.ti.com/lit/ds/symlink/ina260.pdf">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/ina_ds.pdf</td>
+</tr>
+<tr>
+<td>hdc_ds</td>
+<td><a href="https://www.ti.com/lit/ds/symlink/hdc3020.pdf">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/hdc_ds.pdf</td>
+</tr>
+<tr>
+<td>rtc_ds</td>
+<td><a href="https://www.analog.com/media/en/technical-documentation/data-sheets/ds3231.pdf">Official/vendor source</a></td>
+<td>ERROR</td>
+<td>not downloaded</td>
+</tr>
+<tr>
+<td>lr1121_ds</td>
+<td><a href="https://files.waveshare.com/wiki/Core1121/LR1121_H2_DS_v2_0.pdf">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/lr1121_ds.pdf</td>
+</tr>
+<tr>
+<td>radio_lr11_header</td>
+<td><a href="https://raw.githubusercontent.com/jgromes/RadioLib/7.7.1/src/modules/LR11x0/LR11x0.h">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/radio_lr11_header.h</td>
+</tr>
+<tr>
+<td>radio_lr11_cpp</td>
+<td><a href="https://raw.githubusercontent.com/jgromes/RadioLib/7.7.1/src/modules/LR11x0/LR11x0.cpp">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/radio_lr11_cpp.cpp</td>
+</tr>
+<tr>
+<td>radio_lr1121_cpp</td>
+<td><a href="https://raw.githubusercontent.com/jgromes/RadioLib/7.7.1/src/modules/LR11x0/LR1121.cpp">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/radio_lr1121_cpp.cpp</td>
+</tr>
+<tr>
+<td>core1121</td>
+<td><a href="https://www.waveshare.com/wiki/Core1121-XF">Official/vendor source</a></td>
+<td>403</td>
+<td>not downloaded</td>
+</tr>
+<tr>
+<td>p4board</td>
+<td><a href="https://www.waveshare.com/wiki/ESP32-P4-Pico">Official/vendor source</a></td>
+<td>403</td>
+<td>not downloaded</td>
+</tr>
+<tr>
+<td>agfrc</td>
+<td><a href="https://www.agf-rc.com/agfrc-coreless-mini-servo-b26clm-p1669135.html">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/agfrc.html</td>
+</tr>
+<tr>
+<td>towerpro</td>
+<td><a href="https://towerpro.com.tw/product/mg90s-3/">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/towerpro.html</td>
+</tr>
+<tr>
+<td>grove</td>
+<td><a href="https://wiki.seeedstudio.com/Grove-Buzzer/">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/grove.html</td>
+</tr>
+<tr>
+<td>7semi_l89</td>
+<td><a href="https://7semi.com/7semi-l89ha-breakout-multi-gnss-engines-for-gps-irnss-glonass-beidou-galileo-and-qzss/">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/7semi_l89.html</td>
+</tr>
+<tr>
+<td>p4_uart</td>
+<td><a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/peripherals/uart.html">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/p4_uart.html</td>
+</tr>
+<tr>
+<td>p4_ledc</td>
+<td><a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/peripherals/ledc.html">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/p4_ledc.html</td>
+</tr>
+<tr>
+<td>p4_mcpwm</td>
+<td><a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/peripherals/mcpwm.html">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/p4_mcpwm.html</td>
+</tr>
+<tr>
+<td>p4_freertos</td>
+<td><a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32p4/api-reference/system/freertos_idf.html">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/p4_freertos.html</td>
+</tr>
+<tr>
+<td>teensy_serial</td>
+<td><a href="https://www.pjrc.com/teensy/td_uart.html">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/teensy_serial.html</td>
+</tr>
+<tr>
+<td>teensy_wire</td>
+<td><a href="https://www.pjrc.com/teensy/td_libs_Wire.html">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/teensy_wire.html</td>
+</tr>
+<tr>
+<td>teensy_timer</td>
+<td><a href="https://www.pjrc.com/teensy/td_timing_IntervalTimer.html">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/teensy_timer.html</td>
+</tr>
+<tr>
+<td>teensy_sd</td>
+<td><a href="https://www.pjrc.com/teensy/td_libs_SD.html">Official/vendor source</a></td>
+<td>404</td>
+<td>not downloaded</td>
+</tr>
+<tr>
+<td>teensy_eeprom</td>
+<td><a href="https://www.pjrc.com/teensy/td_libs_EEPROM.html">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/teensy_eeprom.html</td>
+</tr>
+<tr>
+<td>nasa_wind</td>
+<td><a href="https://ntrs.nasa.gov/citations/20200011546">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/nasa_wind.html</td>
+</tr>
+<tr>
+<td>parafoil_paper</td>
+<td><a href="https://arxiv.org/pdf/2105.00715">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/parafoil_paper.pdf</td>
+</tr>
+<tr>
+<td>gnss_forum</td>
+<td><a href="https://forums.quectel.com/t/problem-with-pstm-commands-for-l89ha-gnss-module/48222">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/gnss_forum.html</td>
+</tr>
+<tr>
+<td>hdc_driver</td>
+<td><a href="https://raw.githubusercontent.com/adafruit/Adafruit_HDC302x/main/Adafruit_HDC302x.cpp">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/hdc_driver.cpp</td>
+</tr>
+<tr>
+<td>ino_ina</td>
+<td><a href="https://raw.githubusercontent.com/adafruit/Adafruit_INA260/master/Adafruit_INA260.cpp">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/ino_ina.cpp</td>
+</tr>
+<tr>
+<td>w25_ds</td>
+<td><a href="https://www.winbond.com/resource-files/w25q64jv%20spi%20%20%20revc%2006032016%20kms.pdf">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/w25_ds.pdf</td>
+</tr>
+<tr>
+<td>sparkfun_icm</td>
+<td><a href="https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/sparkfun_icm.html</td>
+</tr>
+<tr>
+<td>gnss_hardware</td>
+<td><a href="https://quectel.com/content/uploads/2024/02/Quectel_L89_R2.0_Hardware-Design_V1.2.pdf">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/gnss_hardware.pdf</td>
+</tr>
+<tr>
+<td>icm_v14</td>
+<td><a href="https://invensense.tdk.com/wp-content/uploads/2021/07/DS-000189-ICM-20948-v1.4.pdf">Official/vendor source</a></td>
+<td>404</td>
+<td>not downloaded</td>
+</tr>
+<tr>
+<td>rtc_ds</td>
+<td><a href="https://www.analog.com/media/en/technical-documentation/data-sheets/DS3231.pdf">Official/vendor source</a></td>
+<td>ERROR</td>
+<td>not downloaded</td>
+</tr>
+<tr>
+<td>lsm_an</td>
+<td><a href="https://www.st.com/resource/en/application_note/an5473-lsm6dso32-alwayson-3d-accelerometer-and-3d-gyroscope-stmicroelectronics.pdf">Official/vendor source</a></td>
+<td>ERROR</td>
+<td>not downloaded</td>
+</tr>
+<tr>
+<td>semtech_driver</td>
+<td><a href="https://raw.githubusercontent.com/Lora-net/SWDR001/master/README.md">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/semtech_driver.txt</td>
+</tr>
+<tr>
+<td>st_fifo_example</td>
+<td><a href="https://raw.githubusercontent.com/STMicroelectronics/STMems_Standard_C_drivers/master/lsm6dso32_STdC/examples/lsm6dso32_fifo.c">Official/vendor source</a></td>
+<td>404</td>
+<td>not downloaded</td>
+</tr>
+<tr>
+<td>st_selftest_example</td>
+<td><a href="https://raw.githubusercontent.com/STMicroelectronics/STMems_Standard_C_drivers/master/lsm6dso32_STdC/examples/lsm6dso32_self_test.c">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/st_selftest_example.txt</td>
+</tr>
+<tr>
+<td>icm_driver_header</td>
+<td><a href="https://raw.githubusercontent.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary/main/src/util/ICM_20948_REGISTERS.h">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/icm_driver_header.txt</td>
+</tr>
+<tr>
+<td>radiolib_properties</td>
+<td><a href="https://raw.githubusercontent.com/jgromes/RadioLib/7.7.1/library.properties">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/radiolib_properties.txt</td>
+</tr>
+<tr>
+<td>arduino33_uart</td>
+<td><a href="https://raw.githubusercontent.com/espressif/arduino-esp32/3.3.0/cores/esp32/HardwareSerial.h">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/arduino33_uart.txt</td>
+</tr>
+<tr>
+<td>hdc_ti_note</td>
+<td><a href="https://www.ti.com/lit/an/sboa631/sboa631.pdf">Official/vendor source</a></td>
+<td>200</td>
+<td>research/sources/hdc_ti_note.pdf</td>
+</tr>
+</tbody>
+</table>
+<h2 id="additional-primary-sources-consulted-through-web-tools">Additional primary sources consulted through web tools</h2>
+<ul>
+<li><a href="https://www.st.com/resource/en/datasheet/lsm6dso32.pdf">ST LSM6DSO32 datasheet</a>, <a href="https://www.st.com/resource/en/application_note/an5473-lsm6dso32-alwayson-3d-accelerometer-and-3d-gyroscope-stmicroelectronics.pdf">AN5473</a>, <a href="https://github.com/STMicroelectronics/lsm6dso32-pid">official driver</a>. Local ST PDF retrieval timed out; the official driver and self-test source were downloaded.</li>
+<li><a href="https://product.tdk.com/system/files/dam/doc/product/sensor/mortion-inertial/imu/data_sheet/ds-000189-icm-20948-v1.5.pdf">TDK ICM-20948 DS-000189</a>, with <a href="https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary">SparkFun register reference</a>. TDK search excerpts and official register descriptions were available; complete local TDK PDF download was denied. Do not regard every timing/self-test limit as independently verified here.</li>
+<li><a href="https://www.analog.com/media/en/technical-documentation/data-sheets/ds3231.pdf">ADI DS3231 datasheet</a>. Web text was available; local download timed out.</li>
+<li><a href="https://www.quectel.com/product/gnss-l89-r2/">Quectel L89 product/document index</a> lists HA protocol v1.1, hardware v1.4 and AGNSS notes, but those downloads require an account. The accessible v1.0 protocol and v1.2 hardware guide were used with explicit installed-firmware verification gates.</li>
+<li><a href="https://github.com/7semi-solutions/7semi-L89HA-GNSS-Module-Arduino-Library">7Semi L89HA official library</a>, also supplied in the ZIP. It is a board-vendor library, not an Airoha register-level SDK.</li>
+<li><a href="https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32p4/api-reference/peripherals/uart.html">P4 UART v5.5</a>, <a href="https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32p4/api-reference/peripherals/mcpwm.html">MCPWM v5.5</a>, <a href="https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32p4/api-reference/system/freertos_idf.html">FreeRTOS v5.5</a>, <a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/api/ledc.html">Arduino LEDC</a>. Stable/latest pages can drift; verify against the locked core.</li>
+<li><a href="https://github.com/jgromes/RadioLib/blob/7.7.1/src/modules/LR11x0/LR1120.h">RadioLib LR1120 API at7.7.1</a> and <a href="https://github.com/jgromes/RadioLib/blob/7.7.1/src/modules/LR11x0/LR1120.cpp">implementation</a>; <a href="https://www.semtech.com/design-support/lora-calculator">Semtech calculator</a>.</li>
+<li><a href="https://ntrs.nasa.gov/api/citations/19770009539/downloads/19770009539.pdf">NASA standard atmosphere</a> for the declared atmosphere model; <a href="https://ntrs.nasa.gov/citations/20200011546">NASA parafoil wind/aerodynamic estimation</a>; <a href="https://arxiv.org/abs/2105.00715">parafoil real-time guidance research</a>.</li>
+<li><a href="https://docs.ardupilot.org/plane/docs/common-parachute.html">ArduPilot parachute documentation</a> is a deployment failsafe reference, not a demonstrated ram-air guidance mode. Fixed-wing automatic landing code cannot be copied as a qualified parafoil controller.</li>
+</ul>
+<h2 id="unclosed-sourcemeasurement-questions">Unclosed source/measurement questions</h2>
+<ul>
+<li>No verified public AG3335M firmware SDK, complete HA-specific EPO injection transaction, firmware-matched dynamic model or geofence command was obtained. No LC29H/LC76G command was assumed interchangeable.</li>
+<li>Exact installed flash suffix, ESC, Hall sensor, steering buck, camera sensor and servo-programming configuration remain team identification tasks.</li>
+<li>No manufacturer guarantee was found for the fitted servos’ loss-of-signal holding, backdrive torque or stall current. These are measurements, not constants to invent.</li>
+<li>The canopy geometry conflict remains unresolved. Supplied CFD/FEA/Monte Carlo claims were not rerun or adopted as flight performance.</li>
+<li>Reference frame/log/journal codecs, scheduling helpers, scalar estimation, wind fit and planner blocks now have host checks. Complete board adapters, persistent storage writes, path constraints, device drivers and GUI integration remain outstanding; see IMPLEMENTATION_STATUS.md.</li>
+</ul>
+<h2 id="source-hashes">Source hashes</h2>
+<p>The workspace JSON manifests contain SHA256 values for downloaded source files. The handoff has its own manifest so future edits can be distinguished from this review.</p></article></main>
+<footer><span>CAN-7USAT-025 · REVIEW 01</span><a href="../index.html#library">Research library ↑</a></footer></body></html>

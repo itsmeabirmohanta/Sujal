@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deliverable audit / VRITRA Research desk</title><link rel="stylesheet" href="../reader.css"></head>
+<body><header class="reader-head"><a class="brand" href="../index.html#library"><span class="brand-mark">V</span><span><strong>VRITRA</strong><small>Research desk · 025</small></span></a><a class="back-link" href="../index.html#library">← Back to library</a></header>
+<main class="reader-shell"><div class="reader-kicker">VRITRA RESEARCH DESK / START HERE</div><div class="reader-title"><h1>Deliverable audit</h1><a class="source-link" href="../../deliverables/DELIVERABLE_AUDIT.md">Open source file ↗</a></div><article><h1 id="deep-research-prompt-audit">Deep-research prompt audit</h1>
+<p><strong>Audit date: 28 October 2026, Asia/Calcutta.</strong> Compared the supplied prompt with the current report, source snapshot, supporting artifacts and reference code. Read the <a href="PROMPT_COVERAGE.csv">45-row coverage matrix</a> for each requested output, its location and remaining evidence.</p>
+<p><strong>Result:</strong> the existing package was incomplete and inconsistent as a handoff. Missing audit/navigation/supporting documents are now provided, identified omissions are corrected, reference modules are covered by host checks, and the shareable package is rebuilt. The design deliverables are available. This does <strong>not</strong> close unavailable vendor documentation, unidentified components, platform integration or physical acceptance tests.</p>
+<table>
+<thead>
+<tr>
+<th>Finding at audit start</th>
+<th>Resolution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No prompt-by-prompt completion register</td>
+<td>45 mapped rows, explicit DELIVERED_DESIGN / EVIDENCE_LIMITED status; neither status means flight verified</td>
+</tr>
+<tr>
+<td>INA260 boot/read configuration replaced by calibration text</td>
+<td>Restored identity/reset/config/read/status/scaling using TI register map</td>
+</tr>
+<tr>
+<td>96-byte payload versus whole-frame ambiguity</td>
+<td>Version2 capped at64-byte payload/90 decoded/92 wire; exact message allocations in separate ICD</td>
+</tr>
+<tr>
+<td>New reference modules absent from verification scope and README</td>
+<td>All headers compile together; module behavioral tests and GCS tests added; status table documents adapters still needed</td>
+</tr>
+<tr>
+<td>GNSS position update suppressed velocity from the same epoch</td>
+<td>Independent position/velocity epoch tracking in scalar filter; regression check</td>
+</tr>
+<tr>
+<td>FSM omitted stated descent dwell and accepted inconsistent restored flags</td>
+<td>Dwell and restore validation fixed and tested</td>
+</tr>
+<tr>
+<td>Driver boot helper skipped final settling delay</td>
+<td>Completion now waits for last write's deadline; regression check</td>
+</tr>
+<tr>
+<td>A fresh wind sample could hide an old fitting window</td>
+<td>Fit requires both oldest/newest samples within the configured window; regression check</td>
+</tr>
+<tr>
+<td>Shareable ZIP absent/stale verification and hashes</td>
+<td>Deterministic handoff regenerated with current file list, verification and hashes</td>
+</tr>
+<tr>
+<td>Long report difficult to assign across teams</td>
+<td>Role index, action plan, checklist, questions, GCS brief, implementation status, sensor evidence and test sheet</td>
+</tr>
+<tr>
+<td>Source/history might be mistaken for current firmware</td>
+<td>Original files retained separately and hash checked; current constraints and qualification boundary made prominent</td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-remains-genuinely-open">What remains genuinely open</h2>
+<ul>
+<li>Quectel HA firmware-matched AGNSS/dynamic-model documentation, AG3335M SDK/channel allocation and some full-source self-test evidence are unavailable. Unsupported command blocks are intentionally not invented.</li>
+<li>Exact ESC/Hall/buck/flash variant, canopy geometry, servo limits/current/signal-loss behavior and physical release/deployment confirmation need team evidence.</li>
+<li>The report's two-stage sequence (drogue on release, secondary at600±10 m) is an inherited design decision recorded in the prior report. This audit visually checked the official state/telemetry pages and team025 frequency row. The team must still sign off the actual packed canopy, release-confirmation procedure and950 m event interpretation.</li>
+<li>The provided code comprises key modules and board integration contracts. Complete Teensy/P4 applications, HAL drivers, GCS GUI migration, platform builds and hardware qualification have not been produced or passed by implication.</li>
+<li>Per the prompt, no fabricated position/velocity belongs in the flight pipeline. Offline tests necessarily use synthetic inputs in separate test executables. Physical adapters, build isolation and hardware fault tests are still needed to enforce the policy in a complete firmware image.</li>
+</ul>
+<p>The original task asks for architecture and key code blocks plus a ground-station change plan; these are supplied. It also asks for fully sourced facts that are not all obtainable. Those rows remain EVIDENCE_LIMITED rather than falsely marked complete. See <a href="VERIFICATION.md">verification</a> for exactly what ran and <a href="TEAM_OPEN_QUESTIONS.md">team questions</a> for how to close the remaining gaps.</p></article></main>
+<footer><span>CAN-7USAT-025 · REVIEW 01</span><a href="../index.html#library">Research library ↑</a></footer></body></html>

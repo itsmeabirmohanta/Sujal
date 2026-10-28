@@ -1,0 +1,1708 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engineering report / VRITRA Research desk</title><link rel="stylesheet" href="../reader.css"></head>
+<body><header class="reader-head"><a class="brand" href="../index.html#library"><span class="brand-mark">V</span><span><strong>VRITRA</strong><small>Research desk · 025</small></span></a><a class="back-link" href="../index.html#library">← Back to library</a></header>
+<main class="reader-shell"><div class="reader-kicker">VRITRA RESEARCH DESK / CANONICAL DESIGN</div><div class="reader-title"><h1>Engineering report</h1><a class="source-link" href="../../deliverables/VRITRA_ENGINEERING_REPORT.md">Open source file ↗</a></div><article><h1 id="vritra-avionics-flight-software-and-precision-landing-design">VRITRA: avionics, flight software and precision-landing design</h1>
+<p><strong>Team:</strong> 2026-INSPACe-CAN-7USAT-025. <strong>Review date:</strong> 28 October 2026 (Asia/Calcutta). <strong>Campaign:</strong> 31 October–3 November 2026, as supplied by the team.</p>
+<h2 id="1-engineering-decision-and-evidence-boundaries">1. Engineering decision and evidence boundaries</h2>
+<p><strong>Build a conservative four-board port with autonomous deployment and bounded steering. Do not attempt a new full inertial-navigation UKF, untested flare, or wholesale library replacement in the remaining three days.</strong> The supplied flight software is for an older single-board system. Syntax checks of board tests are not evidence that the flight article works.</p>
+<p>The team clarified during this review that the <strong>drogue deploys immediately after drone release near 1 km, and the ram-air secondary deploys at 600 ±10 m</strong>. This resolves the main mission-sequence conflict with guideline §5.4. The ram-air bay servo belongs to the <strong>600 m event</strong>; the <strong>950 m petri-lid event is independent</strong>. Do not relabel petri opening as a second descent mechanism.</p>
+<p>Evidence labels used throughout:</p>
+<ul>
+<li><strong>R:</strong> requirement in supplied official PDF or current user instruction.</li>
+<li><strong>H:</strong> fixed hardware/pin fact in current brief and current board files; continuity on the built article is still a team test.</li>
+<li><strong>V:</strong> value checked against a linked manufacturer document or driver.</li>
+<li><strong>D:</strong> proposed design setting or derived calculation. These are <strong>not measured performance</strong>. A test ID identifies how to qualify them.</li>
+<li><strong>U:</strong> unresolved, unavailable or unverified. No flight-ready claim attaches to a U item.</li>
+</ul>
+<p>All thresholds and timing budgets below that are not expressly R/H/V are <strong>D starting values</strong>. Hardware test results are not available in this session. This is an architecture and reference-code handoff, not a certified or fully compiled firmware image.</p>
+<p>Controlling local sources: <a href="../source/VRITRA_CanSat_025_Handover_2026-10-28/01_PROJECT_BRIEF_AND_PARTS.md">current brief</a>, <a href="../source/VRITRA_CanSat_025_Handover_2026-10-28/02_competition_documents/IN-SPACe_CAN-7USAT_Mission_Requirements_and_Guidelines_IN-SPACe.CAN.MR.CG.01.pdf">official guidelines</a>, <a href="../source/VRITRA_CanSat_025_Handover_2026-10-28/02_competition_documents/CAN7USAT_Team_Frequency_Assignments_19-10-2026_(OFFICIAL_for_team_025).pdf">19 October radio assignment</a>, <a href="../source/VRITRA_CanSat_025_Handover_2026-10-28/03_kicad_current_boards">current boards</a>, and <a href="../source/VRITRA_CanSat_025_Handover_2026-10-28/05_code/vritra-gcs-master_(CURRENT_repo)">supplied repository</a>. Historical prompts and previous AI answers are evidence of decisions, not datasheets.</p>
+<h3 id="11-launch-critical-findings">1.1 Launch-critical findings</h3>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Finding</th>
+<th>Consequence / action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>Board 4 is now ESP32-P4; old Teensy 4.0 Board 4 and earlier P4 pin maps conflict with the current files</td>
+<td>Freeze the current GPIO map below; compile and run on the actual P4 revision (T-PINS, T-BOOT)</td>
+</tr>
+<tr>
+<td>A</td>
+<td>Board 2 has no wired radio, GNSS command path, beacon or camera takeover</td>
+<td>Call it backup sensing and deployment-authority support; it cannot restore telemetry after MAIN dies</td>
+</tr>
+<tr>
+<td>A</td>
+<td>Existing base-36 downlink is not decimal engineering-unit CSV over the air; PAD cadence is documented as 0.5 Hz</td>
+<td>Replace the flight/gateway/GCS wire path together, or obtain an explicit format exception. The strict design here uses ≥1 Hz CSV (T-RF)</td>
+</tr>
+<tr>
+<td>A</td>
+<td>Existing TX_ON handler clears the 90-minute latch and launch epoch</td>
+<td>Remove that override. The deadline must survive reboot and repeated TX_ON (T-RESET)</td>
+</tr>
+<tr>
+<td>A</td>
+<td>Existing GNSS RMC parser updates speed without checking RMC validity; older numeric state persists</td>
+<td>Commit coherent, fresh GGA/RMC epochs; missing values stay invalid, never zero-filled (T-NAV)</td>
+</tr>
+<tr>
+<td>A</td>
+<td>Grove specification is ≥85 dB, whereas guideline §5.2 / compliance item 13 requires ≥92 dB unobstructed</td>
+<td>Measure using an organiser-agreed distance/weighting; change beacon hardware if it fails. A new drive pattern does not prove compliance</td>
+</tr>
+<tr>
+<td>A</td>
+<td>No wired release switch, canopy-open sensor, servo-position feedback, steering-rail monitor or rangefinder</td>
+<td>Software can infer events and monitor commands, but cannot prove physical release, deployment, servo position, rail voltage or flare height</td>
+</tr>
+<tr>
+<td>A</td>
+<td>Brief says 0.40 m²/7 cells; study says 0.71 m²/11 cells</td>
+<td>Do not use its predicted dispersion, turn rate or polar as measurements of this flight article (T-GLIDE)</td>
+</tr>
+<tr>
+<td>A</td>
+<td>Steering rail was reportedly 9 V; B26CLM maximum is 8.4 V</td>
+<td>Set the existing adjustable supply to 7.4–8.0 V and measure transient overshoot under representative load before connecting servos (T-POWER)</td>
+</tr>
+</tbody>
+</table>
+<p>The <a href="https://wiki.seeedstudio.com/Grove-Buzzer/">Seeed buzzer specification</a> supports the rating discrepancy; the <a href="https://www.agf-rc.com/agfrc-coreless-mini-servo-b26clm-p1669135.html">AGFRC B26CLM specification</a> supports its supply limit. The other findings are from the supplied files, with exact code pointers in §10.</p>
+<h2 id="2-requirements-and-verification">2. Requirements and verification</h2>
+<p>The complete working matrix is <a href="requirements.csv">requirements.csv</a>. These requirements allocate functions to the actual hardware, not an imagined redundant computer.</p>
+<table>
+<thead>
+<tr>
+<th>ID / priority</th>
+<th>Requirement / source</th>
+<th>Owner and acceptance evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R01 A</td>
+<td>Mass under 1 kg with stated ±50 g tolerance; envelope Ø150 ×400 mm (§5.1)</td>
+<td>Team: weigh complete flying system; gauge with rigging and antenna included; clarify interpretation of mass tolerance</td>
+</tr>
+<tr>
+<td>R02 A</td>
+<td>Two descent mechanisms; passive primary immediately on release; secondary at 600 ±10 m; secondary sink 1–3 m/s (§5.4 and current clarification)</td>
+<td>Mechanics + P4: witnessed deployment and measured drop profile, T-DEPLOY/T-GLIDE</td>
+</tr>
+<tr>
+<td>R03 A</td>
+<td>Petri opens once at 950 m above boot/pad reference for 10 s (brief)</td>
+<td>P4: pressure-chamber sweep, direction gate, once-only latch and reset during open, T-EVENT</td>
+</tr>
+<tr>
+<td>R04 A</td>
+<td>No mechanism motion before release (user interlock)</td>
+<td>P4: explicit release-confirmed latch plus inhibits; see §7 for the fixed-hardware limitation, T-INHIBIT</td>
+</tr>
+<tr>
+<td>R05 A</td>
+<td>Collect and transmit ≥1 Hz ASCII CSV after command, fixed order, CR terminator (§6.3)</td>
+<td>MAIN + GS: RF capture and timestamps, not USB-only reconstruction, T-RF</td>
+</tr>
+<tr>
+<td>R06 A</td>
+<td>Boot RF-silent; RF ON/OFF commands (§6.1); 90-minute hard cutoff (19 October assignment p1)</td>
+<td>MAIN: all reset/command permutations; receive remains available after TX_OFF; T-RESET</td>
+</tr>
+<tr>
+<td>R07 A</td>
+<td>State and mission clock survive processor reset (§6.1/6.2)</td>
+<td>All FCs: dual-slot CRC journal, preserved baro datum/event latches, T-RESET</td>
+</tr>
+<tr>
+<td>R08 A</td>
+<td>All required fields live in SI units, plotted and saved as Flight_2026-INSPACe-CAN-7USAT-025.csv (§6.1/6.3)</td>
+<td>GCS: hardware link -&gt; raw receive log -&gt; CSV -&gt; plots; stale values visibly invalid, T-GCS</td>
+</tr>
+<tr>
+<td>R09 A</td>
+<td>Onboard SD record despite RF loss (§5.1/requirement 8)</td>
+<td>Board 2 SD, optionally MAIN native SD: disconnect radio and inspect independently decoded records, T-LOG</td>
+</tr>
+<tr>
+<td>R10 A</td>
+<td>Mechanical gyro stabilization and measured wheel spin in deg/s (§5.4/6.3)</td>
+<td>P4 Hall sensor; wheel command is not spin measurement, T-HALL/T-WHEEL</td>
+</tr>
+<tr>
+<td>R11 A</td>
+<td>No LiPo; metal-can Li-ion allowed; external switch/indicator; 2 h pad plus flight endurance (§5.3)</td>
+<td>Power board + team: physical inspection and actual endurance test, T-POWER</td>
+</tr>
+<tr>
+<td>R12 A</td>
+<td>Survive 15 g acceleration /30 g shock, enclosed boards, mounts, battery retention (§5.2)</td>
+<td>Team: existing qualification evidence or controlled qualification; software is not structural proof</td>
+</tr>
+<tr>
+<td>R13 A</td>
+<td>Recovery beacon ≥92 dB (§5.2); identifying labels</td>
+<td>Team: acoustic measurement + label inspection, T-BEACON</td>
+</tr>
+<tr>
+<td>R14 A</td>
+<td>MAIN 866.50 / BACKUP 865.25 MHz, SF9,125 kHz,4/5,0x99; +10 dBm pad/~+14 flight; backup only on Net Control instruction</td>
+<td>MAIN + gateway: RF configuration/readback, controlled conducted/range test during authorised slot, T-RF</td>
+</tr>
+<tr>
+<td>R15 A</td>
+<td>Only MAIN commands GNSS; raw TX heard by three processors (current brief/current KiCad)</td>
+<td>T-PINS, scope all listeners during baud changes; never attach listener TX to GNSS</td>
+</tr>
+<tr>
+<td>R16 A</td>
+<td>No simulated/replayed/default position or velocity in flight guidance or LIVE telemetry (user)</td>
+<td>Parser validity, provenance, coherence, expiry and build isolation, T-NAV/T-ISOLATE</td>
+</tr>
+<tr>
+<td>R17 A</td>
+<td>Adjustable target, atomic and acknowledged (brief)</td>
+<td>MAIN -&gt; P4 command transaction -&gt; active target echo; stale/partial changes rejected, T-TARGET</td>
+</tr>
+<tr>
+<td>R18 A</td>
+<td>Camera Wi-Fi/BT off; autonomous control survives lost GCS (brief)</td>
+<td>Camera build inspection; cut links during hardware test, T-LINK</td>
+</tr>
+<tr>
+<td>R19 A</td>
+<td>GNSS and sensor data represent physical samples with timestamps</td>
+<td>Sensor-ready flags, bounded read time, saturation flags, unit tests + bench reference, T-SENSOR</td>
+</tr>
+<tr>
+<td>R20 B</td>
+<td>Predicted landing point, wind and mode display</td>
+<td>Estimate validity and uncertainty shown; never label prediction as a GNSS measurement, T-GCS</td>
+</tr>
+</tbody>
+</table>
+<p>The state names in guideline §6.2 are explicitly an <strong>example</strong>, not an assertion that every team must use precisely those names. Preserve the requested numbering 0–7 for this port to avoid needless ambiguity. Guideline §6.3's accelerometer field is underspecified about scalar subfields and mentions roll/pitch; retain the existing expansion ACC_X/Y/Z, append measured roll/pitch as optional, and confirm the judge's parser before freezing the header. The official table also has a longitude-description typo; longitude still occupies its own stated position.</p>
+<h2 id="3-fixed-pin-interface-control-document">3. Fixed-pin interface control document</h2>
+<h3 id="31-electrical-inventory">3.1 Electrical inventory</h3>
+<p><strong>H source:</strong> current brief §3–4 plus current board BUILD_LIST files. GPIO numbers on the P4 are not physical header-pin numbers. Shared ground is required. None of these assignments is changed by this design.</p>
+<table>
+<thead>
+<tr>
+<th>Board</th>
+<th>Link / pins</th>
+<th>Devices / traffic</th>
+<th>D rate / budget / expiry</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MAIN Teensy4.1</td>
+<td>Wire SDA18/SCL19,400 kHz after electrical test;100 kHz fallback</td>
+<td>BMP585 0x47,ICM 0x69,DS3231 0x68,INA260 0x40,AT24C32 0x57 if fitted</td>
+<td>IMU225/220 Hz,baro50 Hz,power20 Hz,RTC1 Hz; ~10–15% nominal bus occupation including register pointers; measure retries</td>
+</tr>
+<tr>
+<td>MAIN</td>
+<td>Serial2 RX7/TX8;RESET_N6</td>
+<td>L89: only bidirectional GNSS connection</td>
+<td>9600 acquisition -&gt;115200 after qualified change;2 KiB extra RX ring; ≥1 ms drain cadence</td>
+</tr>
+<tr>
+<td>MAIN</td>
+<td>SPI1 MOSI26/SCK27/MISO39;CS29,BUSY24,RST25,IRQ30</td>
+<td>LR1121</td>
+<td>Start at tested SPI clock; IRQ flag only; radio deadline as §6</td>
+</tr>
+<tr>
+<td>MAIN</td>
+<td>Same SPI1,CS9</td>
+<td>W25Q64</td>
+<td>Independent transactions, both CS HIGH idle; ≤256-byte program chunks; WIP polled outside critical path</td>
+</tr>
+<tr>
+<td>MAIN</td>
+<td>Serial1 TX1/RX0,115200</td>
+<td>XIAO camera commands</td>
+<td>REC/SNAP/STAT/PING lines;≤64-byte command;500 ms response deadline, bounded retries; camera delay never blocks deployment</td>
+</tr>
+<tr>
+<td>MAIN</td>
+<td>Serial3 TX14 -&gt;P4 RX19;RX15 &lt;-P4 TX54</td>
+<td>MAIN_NAV + authoritative mission state/commands;P4 status back</td>
+<td>115200,20 Hz;≤96 bytes/frame incl framing; MAIN state expires250 ms; nav age checked independently</td>
+</tr>
+<tr>
+<td>MAIN</td>
+<td>GPIO5 -&gt;BACKUP GPIO4</td>
+<td>Progress-qualified heartbeat</td>
+<td>10 Hz toggles;missing edges500 ms -&gt;suspect; lease expires1 s</td>
+</tr>
+<tr>
+<td>MAIN</td>
+<td>GPIO2,LED31/32,ADC20</td>
+<td>Digital active buzzer;status;100k/22k divider</td>
+<td>Nonblocking pattern;ADC diagnostic until calibrated</td>
+</tr>
+<tr>
+<td>BACKUP Teensy4.1</td>
+<td>Wire18/19,400 kHz after check</td>
+<td>BMP585 0x47,HDC3020 0x44;LSM6DSO32 0x6A quarantined initially</td>
+<td>Baro50 Hz,RH/T1 Hz;optional IMU208 Hz only after repair test</td>
+</tr>
+<tr>
+<td>BACKUP</td>
+<td>Serial1 RX0 only</td>
+<td>Shared L89 TX through1k</td>
+<td>115200 after resync;no GNSS TX commands</td>
+</tr>
+<tr>
+<td>BACKUP</td>
+<td>Serial3 TX14 -&gt;P4 RX16;RX15 &lt;-P4 TX54</td>
+<td>BACKUP_NAV +status/backup authority;P4 status</td>
+<td>115200,20 Hz;≤96-byte frames;250 ms expiry</td>
+</tr>
+<tr>
+<td>BACKUP</td>
+<td>SPI CS10,MOSI11,MISO12,SCK13</td>
+<td>External SD module,alone on bus</td>
+<td>Binary queues +CSV export;card stalls measured,not in event task</td>
+</tr>
+<tr>
+<td>BACKUP</td>
+<td>LEDs36/37</td>
+<td>Status</td>
+<td>No new actuator or RF connection assumed</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>Wire SDA7/SCL8</td>
+<td>LSM6DSO32 0x6A,BMP585 0x47;ES8311 0x18 ignored</td>
+<td>IMU208 Hz,baro50 Hz;no IMU/BMP interrupt wire assumed</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>UART1 RX14 only</td>
+<td>Raw L89 NMEA</td>
+<td>115200,4 KiB RX ring;independent parse</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>UART2 RX19/TX54;UART3 RX16 only</td>
+<td>MAIN input,BACKUP input;one TX54 fans to MAIN/BACKUP through separate1k</td>
+<td>20 Hz normal status;extra ACKs share the same TX owner queue</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>GPIO20/21,22/23,32,33</td>
+<td>Left/right brakes,bay,petri,spare,ESC</td>
+<td>Start all servo frames50 Hz;spare detached;ESC stop1000 µs subject to exact ESC qualification</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>GPIO5 Hall input,10k pull-up</td>
+<td>Wheel pulses</td>
+<td>Edge timestamp /counter ISR;calibrated magnets-per-revolution;zero-speed timeout</td>
+</tr>
+<tr>
+<td>POWER</td>
+<td>I²C INA2600x40 accessed by MAIN</td>
+<td>Battery-side V/I/P only</td>
+<td>No independent steering/logic rail readings exist</td>
+</tr>
+<tr>
+<td>GS ESP32</td>
+<td>SPI CS5,SCK18,MOSI23,MISO19,RST14,BUSY27,IRQ26</td>
+<td>LR1121;USB115200 to GCS</td>
+<td>Same RF plan;transparent decimal CSV;no stale-value reconstruction</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Do not use 1 MHz I²C on MAIN.</strong> Its DS3231 and ICM interfaces constrain the common bus to400 kHz; P4 also gains little from changing this close to launch. PJRC's <a href="https://www.pjrc.com/teensy/td_uart.html">UART</a> and <a href="https://www.pjrc.com/teensy/td_libs_Wire.html">Wire</a> documentation describe buffering and controller APIs. Standard Teensy HardwareSerial is interrupt buffered; do not call it DMA without installing and testing a DMA implementation. DMA is unnecessary for these small UART budgets.</p>
+<h3 id="32-gnss-breakout-pins-checked-against-board-nets">3.2 GNSS breakout pins checked against board nets</h3>
+<p>Current MAIN BUILD_LIST connects L89 <strong>TX/RX/RST</strong>, <strong>WAKE to +3V3_A</strong>, and <strong>BAT to GNSS_VBCKP</strong>. VBCKP is diode-ORed from logic3V3 and the J7 cell input. <strong>3D_FIX,JAM,GEO,SDA,SCL and 1PPS are not routed to an MCU in the current build</strong>. They cannot be polled by software. Test the backup cell and diode voltage with main power removed; a drawn backup circuit does not prove a battery is installed. Do not confuse the DS3231 backup cell with the L89's J7 supply.</p>
+<h3 id="33-interboard-binary-frame-d-t-link">3.3 Interboard binary frame (D, T-LINK)</h3>
+<p>Use COBS framing with a zero delimiter, maximum payload64 bytes (version2; decoded frame90 bytes, COBS wire92 bytes including delimiter) and <strong>CRC-32/ISO-HDLC</strong> over the explicit serialized bytes. Header, little endian: <code>version:u8,type:u8,source:u8,flags:u8,session:u32,sequence:u32,send_mono_us:u64,payload_len:u16</code>. CRC:u32 follows payload. Do not send raw C++ structs; padding, enum width and float layout are not an ICD. Explicitly encode IEEE754 float32 only where declared; coordinate fields are signed degrees×10^7 integers.</p>
+<p>Message allocation:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Payload / cadence</th>
+<th>Validity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NAV_RAW 1</td>
+<td>epoch_id:u32,lat_e7:i32,lon_e7:i32,MSL_mm:i32,vN/vE_mmps:i32 each,fix_quality:u8,fix_dimension:u8,sats:u8,source_kind:u8,HDOP×100:u16,GGA_age_ms:u16,RMC_age_ms:u16,UTC_day_ms:u32;20 Hz envelope, only new GNSS epochs change sample</td>
+<td>Never mark a repeated envelope as a new fix; receiver adds local queue age</td>
+</tr>
+<tr>
+<td>BARO 2</td>
+<td>sample counter,pressure:f32,temperature:f32,pad_pressure:f32,pad_temperature:f32,AGL:f32,v_up:f32,age:u16,validity:u16;20 Hz</td>
+<td>Different board barometers have separate calibration IDs and sample clocks</td>
+</tr>
+<tr>
+<td>MISSION 3</td>
+<td>mission ID,elapsed_ms:u64,launch_elapsed_ms:u64,state:u8,armed/release/bay/petri bits,target revision,owner lease;10 Hz +events</td>
+<td>Monotonic phase;cannot clear completed latches via normal command</td>
+</tr>
+<tr>
+<td>ACT_STATUS 4</td>
+<td>P4 reset/session,state,owner,mode,pulses:u16×4,Hall deg/s:f32,target revision,nav epoch,ages,fault mask;20 Hz</td>
+<td>Commanded position is not measured position</td>
+</tr>
+<tr>
+<td>COMMAND 5</td>
+<td>transaction ID:u32,command:u8,typed payload,length;on demand</td>
+<td>Strict source/phase/range validation;idempotent execution</td>
+</tr>
+<tr>
+<td>ACK 6</td>
+<td>transaction ID,result code,applied revision,event flags;on demand</td>
+<td>ACK means software committed,not mechanism moved</td>
+</tr>
+<tr>
+<td>TIME_SYNC 7</td>
+<td>challenge ID,MAIN elapsed_ms and local roundtrip exchange;1 Hz</td>
+<td>Monotonic offset with uncertainty;never subtract unrelated MCU micros clocks directly</td>
+</tr>
+</tbody>
+</table>
+<p>The version2 maximum92-byte wire frame takes7.99 ms at115200 8N1 (D:92×10/115200), or16.0% occupancy at20 Hz. The electrical inventory reserves96 bytes/8.34 ms per frame, leaving framing margin. See <a href="ICD_WIRE_FORMATS.md">the byte-level ICD</a> for the exact schema and version boundary. P4's single outward link has <strong>one producer queue</strong>, because two independent Serial objects must not drive GPIO54. Use a TX-disabled RX-only port for BACKUP and another for GNSS. The P4 has enough hardware UART controllers; see <a href="https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32p4/api-reference/peripherals/uart.html">Espressif's P4 UART reference</a>.</p>
+<p>CRC detects corruption; it does not authenticate commands. A mission nonce, transaction sequence and physical phase interlocks prevent accidental stale/repeated operation but are not cryptographic spoofing protection. Do not describe this as secure authentication.</p>
+<h2 id="4-l89ha-boot-configuration-real-fixes-and-fastest-practical-startup">4. L89HA: boot configuration, real fixes and fastest practical startup</h2>
+<h3 id="41-what-the-evidence-supports">4.1 What the evidence supports</h3>
+<p>The current receiver reports AG3335M firmware (H, team capture). The official <a href="https://quectel.com/content/uploads/2024/02/Quectel_L89_R2.0_Hardware-Design_V1.2.pdf">L89 R2.0 hardware guide v1.2</a>, antenna section, describes an <strong>L1 patch and L5 chip antenna</strong>. <a href="https://7semi.com/7semi-l89ha-breakout-multi-gnss-engines-for-gps-irnss-glonass-beidou-galileo-and-qzss/">7Semi's board listing</a> also lists both built-in antennas. Therefore an extra antenna is <strong>not inherently required for NavIC</strong>. An attached external antenna may switch out the internal path; check its bands and actual antenna-status report.</p>
+<p>This receiver's published signal list uses <strong>NavIC L5</strong>, not GPS L5/Galileo E5a dual-frequency observations of the same satellite. Do not promise RTK, centimetre landing, or dual-frequency ionospheric cancellation from the L1+L5 label. Channel capacity does not by itself identify the most accurate constellation combination for India. Compare the default NavIC-capable profile against all-six using repeated open-sky static/moving tests, same mounting and near-simultaneous conditions; keep the one with lower measured residuals and fewer outages.</p>
+<p>The installed firmware string is not identical to the commercial release names in the protocol's compatibility notes. <strong>Every setting must be ACK-checked and queried where supported.</strong> An unsupported command leaves the last tested configuration active; do not retry indefinitely or send a second vendor's command family blindly. The <a href="https://forums.quectel.com/t/problem-with-pstm-commands-for-l89ha-gnss-module/48222">Quectel support thread</a> confirms why ST PSTM commands are inappropriate to this Airoha unit. The supplied <a href="https://github.com/7semi-solutions/7semi-L89HA-GNSS-Module-Arduino-Library">7Semi library</a> is useful for comparison, not sufficient to enforce epoch validity and boot transactions by itself.</p>
+<h3 id="42-complete-proposed-command-transaction">4.2 Complete proposed command transaction</h3>
+<p>The following <strong>D configuration</strong>, based on <a href="https://quectel.com/content/uploads/2024/02/Quectel_L89_R2.0_GNSS_Protocol_Specification_V1.0.pdf">Quectel protocol v1.0 §§2.4.9–2.4.41</a>, is generated with XOR checksums in <code>reference_code/engineering_checks.py</code>; <code>\r\n</code> follows every line. <code>0</code> ACK result means accepted. Settings/behaviour must still pass T-GNSS on this firmware.</p>
+<table>
+<thead>
+<tr>
+<th>Command body (checksum in generated file)</th>
+<th>Expected ACK body</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PQTMVERNO</td>
+<td>PQTMVERNO response</td>
+<td>Identify</td>
+</tr>
+<tr>
+<td>PAIR067</td>
+<td>PAIR001,067,0</td>
+<td>Query constellations</td>
+</tr>
+<tr>
+<td>PAIR050,1000</td>
+<td>PAIR001,050,0</td>
+<td>Safe configuration rate</td>
+</tr>
+<tr>
+<td>PAIR066,1,1,1,1,1,1</td>
+<td>PAIR001,066,0</td>
+<td>All-six trial</td>
+</tr>
+<tr>
+<td>PAIR070,0</td>
+<td>PAIR001,070,0</td>
+<td>Disable static hold</td>
+</tr>
+<tr>
+<td>PAIR072,10</td>
+<td>PAIR001,072,0</td>
+<td>Elevation mask trial</td>
+</tr>
+<tr>
+<td>PAIR410,1</td>
+<td>PAIR001,410,0</td>
+<td>SBAS search</td>
+</tr>
+<tr>
+<td>PAIR400,2</td>
+<td>PAIR001,400,0</td>
+<td>SBAS corrections</td>
+</tr>
+<tr>
+<td>PAIR062,0,1</td>
+<td>PAIR001,062,0</td>
+<td>GGA</td>
+</tr>
+<tr>
+<td>PAIR062,1,0</td>
+<td>PAIR001,062,0</td>
+<td>No GLL</td>
+</tr>
+<tr>
+<td>PAIR062,2,1</td>
+<td>PAIR001,062,0</td>
+<td>GSA</td>
+</tr>
+<tr>
+<td>PAIR062,3,5</td>
+<td>PAIR001,062,0</td>
+<td>Sparse GSV</td>
+</tr>
+<tr>
+<td>PAIR062,4,1</td>
+<td>PAIR001,062,0</td>
+<td>RMC</td>
+</tr>
+<tr>
+<td>PAIR062,5,0</td>
+<td>PAIR001,062,0</td>
+<td>No VTG</td>
+</tr>
+<tr>
+<td>PAIR062,6,0</td>
+<td>PAIR001,062,0</td>
+<td>No ZDA</td>
+</tr>
+<tr>
+<td>PAIR062,7,0</td>
+<td>PAIR001,062,0</td>
+<td>No GRS</td>
+</tr>
+<tr>
+<td>PAIR062,8,1</td>
+<td>PAIR001,062,0</td>
+<td>GST if supported</td>
+</tr>
+<tr>
+<td>PAIR864,0,0,115200</td>
+<td>PAIR001,864,0</td>
+<td>Baud</td>
+</tr>
+<tr>
+<td>PAIR513</td>
+<td>PAIR001,513,0</td>
+<td>Save</td>
+</tr>
+<tr>
+<td>PAIR050,200</td>
+<td>PAIR001,050,0</td>
+<td>5 Hz trial</td>
+</tr>
+<tr>
+<td>PAIR003;PAIR513;PAIR002</td>
+<td>003,513,002 ACKs</td>
+<td>Persist high-rate profile</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Wire-exact sentences and ACK checksums are in <a href="reference_code/gnss_commands.txt">gnss_commands.txt</a>.</strong> This list is a transaction plan, not a paste-and-forget script. The final three commands are separate transactions. Save at high rate only while GNSS is stopped, then restart. Baud change requires receiver reboot; preserve backup supply, avoid a cold-start command. MAIN waits for final UART TX completion before changing its own baud. ACK may arrive at the previous rate; collect it before reset. Re-discover the rate and query settings after restart. Do not change baud or persist settings in flight.</p>
+<p>The six PAIR066 fields are GPS,GLONASS,Galileo,BeiDou,QZSS,NavIC. The existing <code>1,1,1,0,0,1</code> combination is not in the published supported-mode list. All-six and the default GPS/Galileo/NavIC/QZSS profile are listed. A successful ACK is necessary but acquisition/fix testing is also required. The profile is a trial, not an assertion that more constellations always improve accuracy.</p>
+<p>Protocol caveats: high-rate GGA/RMC can differ from other sentences' cadence; GST can be unsupported. Do not treat a requested5 Hz as a measured5 Hz. Capture UTC epoch intervals, UART load and dropped-byte counters. PAIR004/005/006/007 are hot/warm/cold/full-cold restarts; use cold commands only for deliberate ground tests. Configuration save and navigation-data save are different operations (PAIR513 versus511). Details and restart checksums are included in the generated command file.</p>
+<h3 id="43-nonblocking-boot-state-machine-d">4.3 Nonblocking boot state machine (D)</h3>
+<p><code>LISTEN -&gt; IDENTIFY -&gt; QUERY -&gt; WRITE_ONE -&gt; WAIT_ACK -&gt; QUERY_READBACK -&gt; NEXT -&gt; SAVE -&gt; REBOOT_IF_NEEDED -&gt; VERIFY_STREAM -&gt; READY</code>.</p>
+<ul>
+<li>MAIN alone transmits commands. Start listening at the last qualified baud, then9600 and115200. UART discovery requires <strong>two checksum-correct recognizable sentences with sensible lengths</strong>; bytes alone are not proof of baud.</li>
+<li>Each command has a500 ms ACK deadline and at most2 retries (D). Identify replies may arrive outside that window; the configuration FSM has a separate startup deadline. If a command is rejected, log command/result and return to the tested profile. Never claim NavIC enabled from a sent string.</li>
+<li>BACKUP/P4 rotate receive rates after an idle/decode-failure timeout and independently reacquire. MAIN sends a baud-change notice over the interboard links, but raw GNSS reacquisition also works if that notice is lost. Disable guidance until a fresh coherent epoch has been accepted at the new rate.</li>
+<li>The launch configuration becomes immutable after arming. MAIN reset in flight listens for the running stream and does <strong>not</strong> reset/reconfigure the shared GNSS.</li>
+</ul>
+<p>At1152008N1 the budget is11520 bytes/s (D). An assumed200 bytes per GGA+RMC epoch costs1000 bytes/s at5 Hz or2000 at10 Hz. Allow additional1 Hz quality messages and all constellation GSV bursts; measure the true maximum line length. At9600 the budget is960 bytes/s:5 Hz pairs alone can overflow it. Use5 Hz if demonstrated; retain1 Hz as the qualified fallback. Ten hertz requires measured benefit, not just ACK success.</p>
+<h3 id="44-navigation-mode-assistance-and-proof-of-a-real-fix">4.4 Navigation mode, assistance and proof of a real fix</h3>
+<p>No exact dynamic-model, geofence configuration, reference-time/location injection or EPO transfer block is asserted for this particular firmware: the currently listed HA v1.1 / AGNSS documents are account-gated on the <a href="https://www.quectel.com/product/gnss-l89-r2/">Quectel product page</a>. No publicly verified AG3335M register-level SDK was obtained. LC29H/LC76G command similarity is not firmware compatibility. Debug binary output is not a documented superior PVT interface. Leave unspecified dynamic settings at tested defaults. The10° mask is a D tradeoff; compare against the original setting in T-GNSS.</p>
+<p>For launch in three days, the highest-confidence TTFF measures are clear sky before arming, unobstructed internal antennas, quiet motor/DC-DC environment, verified V_BCKP retention, and avoiding unnecessary resets. Retain a warm receiver through the pad wait. Do not promise a cold/hot TTFF without a capture from this unit. GAGAN-capable SBAS support does not prove corrections are currently being applied.</p>
+<p>For context only, hardware-guide Table2 lists unaided cold/warm/hot TTFF28/23/1 s, EASY cold/warm15/5 s and flash-EPO cold3 s under its stated test conditions. These are not acceptance results for the team's installed firmware. The same guide specifies V_BCKP2.2–4.3 V and RESET_N low for at least100 ms; use a scheduled reset pulse only during deliberate ground recovery. A permanent reset loop destroys acquisition progress. An exact per-constellation tracking-channel allocation was not verified; do not infer the optimal profile from a generic chipset channel count. <a href="https://quectel.com/content/uploads/2024/02/Quectel_L89_R2.0_Hardware-Design_V1.2.pdf">Quectel hardware guide, Table2 and §§3.2.2,5.2.2</a>.</p>
+<p>JAM/GEO/1PPS are not wired to a processor. A B diagnostic can enable UART jamming reports with PAIR391,1 and parse PAIRSPF status, after firmware qualification; critical interference must invalidate precision navigation. PAIR074,1 is the documented AIC option, subject to ACK/readback testing. Neither supplies spoof-proof integrity. No unverified geofence command is added; enforce the approved landing area in the flight planner and target validator.</p>
+<p>Assistance option B: obtain the <strong>matching</strong> HA AGNSS specification and a current assistance file through the vendor tool; verify firmware, GNSS week/time scale, validity interval, record lengths and expected response. MAIN can receive the binary file over USB before flight and stream vendor-defined assistance transactions in bounded chunks while disarmed. DS3231 provides time only if OSF is clear and it has been synchronized; convert UTC/GNSS time with the correct leap-second handling from that assistance protocol. A known pad coordinate is an <strong>assistance input</strong>, never a navigation output. Do not add that input to the LIVE GNSS or steering state. The current code's PMTK-based aiding path must not be called working until the receiver confirms it and repeated TTFF comparisons show improvement.</p>
+<p><strong>GNSS acceptance contract (D, T-NAV):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Launch starting gate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Origin</td>
+<td>LIVE_UART only; no replay/simulation/default values</td>
+</tr>
+<tr>
+<td>Transport</td>
+<td>Correct NMEA XOR checksum, valid numeric grammar, proper hemisphere/minutes bounds</td>
+</tr>
+<tr>
+<td>Coherence</td>
+<td>GGA and RMC same UTC epoch; RMC status A; allowed non-DR fix quality; recent GSA3D</td>
+</tr>
+<tr>
+<td>Quality</td>
+<td>At least6 satellites used and HDOP≤2.5 initially; recent3D status; GST if available supplies uncertainty,not HDOP in metres</td>
+</tr>
+<tr>
+<td>Freshness</td>
+<td>At5 Hz:GGA/RMC ages≤500 ms; at qualified1 Hz≤1500 ms; quality messages≤2500 ms; no replayed UTC epoch refresh</td>
+</tr>
+<tr>
+<td>Plausibility</td>
+<td>Finite lat/lon/velocity,physical geographic bounds,drop-zone plausibility,innovation check against last accepted state with uncertainty</td>
+</tr>
+<tr>
+<td>Reacquisition</td>
+<td>Five consecutive new coherent accepted epochs before full-authority steering; neutral/limited authority during transition</td>
+</tr>
+</tbody>
+</table>
+<p>Do not reject a genuine coordinate solely because it equals zero: equator/Greenwich are legitimate. Invalidity is represented separately. At this site use a launch-area plausibility gate centred on a <strong>measured pad fix</strong>, with a documented radius appropriate to the permitted flight area. Do not hard-code the target as the measured origin. GNSS quality flags are useful but do not prove resistance to spoofing; hardware here has no independent absolute-position integrity sensor.</p>
+<p>P4 parses raw NMEA itself for minimum delay, and also receives MAIN's navigation and quality state. Both are views of the <strong>same receiver</strong>, not independent position measurements. Do not fuse the two as if covariance decreases. Select the fresher validated copy of the same epoch; compare for disagreement. Raw lost but MAIN valid: use MAIN with its original age plus transport uncertainty. MAIN lost but raw valid: keep local guidance. Both stale: leave precision guidance; §8 defines the safe degraded policy.</p>
+<h2 id="5-sensor-and-module-configuration">5. Sensor and module configuration</h2>
+<h3 id="51-shared-driver-contract">5.1 Shared driver contract</h3>
+<p>Every driver has <code>beginStep(now)</code>, <code>pollReady(now)</code>, <code>startRead</code>, <code>finishRead</code>, <code>convert</code>, <code>health</code> and bounded <code>recoverStep</code>; no driver calibrates or sleeps the rest of the computer. A synchronous I²C call still occupies CPU/bus time even with no <code>delay()</code>. Use a bus owner, explicit controller timeout and measured worst case; do not claim zero blocking for stock Wire/RadioLib initialization. Long boot waits are deadlines across scheduler passes. Built-in self-tests run only on the ground; restore and verify flight configuration afterward.</p>
+<p>For I²C recovery: stop scheduling the failed device, terminate the peripheral, release SDA/SCL open-drain, clock SCL up to9 times only while it can actually rise, generate STOP if possible, restart controller, reidentify, reconfigure and discard settling samples. If SCL is held low, pin toggling does not fix it. No per-sensor power switches are wired; repeated failures quarantine the device. A shared-rail power cycle would reset unrelated sensors and must not be performed automatically in flight. Use100 kHz fallback if a400 kHz waveform fails rise-time/voltage checks.</p>
+<h3 id="52-bmp585-all-three-processors">5.2 BMP585, all three processors</h3>
+<p><strong>V basis:</strong> <a href="https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp585-ds003.pdf">Bosch datasheet §§4.3–4.6,8.27–8.36,Tables7/9</a>; <a href="https://github.com/boschsensortec/BMP5_SensorAPI/blob/master/bmp5_defs.h">SensorAPI definitions</a>. <strong>D selection:</strong> pressureOSR16,temperatureOSR2,50 Hz,hardwareIIR bypass; short software filter separate from event path.</p>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Address/value</th>
+<th>Reason / verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Soft reset</td>
+<td>0x7E←0xB6</td>
+<td>Schedule ≥2 ms;verify ID0x01=0x51 and NVM-ready/no-error0x28</td>
+</tr>
+<tr>
+<td>Standby</td>
+<td>0x37←0xBC</td>
+<td>deep-dis;50 Hz code0x0F;wait mode transition</td>
+</tr>
+<tr>
+<td>Disable FIFO</td>
+<td>0x16←0x00;0x18←0x00</td>
+<td>Polling baseline</td>
+</tr>
+<tr>
+<td>Interrupt routes off</td>
+<td>0x15←0x00</td>
+<td>No INT wire</td>
+</tr>
+<tr>
+<td>DSP/IIR</td>
+<td>0x30←0x03;0x31←0x00</td>
+<td>Preserve reserved bits;unfiltered shadow</td>
+</tr>
+<tr>
+<td>OSR</td>
+<td>0x36←0x61</td>
+<td>Pressure enabled,P×16,T×2</td>
+</tr>
+<tr>
+<td>Run</td>
+<td>0x37←0xBD</td>
+<td>NORMAL50 Hz</td>
+</tr>
+<tr>
+<td>Verify</td>
+<td>0x38</td>
+<td>Effective OSRs and ODR-valid;reject silent fallback</td>
+</tr>
+<tr>
+<td>Read</td>
+<td>0x27 DRDY then burst0x1D..0x22</td>
+<td>Timestamp actual ready/read;P=u24/64 Pa,T=s24/65536°C</td>
+</tr>
+</tbody>
+</table>
+<p>Do not apply BMP280/BMP3 compensation coefficients. BMP585 outputs compensated data. The official <a href="https://github.com/boschsensortec/BMP5_SensorAPI/blob/master/bmp5.c">Bosch driver</a> supplies initialization/status/self-test support; use its result codes and verify nonconstant plausible physical samples. The pressureOSR16 intrinsic noise figure is0.21 Pa RMS at the datasheet's stated setting; the exact fitted-board noise with T×2 must be measured. Highest-resolution0.08 Pa is a different slower setting, not the guaranteed noise of this50 Hz profile.</p>
+<p><strong>Derived altimetry (D, T-BARO):</strong> with a fixed pad pressure p0 and measured ambient pad temperature T0K,</p>
+<p><code>h_AGL = T0K/L * [1 - (p/p0)^(Rd*L/g)]</code>, using <code>L=0.0065 K/m</code>, <code>Rd=287.05 J/(kg K)</code>, <code>g=9.80665 m/s²</code> as the declared standard-atmosphere model constants. An isothermal alternative is <code>h = Rd*Tmean/g*ln(p0/p)</code>. Both assume a temperature profile; neither sensor die temperature during descent nor boot zero removes atmospheric-model error. Retain raw pressure and the datum in logs. Match organiser ground-reference expectations using a calibrated pressure/height comparison.</p>
+<p>Model basis: <a href="https://ntrs.nasa.gov/api/citations/19770009539/downloads/19770009539.pdf">U.S. Standard Atmosphere1976</a>. Using a measured pad temperature changes the reference model but does not measure the actual lapse rate or humidity profile.</p>
+<p>At100 kPa and293.15 K, <code>|dh/dp|≈0.0858 m/Pa</code>;0.21 Pa corresponds to≈0.018 m intrinsic RMS. That is <strong>resolution noise</strong>, not altitude accuracy. Pressure-port flow at8 m/s withρ1.2 kg/m³ has dynamic pressure≈38.4 Pa, equivalent to≈3.3 m if fully coupled; at20 m/s≈240 Pa/20.6 m. Port design, weather drift, datum error and temperature profile dominate the centimetre noise figure. An idealized±6 Pa relative sensor error alone maps to≈0.51 m at that operating point; environmental and model errors must be added.</p>
+<p>Event path: median-of3 valid samples plus a short causal filter/vertical estimate. Budget≤100 ms from a threshold crossing to event command (D), equivalent to≤0.8 m at8 m/s and≤2.5 m at25 m/s. Confirm with a pressure ramp and GPIO/servo trace; do not claim this from ODR alone. Guidance may use a0.2 s smoothing time constant; it must not silently become the600 m trigger path. Read DRDY at≥100 Hz, ignore duplicates, flag baro stale after100 ms. Test all three barometers together at pad and during ramps; they are independent sensors but share environmental errors.</p>
+<h3 id="53-icm-20948-ak09916-on-main">5.3 ICM-20948 / AK09916 on MAIN</h3>
+<p><strong>V basis:</strong> <a href="https://product.tdk.com/system/files/dam/doc/product/sensor/mortion-inertial/imu/data_sheet/ds-000189-icm-20948-v1.5.pdf">TDK DS-000189 register map</a>, <a href="https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary">SparkFun register definitions/driver</a>. <strong>D baseline:</strong> no DMP,no FIFO,gyro≈220 Hz,accel225 Hz;poll ready at500 Hz;±2000 dps/±16 g;filter setting3. Readiness is set only after measured samples pass plausibility.</p>
+<table>
+<thead>
+<tr>
+<th>Bank / write</th>
+<th>Proposed value</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>REG_BANK_SEL0x7F</td>
+<td>0x00</td>
+<td>Known bank</td>
+</tr>
+<tr>
+<td>B0 PWR_MGMT_1 0x06</td>
+<td>0x80,then0x01</td>
+<td>Reset,wake/clock;wait ≥100 ms D</td>
+</tr>
+<tr>
+<td>B0 PWR_MGMT_2 0x07;LP_CONFIG0x05</td>
+<td>0x00;0x00</td>
+<td>All axes,continuous</td>
+</tr>
+<tr>
+<td>B0 USER_CTRL0x03;INT_PIN_CFG0x0F</td>
+<td>0x00;0x02</td>
+<td>DMP/FIFO/master off;bypass for AK</td>
+</tr>
+<tr>
+<td>B0 INT_ENABLE_1 0x11</td>
+<td>0x01</td>
+<td>Raw-ready status;no physical IRQ assumed</td>
+</tr>
+<tr>
+<td>B2 GYRO_SMPLRT_DIV0x00</td>
+<td>0x04</td>
+<td>Base-divider5</td>
+</tr>
+<tr>
+<td>B2 GYRO_CONFIG_1 0x01</td>
+<td>0x1F</td>
+<td>FS2000,DLPF3,FCHOICE1</td>
+</tr>
+<tr>
+<td>B2 ACCEL_SMPLRT_DIV1/2 0x10/11</td>
+<td>0x00/0x04</td>
+<td>Divider5</td>
+</tr>
+<tr>
+<td>B2 ACCEL_CONFIG0x14</td>
+<td>0x1F</td>
+<td>FS16g,DLPF3,FCHOICE1</td>
+</tr>
+<tr>
+<td>Return B0</td>
+<td>0x7F←0x00</td>
+<td>Data access</td>
+</tr>
+<tr>
+<td>AK0x0C CNTL3 0x32;CNTL2 0x31</td>
+<td>0x01;then0x08</td>
+<td>Reset;100 Hz continuous after settling</td>
+</tr>
+</tbody>
+</table>
+<p>Bank select0x20 selects B2. WHO_AM_I0x00 must read0xEA. Poll status0x1A; burst14 bytes from0x2D for accel/gyro/temperature. Convert big-endian signed words;±16g scale2048 LSB/g,gyro16.4 LSB/(deg/s). AK WIA2 must be0x09; burstST1 at0x10 throughST2 at0x18, including the intervening byte;accept DRDY and reject overflow. Magnetometer axes need the separately verified mounting transform. Bypass is simpler than programming the I²C-master state machine; do not enable both at once. B3 master/slave registers remain untouched in this baseline.</p>
+<p><strong>Wedge recovery (H plus D test):</strong> at known0x69, selectB0 then blind-reset PWR_MGMT_1,wait,verify WHO_AM_I and reconfigure. <strong>Never blind-reset0x68</strong>, the wired DS3231 address. ACK plus0xFF data is a fault, not a valid IMU. If bank-select itself cannot be trusted because the device is wedged, soft reset may fail; recover the bus then quarantine if still stuck. Do not promise a software cure for every power-domain failure.</p>
+<p>Self-test: use a driver/datasheet-defined ground test with baseline versus stimulated samples and published limits; store both results and restore the above registers. No guessed self-test thresholds are introduced here. Six-position accel calibration,stationary gyro bias,and magnetometer ellipsoid fit are in §11. Shock can exceed±16g even though structure must survive30g: flag saturation,do not integrate clipped acceleration into navigation. Mechanical-wheel magnetic disturbance can invalidate compass yaw; do not compensate it with one hard-iron offset measured motor-off.</p>
+<h3 id="54-lsm6dso32-on-p4-diagnosis-on-backup">5.4 LSM6DSO32 on P4; diagnosis on BACKUP</h3>
+<p><strong>V basis:</strong> <a href="https://www.st.com/resource/en/datasheet/lsm6dso32.pdf">ST datasheet</a>, <a href="https://github.com/STMicroelectronics/lsm6dso32-pid">official platform-independent driver</a>, <a href="https://github.com/STMicroelectronics/STMems_Standard_C_drivers/tree/master/lsm6dso32_STdC">ST examples</a>. <strong>D baseline:</strong>208 Hz,±16g/±2000 dps,poll ready500 Hz;FIFO off until tagged timestamp parsing is tested.</p>
+<table>
+<thead>
+<tr>
+<th>Register / write</th>
+<th>Value</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WHO_AM_I0x0F read</td>
+<td>expect0x6C</td>
+<td>At0x6A</td>
+</tr>
+<tr>
+<td>CTRL3_C0x12</td>
+<td>0x01 then0x44</td>
+<td>Wait SW_RESET clear;BDU+auto-increment</td>
+</tr>
+<tr>
+<td>CTRL1_XL0x10</td>
+<td>0x5C</td>
+<td>208 Hz,16g,LPF2 off</td>
+</tr>
+<tr>
+<td>CTRL2_G0x11</td>
+<td>0x5C</td>
+<td>208 Hz,2000dps</td>
+</tr>
+<tr>
+<td>CTRL4_C0x13</td>
+<td>0x02</td>
+<td>Gyro LPF1 enabled</td>
+</tr>
+<tr>
+<td>CTRL6_C0x15</td>
+<td>0x03</td>
+<td>Gyro filter MEDIUM;high-performance</td>
+</tr>
+<tr>
+<td>CTRL7_G0x16;CTRL8_XL0x17</td>
+<td>0x00;0x00</td>
+<td>High-pass off;preserve gravity</td>
+</tr>
+<tr>
+<td>CTRL10_C0x19</td>
+<td>0x20</td>
+<td>Timestamp counter enabled</td>
+</tr>
+<tr>
+<td>INT1/2_CTRL0x0D/0E</td>
+<td>0x00/0x00</td>
+<td>No wired IRQ</td>
+</tr>
+<tr>
+<td>FIFO_CTRL1..4 0x07..0x0A</td>
+<td>0,0,0,0</td>
+<td>Bypass baseline</td>
+</tr>
+<tr>
+<td>STATUS_REG0x1E read</td>
+<td>XLDA/GDA</td>
+<td>Only count new samples</td>
+</tr>
+<tr>
+<td>Burst0x20..0x2D</td>
+<td>14 bytes</td>
+<td>Temp,gyro,accel;little endian</td>
+</tr>
+<tr>
+<td>Timestamp0x40..0x43 read</td>
+<td>u32×25 µs</td>
+<td>Wrap-aware sensor time;mapping uncertainty logged</td>
+</tr>
+</tbody>
+</table>
+<p>16g uses0.488 mg/LSB,2000dps uses70 mdps/LSB;temperature=25+raw/256°C. These are driver/datasheet conversions, not calibration results. LPF2 is deliberately off to keep the launch configuration small; add a bounded software anti-noise filter at the full sample rate, not after downsampling. Do not enable accelerometer high-pass on an attitude/gravity channel.</p>
+<p><strong>B FIFO option:</strong> ST functions <code>fifo_xl_batch_set(208Hz)</code>, <code>fifo_gy_batch_set(208Hz)</code>, <code>fifo_timestamp_decimation_set(DEC_1)</code>, <code>fifo_watermark_set(32)</code>, <code>fifo_mode_set(STREAM_MODE)</code>. Poll FIFO level/overrun every5 ms,drain complete tagged7-byte records via0x78..0x7E,decode tag parity/type and timestamp records,track sample order,flush and reinitialize after overrun. Watermark units are records, not a guaranteed32 synchronized six-axis samples. Use the official tagged-FIFO example to generate/read back register values; this optional profile is <strong>not qualified</strong> in the provided reference code.</p>
+<p><strong>A BACKUP diagnosis:</strong> disconnect actuator power first; confirm breakout supply and ground and DO/CS straps;scan100 kHz including0x6B;read0x0F repeatedly;run reset/status readbacks;inspect bus pull-ups,voltage and clock waveform;read all six static orientations and hand rotations;check scales for DSO32 rather than an ordinary2g LSM variant. Compare the same breakout on the good P4 bus with power off while moving it. If failures follow the breakout,quarantine it;if they follow BACKUP,inspect that bus/wiring. Do not revive it into the estimator based on an ACK alone. Full positive/negative self-test follows the exact ST example and its settling/limits; restore flight configuration and retest outputs.</p>
+<p>The downloaded <a href="https://github.com/STMicroelectronics/STMems_Standard_C_drivers/blob/master/lsm6dso32_STdC/examples/lsm6dso32_self_test.c">ST self-test example</a> uses52 Hz/4g for the acceleration test, averages5 samples after settling, and checks an absolute stimulated difference of50–1700 mg per axis; its gyro test checks150000–700000 mdps per axis. Follow its complete setup and100 ms settling stages rather than applying those limits to the flight configuration. Replace the example's unlimited wait loops with deadlines in the board integration.</p>
+<h3 id="55-ina260-ds3231-hdc3020-and-w25q64">5.5 INA260, DS3231, HDC3020 and W25Q64</h3>
+<table>
+<thead>
+<tr>
+<th>Device / priority</th>
+<th>D boot configuration and exact read path</th>
+<th>Detection / timing / recovery</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>INA260 A</td>
+<td>I²C0x40; verify0xFE=0x5449 and0xFF device bits=0x2270 (mask low revision nibble). Reset by0x00←0x8000; poll reset completion with deadline. Write0x00←0x6527:16 averages,1.1 ms voltage/current conversions,continuous both; read back. Write0x06←0x0000 (no wired ALERT). Poll0x06 CVRF bit3; individually read0x01 signed current,0x02 unsigned voltage,0x03 unsigned power,MSB first. Scale1.25 mA,1.25 mV,10 mW per LSB.</td>
+<td>Nominal conversion cycle35.2 ms D=16×(1.1+1.1),poll50 Hz,publish latest valid sample20 Hz with original timestamp; no FIFO. Check math-overflow bit2; bracket the register reads with status and discard/retry if another conversion completed mid-read. Finite bus timeout and shared recovery; identity/config/reference-load test rather than invented self-test. No calibration register; calibrate externally. Reset/startup deadline10 ms D to qualify.</td>
+</tr>
+<tr>
+<td>DS3231 A</td>
+<td>I²C0x68;read status0x0F first;read coherent0x00..0x06 calendar burst;BCD and calendar validation. RMW0x0E:EOSC=0,INTCN=1,alarm enables0;disable unused32kHz by RMW0x0F bit3;do not overwrite OSF</td>
+<td>OSF=1 makes absolute time untrusted until explicitly set from verified UTC;readback then clearOSF. No physical1PPS link. Never set compile-time date on every boot</td>
+</tr>
+<tr>
+<td>HDC3020 A</td>
+<td>I²C0x44;command0x3781 read manufacturer0x3000+CRC;0x30A2 reset,0x3066 heater-off,0x2130 auto1Hz lowest-noise;0xE000 -&gt;6 bytes T_MSB,T_LSB,CRC,RH_MSB,RH_LSB,CRC</td>
+<td>T=-45+175·u16/65535;RH=100·u16/65535;CRC8 poly0x31/init0xFF per word;12.5 ms conversion;allow ground startup10 ms D before first command,one full measurement before data. No all-FF reads accepted. Reset/reprobe if repeated CRC/read errors</td>
+</tr>
+<tr>
+<td>W25Q64 A</td>
+<td>SPI1 CS9;read JEDEC0x9F first,confirm suffix/voltage;0x05 readstatus;0x06 WREN,verifyWEL;0x02+24bitaddr+page data;0x03+address readback;0x20+alignedaddress4KiB erase <strong>only preflight</strong></td>
+<td>Use256-byte page boundaries;pollWIP without holdingSPI bus. Max times depend on actual suffix;timeout from correct datasheet,not infinite while(WIP). Do not rewrite protection/QE bits or chip erase at boot. CRC-framed append records,scan after reset</td>
+</tr>
+</tbody>
+</table>
+<p>V references: <a href="https://www.ti.com/lit/ds/symlink/ina260.pdf">TI INA260 §§8.5–8.6</a>, <a href="https://www.analog.com/media/en/technical-documentation/data-sheets/ds3231.pdf">ADI DS3231 register map</a>, <a href="https://www.ti.com/lit/ds/symlink/hdc3020.pdf">TI HDC3020 Tables7-1/7-4/7-5</a>, <a href="https://www.ti.com/lit/an/sboa631/sboa631.pdf">TI programming application note</a>, <a href="https://www.winbond.com/resource-files/w25q64jv%20spi%20%20%20revc%2006032016%20kms.pdf">Winbond W25Q64JV instruction tables</a>. Winbond suffix is <strong>U</strong> until read from the actual chip;JV timings must not be assumed for every W25Q64 variant. TI does not supply a universal Arduino SDK for these parts; <a href="https://github.com/adafruit/Adafruit_INA260">Adafruit INA260</a> and <a href="https://github.com/adafruit/Adafruit_HDC302x">Adafruit HDC302x</a> are board-vendor/community implementations, not TI drivers.</p>
+<p>HDC3020 and SHT4x share a possible address but use different protocols;a generic ACK cannot select the driver. Detect identity first,log the part once,and never oscillate between two command sets in flight. Environmental self-test here means CRC,identity,known-reference comparison and plausible response;these devices do not all expose a MEMS-style stimulated self-test. The INA260 sees only current physically downstream of its shunt. Any ESC wired directly to battery is excluded from coulomb counting;show that limitation rather than manufacturing total battery energy/SOC.</p>
+<h3 id="56-camera-buzzer-and-mcu-services">5.6 Camera, buzzer and MCU services</h3>
+<p>The camera protocol in the supplied <code>vritra_cam.ino</code> is retained:115200 UART0 GPIO44 RX/GPIO43 TX on XIAO;MAIN Serial1TX1/RX0;PING,STAT,SNAP,REC lines. Confirm actual line endings/responses from this source,then log <code>CAM REC OK</code> as a software ACK. MAIN repeats REC with a bounded timer until acknowledgment;camera initialization or SD failure must never hold the main loop. Start recording on drone lift if practical to capture release;this is earlier than the optional separation-to-touchdown interval. Sense PSRAM/camera settings must match the actual board/camera revision. Camera storage is independent and its timestamps need a documented mapping to mission time. The source's never-start-Wi-Fi/BT approach is appropriate;do not add wireless setup for launch. <a href="https://wiki.seeedstudio.com/xiao_esp32s3_camera_usage/">Seeed Sense camera documentation</a> and <a href="https://github.com/espressif/esp32-camera">Espressif camera driver</a> are the hardware/driver sources;exact camera sensor is U until identified.</p>
+<p>Buzzer:MAIN GPIO2 digital HIGH/LOW drives the fitted active Grove input. Remove I²S initialization and the old amplifier pin ownership. Use a timed beacon pattern after landing and a grounded manual command. Boot LOW until state restore;restore beacon after a valid landed journal. Sound pressure requires measurement;GPIO success is not acoustic success.</p>
+<p>Teensy:use a cooperative deadline scheduler;IntervalTimer only sets flags/timestamps,no I²C/SD/Serial prints in the ISR. Native Teensy4.1 SD usesSDIO via the bundled SD/SdFat path when a card is fitted;BACKUP's external module stays on its ownSPI bus. EEPROM emulation is flash-backed,so writing every sample is inappropriate;journal only essential phase/mission changes. Read <a href="https://www.pjrc.com/teensy/td_timing_IntervalTimer.html">IntervalTimer</a>, <a href="https://www.pjrc.com/teensy/td_libs_EEPROM.html">EEPROM</a> and the <a href="https://github.com/PaulStoffregen/SD">PJRC SD library</a>.</p>
+<p>P4:use one sensor/bus owner and one actuator owner. FreeRTOS tasks exchange immutable snapshots;no spin waiting on a mutex held by logging. <code>esp_timer_get_time()</code> supplies64-bit monotonic timestamps;hardwarePWM runs independently of tasks. Arduino core3.3.x uses pin-based <code>ledcAttach/ledcWrite</code>;the included bench sketch's14-bit50Hz method has≈1.22 µs quantization (D). <a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/api/ledc.html">Arduino LEDC reference</a>, <a href="https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32p4/api-reference/peripherals/mcpwm.html">P4 MCPWM</a> and <a href="https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32p4/api-reference/system/freertos_idf.html">IDF FreeRTOS</a> define supported APIs. MCPWM offers explicit synchronization/fault features but replacing a workingLEDC setup is B;prove pulse widths on the scope first. No register map should be hard-coded in application code for these peripherals.</p>
+<h2 id="6-radio-truthful-csv-and-storage">6. Radio, truthful CSV and storage</h2>
+<h3 id="61-lr1121-initialization-a">6.1 LR1121 initialization (A)</h3>
+<p>The official assignment was <strong>visually checked on PDF page2,row18,team025</strong>. MAIN866.50 MHz,backup865.25 MHz,SF9,BW125 kHz,CR4/5,sync0x99. Use MAIN by default and change channel only on Net Control instruction;do not preserve the old autonomous toggling failover. This is a raw LoRa point-to-point link using RadioLib,not a LoRaWAN network implementation. The assignment supports this link plan;do not claim NETID compliance from a LoRa sync byte alone.</p>
+<p>Retain the supplied proven-to-compile RF-switch table,then verify on the actual Core1121/ANT2:STBY(LOW,LOW),RX(HIGH,LOW),TX_LP(HIGH,HIGH),TX_HP(LOW,HIGH),TX_HF(LOW,LOW),unused modesLOW/LOW. These are radio-internalDIO5/6,not processorGPIOs. The fitted module's path must be confirmed;the generic RadioLib example explicitly warns that board routing can differ. The supplied code forces HP PA for ANT2. <a href="https://github.com/jgromes/RadioLib/blob/7.7.1/examples/LR11x0/LR11x0_Transmit_Blocking/LR11x0_Transmit_Blocking.ino">RadioLib v7.7.1 example</a>, <a href="https://github.com/jgromes/RadioLib/blob/7.7.1/src/modules/LR11x0/LR1120.h">LR1120 API inherited by LR1121</a>, <a href="https://files.waveshare.com/wiki/Core1121/LR1121_H2_DS_v2_0.pdf">Semtech LR1121 datasheet</a> and <a href="https://github.com/Lora-net/SWDR001">Semtech driver SWDR001</a> are the references.</p>
+<pre><code class="language-cpp">// Setup outline for MAIN; each returned error must enter an RF fault state.
+digitalWrite(9, HIGH);  pinMode(9, OUTPUT);    // flash deselected
+digitalWrite(29, HIGH); pinMode(29, OUTPUT);   // radio deselected
+SPI1.setMOSI(26); SPI1.setSCK(27); SPI1.setMISO(39);
+SPI1.begin();
+// LR1121 radio(new Module(29, 30, 25, 24, SPI1));
+radio.setRfSwitchTable(SW_PINS, SW_TABLE);
+int16_t rc = radio.begin(866.50f, 125.0f, 9, 5, 0x99, 10, 8, 1.6f);
+if (rc != RADIOLIB_ERR_NONE) { /* latch RF init fault; no TX */ }
+radio.setRfSwitchTable(SW_PINS, SW_TABLE); // reapply after begin/reset
+// check each status, do not ignore these results:
+// setCRC(2), setRegulatorDCDC(), setSyncWord(0x99),
+// setOutputPower(10, true), calibrateImageRejection(863,870),
+// setRxBoostedGainMode(true), startReceive().
+</code></pre>
+<p>The positional <code>begin</code> overload is retained in the checked7.7.1 header although marked deprecated;it explicitly sets TCXO1.6 V. Freeze that actual library blob/build rather than silently compiling against current <code>main</code>. <code>begin()</code> and calibration are boot operations with internal waits;calling this outline is not evidence of a nonblocking runtime driver. Runtime TX uses <code>startTransmit</code>,IRQ status/timeout,<code>finishTransmit</code>,then RX;no blocking <code>transmit()</code> in the flight loop. One IRQ dispatch reads radio flags and handles TX_DONE/RX_DONE/timeouts;never install competing callbacks onto one hardware IRQ.</p>
+<p>Use+10 dBm while pad-authorized,~+14 dBm only in the assigned flight condition. Check RF-path and power settings after resets. CRC failure discards the packet. A success code proves command exchange with the chip,not radiated power,antenna match or range. Keep old22 dBm tests out of launch images.</p>
+<h3 id="62-airtime-and-1-hz-feasibility">6.2 Airtime and 1 Hz feasibility</h3>
+<p><strong>D calculation:</strong>explicit header,CRC on,preamble8 symbols,SF9,BW125000 Hz,CR denominator5,LDRO off. <code>Ts=2^9/125000=4.096 ms</code>;<code>Tpreamble=(8+4.25)Ts</code>;<code>Npayload=8+5 ceil((8PL-4·9+28+16)/(4·9))</code>. Formula is cross-checkable with <a href="https://www.semtech.com/design-support/lora-calculator">Semtech's LoRa calculator</a> and RadioLib's time-on-air implementation. All lengths include application bytes actually passed to radio;no LoRaWAN overhead is assumed.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Application bytes</th>
+<th style="text-align: right;">Calculated TX airtime</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">205.824 ms</td>
+</tr>
+<tr>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">226.304 ms</td>
+</tr>
+<tr>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">287.744 ms</td>
+</tr>
+<tr>
+<td style="text-align: right;">120</td>
+<td style="text-align: right;">635.904 ms</td>
+</tr>
+<tr>
+<td style="text-align: right;">130</td>
+<td style="text-align: right;">697.344 ms</td>
+</tr>
+<tr>
+<td style="text-align: right;">138</td>
+<td style="text-align: right;">717.824 ms</td>
+</tr>
+<tr>
+<td style="text-align: right;">140</td>
+<td style="text-align: right;">738.304 ms</td>
+</tr>
+<tr>
+<td style="text-align: right;">160</td>
+<td style="text-align: right;">820.224 ms</td>
+</tr>
+<tr>
+<td style="text-align: right;">180</td>
+<td style="text-align: right;">922.624 ms</td>
+</tr>
+<tr>
+<td style="text-align: right;">200</td>
+<td style="text-align: right;">1004.544 ms</td>
+</tr>
+<tr>
+<td style="text-align: right;">255</td>
+<td style="text-align: right;">1250.304 ms</td>
+</tr>
+</tbody>
+</table>
+<p>The absolute mathematical≤1 s payload ceiling is197 bytes with <strong>no command window or margin</strong>. It is not a practical packet budget. For a conservative half-duplex1 Hz schedule choose <strong>downlink≤130 bytes, uplink≤32 bytes, total turnaround/guard40 ms</strong>, giving984.128 ms. Verify actual RF intervals on hardware (T-RF); processing, clock skew and retries consume the remaining margin. Each second starts with a downlink, followed by at most one queued uplink. RF-off mode listens continuously. Blind retries stop when scheduled reception resumes.</p>
+<p>A representative <strong>length calculation only</strong>,using the declared field widths,requires130 bytes before optional fields. It is a test vector in the offline check,not injected into LIVE telemetry. Latitude/longitude keep6 decimal degrees;using4 decimals to save bytes quantizes roughly11 m latitude (D),undesirable for precision landing. Packet count and mission time must have bounded variable decimal formats and capacity for the whole pad+flight period. Never clamp an unexpected measurement into a plausible number to fit:send an empty invalid field with a fault record,or reduce optional content. Validate the serializer's maximum length over its complete declared operating envelope before launch.</p>
+<p>Original full-team-ID uplinks may exceed32 bytes. <strong>Before-flight target updates can use the verbose protocol while telemetry is silent.</strong> In-flight updates under strict1 Hz require the compact protocol in §10. If mandatory CSV exceeds130 bytes, measure the length and recompute the uplink allowance; never drop mandatory samples or quietly revert to0.5 Hz. Optional fields may use measured slack or separately budgeted diagnostic packets. Their display rate can be lower than the mandatory1 Hz.</p>
+<p>High duty occupation follows from the requested RF plan and1 Hz requirement;the assignment is the competition instruction,not a general regulatory analysis. Confirm the organiser's allowed airtime plan at launch rather than importing a generic1%LoRaWAN duty-cycle model from the old GUI.</p>
+<h3 id="63-exact-csv-order-and-missing-data">6.3 Exact CSV order and missing data</h3>
+<p>Freeze this header across MAIN,GS,GCS and the judges' file:</p>
+<pre><code class="language-text">TEAM_ID,TIME_S,PKT,ALT_M,PRES_PA,TEMP_C,BUS_V,GNSS_TIME,LAT,LON,GPS_ALT_M,SATS,ACC_X,ACC_Y,ACC_Z,SPIN_RATE,STATE
+</code></pre>
+<p><code>GNSS_TIME</code> is <strong>UTC seconds since midnight</strong>,derived from an accepted receiver time,not the legacy packedhhmmsscc value. <code>TIME_S</code> is elapsed since initial mission power-on,including pad wait. UTC date/epoch belongs in optional/log records;handle midnight roll-over. MAIN's existing prelaunch/launch epoch distinction must be made explicit so the90-minute clock starts at launch detect without resetting TIME_S.</p>
+<p>Core units/rounding:ALT/GPS_ALT0.1 m,P1 Pa,T0.1°C,V0.01V,lat/lon6 decimals (finer than required),accelerationm/s²,Hallwheeldeg/s,stateinteger0–7. Pressure and temperature are <strong>measured sources</strong>,not a fabricated weather model. Prefer the identified ambient HDC temperature when its age/quality is good;otherwise use the measured BMP die temperature <strong>with that source limitation recorded</strong>. Do not blend two different temperature types invisibly.</p>
+<p>Each packet is a complete current snapshot;CR terminates it. An invalid/stale sensor field is empty,not0,not a held old value with a refreshed timestamp. The <strong>field order and delimiters remain intact</strong>. GCS records receive time separately and marks gaps. Confirm empty-field acceptance with the organiser because the rules do not prescribe invalid-value encoding. Do not use a parser's lack of missing-value support as permission to invent a value.</p>
+<p>The current software's3-axis expansion is retained as stated in §2. Optional named columns append after STATE in an agreed schema;for this launch do not append every old science field or fill absent hardware fields. Suggested optional compact series:validity mask,GNSS age,fix-quality,guidance mode,target revision,windN/E,predicted landingN/E/uncertainty,reset count,owner,commandACK. Either append a <strong>fixed declared subset</strong> within byte budget or place diagnostics on a separately typed packet that the judges' core CSV parser cannot confuse with telemetry.</p>
+<h3 id="64-logging-and-storage-loss">6.4 Logging and storage loss</h3>
+<p>Keep raw receive-only NMEA,raw pressure/sensor counts,calibrated SI data,estimator state/covariance,guidance setpoint,controller error/terms,commanded pulses,Hall edges/counts,fault transitions,state/event journal and radio TX/RX results. Each record carries source board/session,sequence,local sample time and mission-time mapping. Onboard binary records useversion/type/length/CRC;generate CSV offline. The mandatory ground CSV contains <strong>received/transmitted measurements only</strong>,never a later onboard backfill masquerading as an RF reception.</p>
+<p>MAIN owns the sharedSPI1 radio/flash schedule. Pre-erase flash sectors while disarmed;page-program from aRAM queue and releaseSPI duringWIP. BACKUP'sSD task consumes P4 broadcast status plus its own sensors;to log MAIN's full data,MAIN must explicitly route those fields throughP4 or provide them in existing link frames. No directMAIN↔BACKUP dataUART is wired. Do not claim full backup of data that never traverses a cable.</p>
+<p><strong>D capacity examples:</strong>W25Q64=8 MiB;96-byte records at20 Hz consume1920 B/s,giving≈72.8 minutes before headers/reserved sectors. Full200 Hz recording would last≈7.3 minutes. Reserve launch/deployment/high-rate windows and lower pad rates;calculate using actual record sizes. SD latency has an unbounded practical failure tail;preallocate where possible,use a64 KiB ring buffer(D),monitor fill,discard lower-priority diagnostics on overflow and retain fault counters. Never wait forSDflush in a600 m event handler. Storage failure must not stop steering/deployment;show it in telemetry.</p>
+<h2 id="7-software-architecture-estimation-and-flight-states">7. Software architecture, estimation and flight states</h2>
+<h3 id="71-board-responsibilities-and-timing-budgets">7.1 Board responsibilities and timing budgets</h3>
+<p>All WCET figures are <strong>D reservations to measure</strong>,not benchmarks. Periodic acquisition follows sensor data-ready rather than claiming identical IMU clocks. Use deadline-based scheduling,no catch-up burst that reprocesses the same sample. MAIN watchdog is fed only after every critical activity has advanced or explicitly entered a bounded degraded state. A timerISR that togglesheartbeat while the main task is dead is not a valid heartbeat.</p>
+<table>
+<thead>
+<tr>
+<th>Board / task</th>
+<th>Rate / priority</th>
+<th>D CPU reservation and deadline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MAIN UART drain+RF service</td>
+<td>Every loop/highest</td>
+<td>≤1 ms service gap;100 µs/pass excludingbounded peripheral calls</td>
+</tr>
+<tr>
+<td>MAIN ICM/AK</td>
+<td>ready checks500 Hz;IMU220/225 Hz,mag100 Hz/high</td>
+<td>≤700 µs/sample incl bus/compute;AHRS compute target≤200 µs</td>
+</tr>
+<tr>
+<td>MAIN BMP</td>
+<td>50 Hz/high</td>
+<td>≤400 µs/sample;event age≤100 ms</td>
+</tr>
+<tr>
+<td>MAIN nav/vertical fusion</td>
+<td>new GNSS epochs +50 Hz predict/high</td>
+<td>≤500 µs/update;no matrix inversion of full state when scalar update suffices</td>
+</tr>
+<tr>
+<td>MAIN mission+heartbeat</td>
+<td>100 Hz+10 Hz/high</td>
+<td>≤100 µs;phase transitions/journal handoff bounded</td>
+</tr>
+<tr>
+<td>MAIN telemetry+power+RTC</td>
+<td>1 Hz/20 Hz/1 Hz/medium</td>
+<td>serialization≤1 ms;radio async;I²C reads scheduled</td>
+</tr>
+<tr>
+<td>MAIN logging/camera</td>
+<td>queued/lowest</td>
+<td>≤1 ms work slice if API supports it;otherwise move storage load out ofcritical path and measure actual stall</td>
+</tr>
+<tr>
+<td>BACKUP sensor+links+lease</td>
+<td>baro50 Hz,linkscontinuous,lease100 Hz/high</td>
+<td>No need to run the old full FC;quarantinedIMU remains excluded</td>
+</tr>
+<tr>
+<td>BACKUP SD writer</td>
+<td>queued/low</td>
+<td>No actuator task on thisMCU;captureSDstall andUARToverflow</td>
+</tr>
+<tr>
+<td>P4 UART ingestion</td>
+<td>event driven/core0,priority20 D</td>
+<td>No indefinite UARTreadwait;bounded queues;small frames</td>
+</tr>
+<tr>
+<td>P4 sensor/AHRS</td>
+<td>208 Hz/core1,priority21 D</td>
+<td>≤1.5 ms incl bus per sample;recordWCET</td>
+</tr>
+<tr>
+<td>P4 event safety monitor</td>
+<td>100 Hz/core1,priority23 D</td>
+<td>≤200 µs;never waits forlogger/GCS</td>
+</tr>
+<tr>
+<td>P4 guidance</td>
+<td>20 Hz/core1,priority18 D</td>
+<td>≤1 ms compute target;only acceptedliveNAV</td>
+</tr>
+<tr>
+<td>P4 servo control</td>
+<td>50 Hz/core1,priority22 D</td>
+<td>≤300 µs;PWM edge jittermeasured,separate hardwarecounter</td>
+</tr>
+<tr>
+<td>P4 links/logging/NVS</td>
+<td>20 Hz/event/core0,priority8 D</td>
+<td>OneTXowner;NVScommit in known windows;time-critical events cannotwaitforflash</td>
+</tr>
+</tbody>
+</table>
+<p>StartP4FreeRTOS with control tasks on one core to reduce shared-state complexity;put parsing/log output on the other. Respect the configured <code>configMAX_PRIORITIES</code>;the numbers above assume a compatible configuration and need adjustment if the chosen core differs. IRQ handlers only capture timestamps/counters/set flags. Use task-watchdog registration plus a progress mask,not oneunconditionalglobalfeed. Idle task starvation indicates a scheduling fault.</p>
+<p>Proposed acceptance:criticalCPU utilization&lt;50%,criticaldeadline misses0 in a2 h pad+flight workload test,remainingRAM≥25%,noUARToverflows,stack high-water margin≥25%(allD). These margins do not prove bounded SD/NVS latency. Bench under simultaneouscamera,radio,flash,servos and injected device failures.</p>
+<h3 id="72-typed-pipeline-code-at-every-boundary">7.2 Typed pipeline: code at every boundary</h3>
+<p>The linked <a href="reference_code/README.md">reference code</a> contains host-checked guards, parser, controller, events, frame/log codecs, journal selection, estimator, planner and scheduling examples. <a href="IMPLEMENTATION_STATUS.md">Integration boundaries</a> distinguish these from unimplemented platform adapters. The following integration blocks specify the remaining stages. They are <strong>API sketches</strong>,not independently buildable complete board programs.</p>
+<pre><code class="language-cpp">// 1 acquisition -&gt; timestamp; at sensor rate, no fabricated &quot;new&quot; sample.
+if (driver.ready(now)) {
+    RawImu raw;
+    if (driver.readBurst(raw)) rawQueue.push({raw, monotonicUs(), ++sampleSeq});
+    else faults.note(IMU_READ_FAIL);
+}
+// RawImu: int16_t accel[3],gyro[3],temperature; sensor-specific byte order.
+</code></pre>
+<pre><code class="language-cpp">// 2 unit conversion -&gt; calibration -&gt; mounting; ~208/220 Hz.
+Vec3 a_mps2 = R_body_sensor * (A_accel * (rawAccel * accelScale - accelBias));
+Vec3 w_rps  = R_body_sensor * (rawGyro * gyroScale_rps - gyroBias_rps);
+// Calibration matrix/bias/version/CRC comes from this actual sensor's record.
+</code></pre>
+<pre><code class="language-cpp">// 3 validity/plausibility; never substitute 1g,0 yaw or last-good as a new read.
+ImuSample s{a_mps2,w_rps,sampleUs,sequence};
+s.valid = allFinite(s) &amp;&amp; !driver.overrun() &amp;&amp; !rawSaturated(raw);
+if (s.valid) imuSnapshots.publish(s); else faults.note(IMU_INVALID);
+</code></pre>
+<pre><code class="language-cpp">// 4 filtering -&gt; fusion; dt comes from distinct sample timestamps.
+double dt = (s.sample_us - previous.sample_us) * 1e-6;
+if (s.valid &amp;&amp; dt &gt; 0 &amp;&amp; dt &lt; maxQualifiedGap)
+    attitude.update(s, calibratedMagIfFresh(), dt); // q body-&gt;navigation
+if (baro.newSequence()) vertical.update(baro.h_agl_m,baro.variance_m2);
+if (gnss.newAcceptedEpoch()) horizontal.update(gnss.position,gnss.velocity);
+// A held snapshot can be read repeatedly but cannot be fused repeatedly.
+</code></pre>
+<pre><code class="language-cpp">// 5 state estimate -&gt; guidance; 20 Hz. Sample/provenance gates repeated here.
+if (mission.parafoilCommanded &amp;&amp; canopyStabilizationQualified &amp;&amp; liveNavGate(nav,now))
+    desiredCourse = planner.update(nav,target,vertical,windIfObservable());
+else desiredCourse.invalidate();
+</code></pre>
+<pre><code class="language-cpp">// 6 control -&gt; actuator; 50 Hz, finite/saturation/phase checks at final writer.
+if (desiredCourse.valid &amp;&amp; actuatorPermit(mission,health)) {
+    double brakeDiff = controller.update(desiredCourse,nav,dt);
+    ServoPair pulses = measuredBrakeMap.limit(brakeDiff,trimBrake,dt);
+    actuatorOwner.writeChecked(pulses);
+} else { controller.reset(); actuatorOwner.writeMeasuredGlideTrim(); }
+</code></pre>
+<pre><code class="language-cpp">// 7 logging -&gt; telemetry; independent consumers of one immutable snapshot.
+logQueue.tryPush(encodeVersionedRecord(snapshot,CRC32)); // records may drop;control may not wait
+if (nextRadioDeadline(now) &amp;&amp; rfPermit &amp;&amp; !cutoffLatched)
+    radioQueue.tryPush(formatCurrentCsv(snapshot)); // blanks when invalid,CR terminator
+</code></pre>
+<p>Rawcounts:int16/u24;sensorseconds:uint64µs;positions:doublelocally orint32e7 onwire;velocityfloatm/s;angles/ratesrad/rad/s internally;servoµs:uint16 only at the actuator layer. Convert deg/s for telemetry and magnetic µT at the driver boundary. UseENUorNED consistently:the guidance below uses <strong>N,E,up</strong> with course measured clockwise fromNorth. Body+Xforward,+Yright,+Zdown is a separate convention and its transform must be measured. Do not mix AHRS yawrelative-to-pad with true course-to-target.</p>
+<h3 id="73-attitude-estimator">7.3 Attitude estimator</h3>
+<p>Keep the current AHRS only after axis,sample-time and motor-disturbance tests;do not switch algorithms to fix a wrong mounting matrix. A complementaryMahony/Madgwick-type quaternion update is sufficient for this launch. With bodygyroω,biasb,orientationq:</p>
+<p><code>qdot = 0.5 q⊗[0,ω-b + kp e]</code>, <code>bdot = -ki e</code>.</p>
+<p><code>e</code> is the calibratedgravity-direction cross-product plus optional trustedmagnetic error. Normalizeq and reject nonfinite/near-zero norm. <strong>D starting gains:</strong>kp=0.5 s^-1,ki=0 during flight until bias adaptation is qualified;estimate gyro bias while stationary on ground. Gategravity correction when |a| differs fromg by&gt;20% D or motion is high;gate magnetic correction if norm/innovation or motor-state checks fail. Gyro-only integration temporarily preserves short-term orientation with growing uncertainty;it does not create absolute yaw. <a href="https://github.com/xioTechnologies/Fusion">x-io Fusion</a> is a maintained reference with rejection/overrange support;its current algorithm should not be described as identical to the original Madgwick implementation.</p>
+<p>P4 has no magnetometer. MAIN's compass measures <strong>payload orientation</strong>,which may differ from canopyheading because of swivel/line twist/swing. Do not use payloadyaw as canopyheading or equate GNSSgroundcourse to air-relativeheading. The turn controller initially uses measured GNSScourse response;IMU yawrate damping is B until a drop proves the body-to-canopy relationship.</p>
+<h3 id="74-position-vertical-velocity-and-wind">7.4 Position, vertical velocity and wind</h3>
+<p><strong>A:</strong>a small error-tolerant estimator with separate horizontal and vertical filters. Horizontalstate<code>[N,E,vN,vE]</code>;constant-velocity prediction at20–50 Hz,GNSSposition+velocity update only for new acceptedepochs. Eachaxis uses<code>F=[[1,dt],[0,1]]</code>,acceleration-noiseQ=<code>σa²[[dt⁴/4,dt³/2],[dt³/2,dt²]]</code>. D initialσa=1 m/s²,positionσ=5 m,velocityσ=0.5 m/s if no trustworthyreceivererror estimate. HDOP scalesgeometry but is not itselfσmetres. Adapt from innovationrecords,not optimism. UseJosephcovarianceupdate,finite/positivity checks and a documentedinnovationgate. Do not averagerawNMEA and MAINcopy from the samereceiver.</p>
+<p>Verticalstate<code>[h_up,v_up]</code>,baroAGLmeasurement50 Hz;Dinitialσbaro=1 m andσverticalaccel=2 m/s² until pad/rampdata refine them. GNSSMSLaltitude can sanity-check drift but must first be referenced to the measuredpadMSLandnotellipsoidheight. Do not overwritepadreference in ascent. A fullaccelerometer-driven verticalINS is B because gravity/remounting/payloadswing errors can be larger thanbaronoise.</p>
+<p><strong>B augmented EKF:</strong><code>x=[N,E,h,vN,vE,vh,wN,wE,Va,ψ]</code>,with</p>
+<p><code>Ndot=vN</code>, <code>Edot=vE</code>, <code>hdot=vh</code>, <code>vN=Va cosψ+wN</code>, <code>vE=Va sinψ+wE</code>, <code>ψdot=r</code>, with slow random walks for wind and airspeed. GNSS observes position and ground velocity; the barometer observes height; a validated canopy heading or turn model supplies heading information. Without heading information or varied turns, wind and Va are <strong>unobservable</strong>. No UKF can remove this limitation. An initial wind process sigma of0.05 m/s/√s is D only; increase it during shear or model mismatch. Do not publish an unexcited wind estimate as a measurement.</p>
+<p>For a launch-feasible GNSS-only wind fit during a safe, steady turn, fit a circle to several diverse ground velocity vectors:</p>
+<p><code>(vN-wN)^2+(vE-wE)^2=Va²</code>.</p>
+<p>Linear form: <code>2vN wN +2vE wE +c = vN²+vE²</code>, where <code>Va²=c+wN²+wE²</code>. Use weighted least squares, geometry/condition-number checks and residuals. Require at least12 accepted new epochs,120° of velocity-direction coverage, steady brakes/sink and a small residual before publishing valid wind (all D). Straight flight cannot separate wind and airspeed. A full turn may be unsafe in high wind or at low altitude; skip the fit in those cases. Gate GNSS course by speed, quality and uncertainty.</p>
+<p><a href="https://ntrs.nasa.gov/citations/20200011546">NASA's on-the-fly parafoil aerodynamic/wind estimation research</a> explains whywind/modelestimationmatters. The <a href="https://arxiv.org/abs/2105.00715">convex real-time parafoil guidance paper</a> provides a trajectory-optimization route;the launchdesignhere deliberately uses a simplerplanner because the flightpolar and steeringresponse are unmeasured. No paper'slandingaccuracy transfers to thisCanSat.</p>
+<h3 id="75-flight-state-machine-and-mechanism-events">7.5 Flight state machine and mechanism events</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">State</th>
+<th>Meaning / entry (D unless R)</th>
+<th>Allowed actions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">0 BOOT</td>
+<td>Restore journal and identify hardware; use airborne recovery if needed</td>
+<td>RF receive, ESC stop, conservative pulses; no automatic mechanism test</td>
+</tr>
+<tr>
+<td style="text-align: right;">1 TEST_MODE</td>
+<td>Explicit ground session, disarmed, actuator power controlled</td>
+<td>Individual bench tests; inaccessible through in-flight commands</td>
+</tr>
+<tr>
+<td style="text-align: right;">2 LAUNCH_PAD</td>
+<td>Pad reference valid, required checks passed, mission armed</td>
+<td>TX after command; stationary calibration; camera available</td>
+</tr>
+<tr>
+<td style="text-align: right;">3 ASCENT</td>
+<td>AGL&gt;10 m and v_up&gt;0.5 m/s continuously for2 s; retain peak</td>
+<td>Camera REC; persist launch deadline; bay, petri and steering inhibited</td>
+</tr>
+<tr>
+<td style="text-align: right;">4 ROCKET_DEPLOY</td>
+<td>Number/name retained; means confirmed drone release</td>
+<td>Passive drogue; persist release; monitor950 m crossing</td>
+</tr>
+<tr>
+<td style="text-align: right;">5 DESCENT</td>
+<td>Release confirmed; v_up&lt;−0.5 m/s for0.5 s with valid barometer</td>
+<td>Petri event; prepare600 m bay trigger; qualified ESC operation only</td>
+</tr>
+<tr>
+<td style="text-align: right;">6 AEROBREAK_RELEASE</td>
+<td>Secondary bay command committed at600 m crossing</td>
+<td>Hold bay open; stabilize; then bounded qualified guidance</td>
+</tr>
+<tr>
+<td style="text-align: right;">7 IMPACT</td>
+<td>AGL&lt;5 m, absolute v_up&lt;0.3 m/s, GNSS speed&lt;0.5 m/s if valid, stable IMU for10 s; or validated impact plus settling</td>
+<td>ESC stop, beacon, tested brake trim; no automatic rearm</td>
+</tr>
+</tbody>
+</table>
+<p>These are conservative starting thresholds, <strong>not characterized release detectors</strong>. Test actual lift, hover and descent profiles (T-FSM). A drone can descend with the payload attached: barometric descent or an apogee does not prove release. <strong>The fixed hardware cannot guarantee automatic physical release verification.</strong> The strict software path requires a <code>RELEASE_CONFIRMED</code> command sent after observed physical release and latched on P4. A sensor-only heuristic relaxes that guarantee and needs an explicit team decision and separate tests; it is not assumed here.</p>
+<p>If the confirmation link fails before P4 latches release, the strict inhibit keeps bay and petri actuation off; the passive drogue is the fallback. If both complete early link-loss autonomy and positive release verification are required, a wired release interlock is a hardware change (§12). Confirmation latency must also permit petri opening at950 m during fast drogue descent. Rehearse the command and pressure crossing together; a several-second ACK delay can miss that event.</p>
+<p><strong>Petri:</strong> on a descending950 m crossing, require release confirmation and a valid pad reference. If not already started, commit <code>petri_started</code> and the mission start time, command the measured open pulse, close at start+10 s and commit completion. A reset preserves the original deadline; it never starts another10 s exposure. With untrusted restored time, close and retain the event/fault history. Descent is the assumed crossing direction because pre-release actuation is inhibited; the team still needs to confirm that interpretation.</p>
+<p><strong>Bay:</strong> the requirement is600±10 m. Trigger on descending predicted event altitude <code>h_pred=h+v_up·Ldeploy</code> crossing600 m, using <strong>measured mechanism latency</strong> Ldeploy. If latency is unknown, a600 m command does not prove physical opening at600 m. At25 m/s,400 ms delay consumes the entire10 m tolerance before barometer/model error (D). Log command time and independent video or observer evidence of opening. A servo ACK does not prove canopy inflation. No automatic drogue cutaway is assumed; inspect the retained drogue for interference.</p>
+<h3 id="76-persistent-state-and-redundancy">7.6 Persistent state and redundancy</h3>
+<p>Journal fields: magic, version, mission ID, generation, mission-start RTC, launch RTC, elapsed checkpoint, p0/T0, calibration IDs, state, armed/release flags, bay intent, petri start/deadline/completion, cutoff latch, target/revision, CRC and commit marker. Alternate two slots: write payload and CRC, verify, then commit. On boot select the highest valid generation. Never overwrite both copies first. Publish critical journal changes over the P4 links.</p>
+<p>MAIN uses the battery-backed DS3231 and stored mission epoch; require trustworthy OSF-clear time. TIME_S never decreases, and TX_ON cannot change the launch deadline. BACKUP and P4 keep running their monotonic clocks during link loss. After reset they recover elapsed time from fresh MAIN time or a proven retained RTC source. <strong>An isolated P4 cold restart cannot reconstruct exact elapsed wall time from an NVS checkpoint alone.</strong> Declare time uncertain, preserve completed events and use conservative recovery. No independent battery RTC is wired to P4.</p>
+<p>Use idempotent absolute servo positions for restoration. <strong>Exactly-once physical actuation cannot be proven across a power failure without feedback.</strong> Journaling before motion risks a reset before movement; journaling afterward risks repetition. Record intent first and reconcile the intended absolute position and deadline after restart.</p>
+<p><strong>Explicit airborne recovery policy (D, T-RESET):</strong> do not capture a new pad datum. Restore release/arming and validate fresh barometer samples against the persisted reference. If a bay intent exists, reassert the measured open position. If release is confirmed, bay intent is absent and valid AGL is already below the compensated600 m threshold, commit/open immediately and log a late-deployment fault; the missed altitude cannot be repaired. If still above threshold, resume crossing detection. A petri exposure already started uses its old deadline; one not started and already below950 m is marked missed and remains closed rather than inventing an on-time exposure. With uncertain time or mission identity, close petri, stop the wheel and preserve fault/event history. The reference crossing helper intentionally leaves these board-level recovery decisions to its journal adapter.</p>
+<p>Authority policy (D): MAIN lease500 ms; BACKUP may supply navigation/mission support after MAIN lease and heartbeat fail for1 s. Require several valid frames for handoff. P4 always owns physical outputs and event latches. A restarted MAIN session must resynchronize before regaining authority. Reject conflicting commands from stale owners/revisions; primary loss never clears release or deployment history.</p>
+<p>With both links dead, P4 uses its local BMP/LSM, raw GNSS, valid mission latches and last accepted target. MAIN attitude is not needed for the course loop. GNSS, its TX wire, shared power and antenna remain common failure points. BACKUP cannot reset the L89, drive MAIN's buzzer or start the radio. This is not full triple-modular redundancy.</p>
+<h2 id="8-precision-landing-guidance-and-control">8. Precision-landing guidance and control</h2>
+<h3 id="81-model-and-reachable-area">8.1 Model and reachable area</h3>
+<p>The brief's 0.40 m² canopy and approximately 1 kg suspended mass are <strong>H assumptions</strong>, not a tested polar. Area and mass alone do not determine forward speed, sink, stall brake, turn rate or deployment reliability. The supplied parafoil study used a different geometry and includes evolving simulation reports. Its 30 m-class predicted dispersion is not flight evidence and must not appear as achieved accuracy in the GCS.</p>
+<p>Use measured trim forward speed <code>Va</code>, sink <code>s=-v_up&gt;0</code>, turn authority and brake map after deployment. A simple flight model is:</p>
+<p><code>p_dot = Va [cos ψ, sin ψ] + w</code>, <code>h_dot = -s(b_common,Va)</code>, <code>ψ_dot = r</code>, <code>τ_r r_dot + r = K_r u_diff</code>.</p>
+<p><code>ψ</code> is canopy air heading, not payload yaw. Keep measured GNSS ground velocity as the primary navigation observation. Calculate in a local tangent frame around a <strong>measured</strong> pad origin:</p>
+<p><code>N≈R(φ-φ0)</code>, <code>E≈R cos(φ0)(λ-λ0)</code> in radians, with WGS84 local curvature or a qualified geodesy routine for the final implementation. A spherical <code>R=6378137 m</code> approximation is D for the small test area; validate against a WGS84 implementation. Never initialize the current position to the target.</p>
+<p>Nominal remaining time is <code>t_go=h_AGL/s</code>; reject invalid/nonpositive sink, and bound it using measured sink uncertainty. A first reachability check is <code>||target-p-w*t_go|| ≤ Va*t_go</code>, with extra margin for turn radius, deployment delay and wind uncertainty. If the target is unreachable, show <strong>UNREACHABLE</strong> and choose the best reachable point in the organiser-approved landing area. Do not increase brake to manufacture forward penetration into wind faster than the canopy can fly.</p>
+<p>Only use a valid wind fit. With desired ground-track unit vector <code>t=[cos χ,sin χ]</code>, right normal <code>n=[-sin χ,cos χ]</code>, crosswind <code>w_cross=w·n</code>, the air-heading correction is <code>δ=asin(-w_cross/Va)</code> and <code>ψ_cmd=χ+δ</code>. Feasible along-track speed is <code>Va cos δ+w·t</code>; if <code>|w_cross|≥Va</code> or along-track speed≤0, mark that leg infeasible. This equation is a D engineering derivation from vector addition, not proof that Va/wind are observable on the current flight.</p>
+<p>For launch A, direct control of <strong>measured ground course</strong> already corrects moderate wind drift without needing an air-heading sensor. Do not apply both a wind crab correction to a ground-course loop and then expect the same desired ground track; that double counts wind. Wind compensation belongs in the planner/air-heading model, while the course loop tracks the planned <strong>ground</strong> course. Without a validated canopy-heading estimate, retain the ground-course loop.</p>
+<h3 id="82-guidance-phases-d-t-guide-t-glide">8.2 Guidance phases (D; T-GUIDE, T-GLIDE)</h3>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Entry and behavior</th>
+<th>Exit / inhibit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>INHIBITED</td>
+<td>Before confirmed release or before secondary command; brake trim only</td>
+<td>No homing during drone carriage or drogue phase</td>
+</tr>
+<tr>
+<td>DEPLOY_STABILIZE</td>
+<td>After bay command, hold measured glide trim; wait a qualified inflation interval and stable sink/IMU response</td>
+<td>A guessed timer does not prove canopy inflation; reject unstable samples</td>
+</tr>
+<tr>
+<td>HOME</td>
+<td>Compute course to the active target or approach-entry point from the latest live position; bounded differential brake</td>
+<td>Reachable-area test and new GNSS epochs drive planning</td>
+</tr>
+<tr>
+<td>ENERGY_MANAGE</td>
+<td>If substantial excess height exists, follow a bounded racetrack/figure-eight inside the approved area, preferably upwind</td>
+<td>Do not orbit solely because range is small; verify turn radius, drift margin, altitude reserve</td>
+</tr>
+<tr>
+<td>APPROACH</td>
+<td>Leave holding when remaining height approximately matches the measured path-to-final height plus reserve</td>
+<td>Continue checking feasibility and actual sink</td>
+</tr>
+<tr>
+<td>FINAL</td>
+<td>Straight upwind ground track toward target, limited turns, no untested flare</td>
+<td>Freeze target updates that would demand an abrupt low turn</td>
+</tr>
+<tr>
+<td>NAV_DEGRADED</td>
+<td>No acceptable current position/velocity; reset course integrator and smoothly return to tested symmetric glide trim</td>
+<td>Require five new coherent accepted epochs before re-entry</td>
+</tr>
+<tr>
+<td>LANDED</td>
+<td>Stable landing declaration; stop wheel and start beacon</td>
+<td>No automatic mission rearm</td>
+</tr>
+</tbody>
+</table>
+<p>“Into wind” means final <strong>velocity opposite the wind vector</strong>. For wind toward +North, start north/downwind of the target and fly south. Use explicit vector math: <code>q_entry=target+w_hat*D_final</code>, final track <code>-w_hat</code>. If wind is not observable, use a team-selected approach direction from measured field wind, identify it as an operator input, and retain live GNSS course feedback.</p>
+<p>Choose final distance <code>D_final=(Va-|w|)*H_final/s</code> for a straight into-wind leg only when positive and supported by the model. This is an estimate, not a command to cross hazards. A conservative initial <code>H_final=50 m</code>, reserve <code>20 m</code>, turn-rate limit <code>10 deg/s</code>, minimum GNSS ground speed for reliable course <code>1.5 m/s</code>, and energy-mode altitude floor <code>100 m</code> are <strong>D test values</strong>, not calibrated settings. Below the final floor, prefer a stable straight approach over aggressive last-second target pursuit. Tune from the actual canopy, sink, terrain reference and test data.</p>
+<p>A simple bounded holding law uses a circle or racetrack whose radius exceeds the measured minimum turn radius. For a circle with radial distance ρ, radius R_hold and selected direction, command a tangent plus an inward radial correction, e.g. <code>v_dir = tangent - k_radius*(ρ-R_hold)*radial</code>, normalize, then convert to a desired course. Do not fly near the circle center where radial direction is undefined; enter via a tangent. Radius and handedness must fit the approved area. A tight spiral can increase sink or collapse a lightly loaded wing; it is not an automatic energy-management default.</p>
+<p>Predict landing with the same measured model and assumed current plan. The simplest diagnostic <code>p_pred=p+v_ground*t_go</code> assumes constant ground velocity and is <strong>not a final guided landing prediction</strong>. A better B predictor propagates the bounded commanded trajectory, wind layers and measured sink to ground; show a covariance/ensemble footprint. Never label either prediction as the measured current position.</p>
+<h3 id="83-controller-structure-and-tuning">8.3 Controller structure and tuning</h3>
+<p>Start with a <strong>low-bandwidth course P controller</strong> using fresh GNSS ground course and speed. Let <code>eχ=wrap(χ_des-atan2(vE,vN))</code>. Initial outer law <code>r_cmd=sat(kχ eχ, ±r_max)</code>, then a measured inverse steering map converts r_cmd to brake differential. Add an inner yaw/turn-rate loop only after identifying a stable canopy response. Payload gyro yaw rate is not automatically canopy turn rate; compare it against GNSS course change in actual drops.</p>
+<p>For a validated turn model, inner PI:</p>
+<p><code>u_unsat = u_ff(r_cmd) + Kp_r(r_cmd-r_meas) + I</code>,
+<code>I_dot = Ki_r(r_cmd-r_meas) + Kaw(u_applied-u_unsat)</code>.</p>
+<p>Use the <strong>applied</strong> command after saturation and slew limiting for anti-windup. Reset/freeze I on invalid navigation, deployment, authority handoff and landing. Derivative is off initially; if later needed, differentiate a filtered measurement rather than the setpoint and account for GNSS interval jitter. Set a small measured course deadband and a neutral brake deadband only after characterizing friction; avoid on/off chatter at the target.</p>
+<p><strong>No flight-qualified numeric PID gains exist in this evidence.</strong> The included reference P controller uses D <code>k_course=0.25 normalized brake/radian</code>, <code>u_max=0.20</code>, <code>slew=0.25 normalized units/s</code>, <code>Ki=0</code> to demonstrate signs, limits and gates. It is a bench starting configuration, not permission to fly those values. Normalized brake=1 means the <strong>measured safe maximum</strong>, not a full servo sweep or an assumed stall setting.</p>
+<p>Practical tuning sequence:</p>
+<ol>
+<li>Ground rig: identify positive left/right commands, released-line trim and safe travel. Confirm which differential sign makes a right turn; do not infer it from mirrored servo pulse signs.</li>
+<li>First authorised short glide: fixed trim, then small symmetric left/right brake steps at safe height. Log actual pulses, new GNSS velocity epochs, sink and gyro; return to trim between steps. Avoid sustained oscillation tests.</li>
+<li>Fit <code>r(t)=K_r u(1-exp(-(t-Td)/τ_r))</code> after delay Td, using separate left/right fits and rejecting deployment/swing segments. If a clean first-order response is absent, use a lookup table plus slow outer P instead of forcing this model.</li>
+<li>Choose an IMC-style PI only if justified: for <code>K_r/(τ_r s+1)</code> with delay Td, <code>Kp_r≈τ_r/[K_r(λ+Td)]</code>, <code>Ti≈τ_r</code>, <code>Ki_r=Kp_r/Ti</code>. Start λ longer than the measured lag and pendulum effects, then increase authority gradually. These are model-based starting equations, not guaranteed stable gains.</li>
+<li>Adjust outer course gain to keep heading response slower than the inner rate response and avoid line/payload swing. Use rise/settle time, overshoot, sink increase, saturation fraction and landing error from independent drops; do not use Ziegler–Nichols induced oscillations in a small uncharacterized parafoil.</li>
+<li>Schedule gains/common brake only against <strong>measured</strong> Va/response data. GNSS ground speed alone is not airspeed for gain scheduling in wind. No airspeed sensor is wired.</li>
+</ol>
+<h3 id="84-servo-mapping-and-physical-limits">8.4 Servo mapping and physical limits</h3>
+<p>Manufacturer evidence for <a href="https://www.agf-rc.com/agfrc-coreless-mini-servo-b26clm-p1669135.html">B26CLM</a>: 4.8–8.4 V, center1520 µs,333 Hz capability, stall torque9.5 kg·cm at7.4 V/10.5 kg·cm at8.4 V, speed0.085 s/60° at7.4 V. These are advertised conditions, not measured loaded steering performance. Published stall current, guaranteed signal-loss position and backdrive/holding behavior were not established. Do not assume a worm gear, mechanical lock or full-range pulse endpoints from the brand/model name.</p>
+<p>The <a href="https://towerpro.com.tw/product/mg90s-3/">Tower Pro MG90S page</a> is inconsistent about voltage versus performance test points; use the existing regulated5 V rail and verify the actual units. Its listed torque1.8 kg·cm at4.8 V does not establish latch margin. Pulse endpoints, lid positions, stall current and no-signal behavior must be measured for each mechanism.</p>
+<p>Use50 Hz initially for both steering and MG90S.333 Hz is B for B26CLM only and may require programming;keep MG90S on its independently qualified frame rate. A333 Hz frame is about3 ms, so pulse range and peripheral resolution must fit. Higher update rate does not remove GNSS/control delay or prove faster loaded motion. Do not globally change every servo timer to333 Hz.</p>
+<p>For a spool radius r and angle change Δθ radians, line travel <code>Δl=rΔθ</code>; for a horn with attachment geometry, measure the actual nonlinear line displacement versus angle. A D example r=15 mm and60° gives15.7 mm travel. Required torque <code>τ=F_line*r</code>; compare measured line tension, transient opening loads and the working supply with a derated continuous thermal capability, not just stall torque. Without a measured radius/tension, no numerical torque margin is justified.</p>
+<p>Map brake fractions bL,bR through separate measured pulse tables. One convention is <code>bL=b_common+max(-u,0)</code>, <code>bR=b_common+max(u,0)</code> with positive u defined as a right-brake command <strong>only after sign qualification</strong>. Clamp each to the tested safe pull range, rate-limit line travel, and preserve room for trim. Equal pulse widths do not mean equal brake travel on mirrored installations.</p>
+<p>Keep a periodic pulse to hold a commanded servo position under normal power. Stopping PWM does not reliably “lock” a digital servo. Power loss cannot be solved in software;use the existing latch geometry if it is mechanically stable. Bay open should be a stable physical state;petri closure after its deadline should not depend on a blocked task. Do not detach a loaded brake servo in flight as an assumed safe fallback.</p>
+<p>Power: test simultaneous steering transients plus both small servos, camera, wheel and radio. INA260 only measures the battery path;it does <strong>not</strong> verify the7.4–8.0 V rail or fast dips. Scope that rail at the servo connectors and logic rails at MCUs, including overshoot when load releases. Capacitor hold-up follows <code>C≥I·Δt/ΔV</code>;a470 µF capacitor with2 A for5 ms would droop≈21 V in an idealized calculation,so the fitted bulk capacitance cannot replace regulator current capacity. Inspect connector/return-current drops and avoid motor current in sensor ground paths. Required regulator model/current/transient data remain U.</p>
+<p>ESC/EMAX/Hall: the exact ESC is unconfirmed, so only stop/idle pulses may be assumed after bench qualification. Keep1000 µs stop as the supplied starting convention,never perform throttle-endpoint calibration automatically at boot. Wheel target10000 RPM is a team objective,not a safe rotor rating. With one magnet per revolution this is166.7 pulses/s and60000 deg/s(D);use an optical tachometer/reference to verify Hall PPR and sign convention. KV2300 is a motor speed constant,not a closed-loop RPM measurement. The rotor attachment, balance, containment, ESC input protocol, signal-loss response and brownout restart need a guarded test. Hall stuck/no edges while throttle is commanded -&gt;stop wheel and latch fault;never increase throttle blindly.</p>
+<h3 id="85-millisecond-execution-versus-navigation-latency">8.5 Millisecond execution versus navigation latency</h3>
+<p><strong>D budget at5 Hz GNSS/115200:</strong>≤200 ms epoch period, assumed≤17.4 ms for a200-byte epoch on UART,≤1 ms parsing,≤50 ms wait for20 Hz guidance,≤20 ms next50 Hz PWM frame. Sum≈288.4 ms from a worst-phase physical observation boundary, <strong>excluding receiver internal navigation latency</strong>. From receipt of the complete accepted epoch to next PWM edge, the budget is≤71 ms;the actual planner computation target is≤1 ms. At1 Hz the sampling component alone is up to1 s. Do not call a1 ms calculation a1 ms end-to-end navigation loop.</p>
+<p>Use RX byte/epoch time, measurement UTC, sample counter, planner-start/end, command-write and scope PWM-edge timestamps. Measure jitter and high-water marks with all tasks active. Hardware PWM keeps edge timing stable while a task runs,but a CPU stall still delays new pulse values. T-TIMING requires planner WCET≤1 ms,accepted-epoch-to-command-write≤55 ms under the declared schedule,and PWM output within the measured frame bound,with no control-deadline miss during the qualified workload. These are acceptance targets,not results.</p>
+<h2 id="9-fault-management-and-safe-defaults">9. Fault management and safe defaults</h2>
+<table>
+<thead>
+<tr>
+<th>Failure</th>
+<th>Detection</th>
+<th>Response with current wiring / residual risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GNSS invalid/stale/replayed epoch</td>
+<td>Checksum,fix/status/coherence,ages,new epoch,innovation</td>
+<td>Invalidate navigation;reset integrator;measured symmetric glide trim;no target-vector update from held coordinates</td>
+</tr>
+<tr>
+<td>GNSS RAW lost at P4 only</td>
+<td>Raw timeout,MAIN epoch still fresh</td>
+<td>Use MAIN copy with original age and transport uncertainty;do not combine as an independent fix</td>
+</tr>
+<tr>
+<td>MAIN stops</td>
+<td>Heartbeat edge+lease+link timeout</td>
+<td>P4 local guidance;BACKUP support;downlink/beacon/camera control are not recoverable through BACKUP wiring</td>
+</tr>
+<tr>
+<td>BACKUP stops /SD fails</td>
+<td>Lease/CRC/storage counters</td>
+<td>MAIN/P4 continue;onboard data redundancy reduced,reported honestly</td>
+</tr>
+<tr>
+<td>P4 stalls/resets</td>
+<td>Task progress watchdog,reset reason</td>
+<td>Stop ESC at earliest initialization;restore mission/event journal;reassert measured safe pulses;no ground sweep. Hardware signal-loss behavior remains a residual risk</td>
+</tr>
+<tr>
+<td>Barometer fails/stuck</td>
+<td>Age,DRDY,pressure/temperature plausibility,cross-board disagreement</td>
+<td>Use a fresh qualified remote barometer only with same persisted datum;no GNSS-altitude substitution for600±10 m unless separately qualified</td>
+</tr>
+<tr>
+<td>IMU saturated/wedged</td>
+<td>Range/status/constant0xFF,identity,stale</td>
+<td>Reject sample;recover only affected device;course guidance may continue with reduced authority if tested</td>
+</tr>
+<tr>
+<td>Magnetic interference</td>
+<td>Norm/innovation correlated with wheel/current</td>
+<td>Reject compass correction;do not steer from disturbed yaw</td>
+</tr>
+<tr>
+<td>Corrupt/repeated command</td>
+<td>Frame CRC,strict grammar,mission/transaction/session checks</td>
+<td>Reject or return cached ACK;no repeated bay/petri timer restart</td>
+</tr>
+<tr>
+<td>Partial target update</td>
+<td>Staged fields/revision/commit</td>
+<td>Keep previous complete target;echo active revision</td>
+</tr>
+<tr>
+<td>Servo stall /line jam</td>
+<td>Current spike is only indirect;no position feedback</td>
+<td>Limit travel/duration;return to qualified trim if possible;fault detection is incomplete without feedback</td>
+</tr>
+<tr>
+<td>Steering brownout</td>
+<td>Bench rail scope;in flight battery proxy only</td>
+<td>Software cannot guarantee detection from INA260;retain supply margin and mechanical fail behavior</td>
+</tr>
+<tr>
+<td>Hall lost while wheel commanded</td>
+<td>Pulse age/PPR limits</td>
+<td>Stop ESC;flag measured RPM invalid rather than reporting requested RPM</td>
+</tr>
+<tr>
+<td>Clock/journal corrupt</td>
+<td>CRC/version/OSF/monotonic checks</td>
+<td>No pad recalibration in flight;retain conservative phase;flag time uncertainty;do not clear TX cutoff</td>
+</tr>
+<tr>
+<td>Radio BUSY stuck/CRC failures</td>
+<td>Bounded transaction/IRQ deadline</td>
+<td>Radio-specific recovery and RX re-entry;never block mechanism control on a radio error</td>
+</tr>
+</tbody>
+</table>
+<p>Safe outputs before mission restore:ESC stop;no spare PWM;bay and petri at their <strong>measured safe closed positions only when a valid ground state exists</strong>;steering at measured released-line trim. During a verified airborne reset,do not close a bay that was already opened or re-tension released lines without the tested recovery policy. Until state is known,there is no single universally safe servo sweep. Log RESET_UNCERTAIN and choose the mechanically qualified conservative position.</p>
+<p>No fallback fabricates position,wind,gyro spin,voltage,current or camera success. Estimated values have explicit source/validity/uncertainty;mandatory GNSS fields remain receiver-derived and blank when invalid. An estimator prediction may support a short tested degraded policy,but must not be transmitted as a new GNSS observation or used indefinitely to chase a target.</p>
+<h2 id="10-code-organization-and-ground-station-migration">10. Code organization and ground-station migration</h2>
+<h3 id="101-modules-and-existing-code-disposition">10.1 Modules and existing-code disposition</h3>
+<p>Use one shared protocol/types library and three board applications. The supplied repository remains a provenance snapshot; the reference modules and integration contract live in this handoff. See <a href="IMPLEMENTATION_STATUS.md">module status</a> before adopting any code. The research prompt requests architecture and key blocks, not proof of a flashed/flight-qualified image.</p>
+<pre><code class="language-text">firmware/shared/{Units,Validity,Protocol,CRC,Calibration,JournalSchema,TelemetrySchema}.h
+firmware/main/{PinsMain,SensorDrivers,LiveGnss,RadioService,Camera,Clock,Journal,Telemetry,LogQueue,Main}.cpp
+firmware/backup/{PinsBackup,BaroEnv,LiveGnss,BackupAuthority,SdLogger,Backup}.cpp
+firmware/parafoil/{PinsP4,SensorTask,LiveGnss,Estimator,Planner,CourseControl,ActuatorOwner,Events,Journal,LinkTask,P4}.cpp
+gcs/{protocol,live_transport,telemetry_schema,target_transaction,map_guidance,flight_csv}.py
+tests/offline/{nmea,epochs,radio_budget,protocol_crc,fsm_resets,controllers,telemetry_schema}/
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Existing file/function</th>
+<th>Keep</th>
+<th>Change / remove before flight</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>firmware/vritra_fc/Config.h</code> pins/radio/states</td>
+<td>Keep verified mission and radio constants</td>
+<td>Replace old Serial1 GNSS, BMP INT pin0, TB6612 and I²S pins; set flash CS9; update states0–4 to0–7; remove absent hardware fields</td>
+</tr>
+<tr>
+<td><code>Sensors.cpp</code> I²C/barometer/ICM</td>
+<td>Keep bounded recovery and checked conversions</td>
+<td>Use MAIN Serial2; coherent GNSS epochs and RMC validity; remove blind PMTK fallback and stale-position refresh</td>
+</tr>
+<tr>
+<td><code>Sensors.cpp:nmeaRMC</code> around1749</td>
+<td>Keep date and knots conversion</td>
+<td>Check RMC status A, numeric grammar, course, epoch and age before updating velocity</td>
+</tr>
+<tr>
+<td><code>Sensors.cpp:nmeaGGA</code> around1704</td>
+<td>Keep checksum front end</td>
+<td>Validate coordinates, hemispheres, minutes and fix quality; exclude predictions from GNSS fields; never convert empty input into position0</td>
+</tr>
+<tr>
+<td><code>Radio.cpp</code> around200–430</td>
+<td>Keep SPI1 MISO39, TCXO, switch table and async service</td>
+<td>Use decimal CSV; remove autonomous backup-channel switching; check all configuration results and timeouts</td>
+</tr>
+<tr>
+<td><code>vritra_fc.ino:execCmd</code> around429–485</td>
+<td>Keep TX_OFF independent of disarming</td>
+<td>Remove cutoff override; restrict destructive/calibration commands in flight; forward wheel commands to P4 with phase checks</td>
+</tr>
+<tr>
+<td><code>vritra_fc.ino:buildPacket</code> and <code>Base36.h</code></td>
+<td>Keep only for archived decoding</td>
+<td>Use decimal core CSV in the launch path unless an exception is approved; update all endpoints together</td>
+</tr>
+<tr>
+<td><code>Motor.cpp/.h</code></td>
+<td>Old TB6612 implementation is obsolete</td>
+<td>Replace with qualified P4 ESC/Hall control; MAIN must not drive old motor pins</td>
+</tr>
+<tr>
+<td><code>Beacon.cpp/.h</code></td>
+<td>Keep portable timing logic</td>
+<td>Remove I²S/MAX98357A; use active buzzer on GPIO2</td>
+</tr>
+<tr>
+<td><code>DataLogger.cpp</code></td>
+<td>Keep qualified queues and versioned records</td>
+<td>Remap flash bus/CS; inspect blocking calls; disable unverified PMTK assistance; log raw samples and validity</td>
+</tr>
+<tr>
+<td><code>board_tests/*</code></td>
+<td>Keep pin maps and isolated bring-up methods</td>
+<td>Ground tests only; remove interactive sweeps from flight builds; verify actual hardware/core versions</td>
+</tr>
+<tr>
+<td><code>vritra_gs.ino</code> command table around100–170</td>
+<td>Keep reserved IDs and radio hardware map</td>
+<td>Replace int16 coordinate arguments; remove repeated toggle bursts and sticky-field reconstruction; pass decimal CSV transparently</td>
+</tr>
+<tr>
+<td><code>gcs/vritra_gcs.py</code> SCHEMA~250, parser~490, CSV writer~1920</td>
+<td>Keep SI plots, presence flags, port detection and filename</td>
+<td>Update states, INA260 labels, time encoding and airtime; isolate simulation classes from the flight entrypoint</td>
+</tr>
+<tr>
+<td><code>vritra_cam.ino</code></td>
+<td>Keep UART commands and local SD recording</td>
+<td>Verify PSRAM, camera identity, storage errors and REC ACK; never assume recording succeeded</td>
+</tr>
+</tbody>
+</table>
+<p>These line numbers are navigation pointers into the supplied snapshot,not an immutable upstream commit. Hashes in the bundle manifest identify that snapshot. Historical August code is not an additional current flight implementation.</p>
+<h3 id="102-libraries-and-reproducibility">10.2 Libraries and reproducibility</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Version decision / source</th>
+<th>Launch recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Teensyduino</td>
+<td>Team records1.62; <a href="https://www.pjrc.com/teensy/td_download.html">PJRC</a></td>
+<td>Freeze tested compiler/core and bundled SD/SPI/Wire; no platform build was reproduced here</td>
+</tr>
+<tr>
+<td>Arduino-ESP32</td>
+<td>Required3.3.x; team records3.3.11 for camera; <a href="https://github.com/espressif/arduino-esp32/releases">releases</a></td>
+<td>Lock actual tested P4/S3 versions and chip revision; avoid a launch-week upgrade</td>
+</tr>
+<tr>
+<td>RadioLib</td>
+<td>Verified7.7.1 <a href="https://github.com/jgromes/RadioLib/tree/7.7.1">tag</a></td>
+<td>Freeze the tested blob; the positional begin overload remains available; verify every result</td>
+</tr>
+<tr>
+<td>BMP5 SensorAPI</td>
+<td>Downloaded header reports1.5.0; <a href="https://github.com/boschsensortec/BMP5_SensorAPI">Bosch</a></td>
+<td>Use as configuration reference; pin the actual commit/hash if adopted</td>
+</tr>
+<tr>
+<td>LSM6DSO32 PID</td>
+<td><a href="https://github.com/STMicroelectronics/lsm6dso32-pid">ST</a>; no semver asserted</td>
+<td>Pin reviewed source; use official register and self-test helpers</td>
+</tr>
+<tr>
+<td>ICM-20948</td>
+<td><a href="https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary">SparkFun</a>; release unselected</td>
+<td>Community reference; keep a qualified direct-register driver if that reduces change</td>
+</tr>
+<tr>
+<td>INA260/HDC302x</td>
+<td><a href="https://github.com/adafruit/Adafruit_INA260">Adafruit INA260</a>, <a href="https://github.com/adafruit/Adafruit_HDC302x">HDC302x</a></td>
+<td>Reference implementations; TI documentation controls commands and conversions</td>
+</tr>
+<tr>
+<td>AHRS</td>
+<td>Existing implementation or <a href="https://github.com/xioTechnologies/Fusion">x-io Fusion</a></td>
+<td>A: keep qualified code. B: compare Fusion offline and pin if adopted</td>
+</tr>
+<tr>
+<td>Semtech SDK</td>
+<td><a href="https://github.com/Lora-net/SWDR001">SWDR001</a>, <a href="https://github.com/Lora-net/SWSD003">SWSD003</a></td>
+<td>Reference material; do not add a second radio stack before launch</td>
+</tr>
+</tbody>
+</table>
+<p>No driver/library is required for an analog PWM servo or activebuzzer beyond the MCU peripheral API. No official ESC SDK can be selected before the actual ESC is identified. Version numbers that could not be verified are explicitly unselected;the team should freeze the working installed copies,record SHA256 and retain installers/source archives.</p>
+<h3 id="103-commands-adjustable-target-and-ack-behavior">10.3 Commands, adjustable target and ACK behavior</h3>
+<p>Preserve existing IDs:1TX_ON,2TX_OFF,3CALIBRATE,9BEACON_ON,10BEACON_OFF,11FAILOVER,12RESET,13GYRO_ON,14GYRO_OFF,15GYRO_SPD,16MAG_CAL,17GPS_RESET,18NEW_MISSION. <strong>4–8 remain retired.</strong> FAILOVER becomes an explicit authorised channel selection with ACK/scheduled-switch recovery,not a repeated toggle. NEW_MISSION and calibration are ground-only;GPS_RESET is blocked in flight unless a specifically tested recovery policy calls it. TX_ON must not arm mechanism outputs merely because an operator wants telemetry;retain a separate mission-arming interlock or explicit readiness check.</p>
+<p>D extensions:19 TARGET_LAT,20 TARGET_LON,21 TARGET_COMMIT,22 RELEASE_CONFIRMED,23 MISSION_ARM,24 GUIDANCE_ENABLE. Stage both signed int32e7 coordinates under one transaction. Commit requires both fields, valid ranges, an approved landing area, allowed mission phase and a valid frame. Publish atomically. A repeated commit returns the same ACK without a new revision. The GCS shows “active” only after P4 echoes the applied coordinates and revision. MAIN's queue ACK alone is insufficient.</p>
+<p>The existing <code>&lt;TEAM_ID&gt;,C,&lt;id&gt;,&lt;arg&gt;,&lt;seq&gt;</code> uplink has an int16 argument and48-byte buffer; both need review for coordinates. Proposed compact example: <code>025,C,19,267175350,FF,12345678</code>. The coordinate is a <strong>target</strong>, never a navigation fix. Fields are short team alias, C, decimal command ID, signed decimal int32 argument, two-hex-digit transaction ID, and eight-hex-digit mission session. Each packet is at most32 bytes, <strong>without a terminator</strong>, with PHY CRC; the RF packet length defines its end. The mandatory downlink still ends in CR. A paired version handshake binds025 to the full team; a persistent monotonic session counter changes each new mission and must not be reused after storage corruption. Latitude, longitude and commit carry the same transaction ID; deduplicate by session+command+transaction, not transaction alone. Ground USB can expose <code>CMD_TARGET &lt;lat&gt; &lt;lon&gt;</code> while the gateway stages and commits across slots. This is a coordinated protocol update, not cryptographic authentication.</p>
+<p>Use wrap-aware sequence comparison and a bounded duplicate cache tied to the mission/session. Six repeated legacy commands can otherwise toggle a state repeatedly. Prefer absolute desired states. Release confirmation is a one-way latch; packets from an earlier mission cannot release a new one. ACKs must fit the downlink budget or a separately calculated diagnostic window. A second full CSV does not automatically fit.</p>
+<h3 id="104-gcs-changes">10.4 GCS changes</h3>
+<p>Keep the mandatory live plots and judges' CSV. Add target staging/ACK status, applied revision and coordinates, approach direction and feedback for rejected low-altitude updates. The map shows current valid position and age, track, target, approach and predicted landing footprint. Before a fix, show “NO CURRENT FIX.” A last-known marker must be visibly stale and excluded from current measurement fields.</p>
+<p>Wind display includes N/E components, magnitude, direction, fit age, coverage, residual and validity. Unknown wind is not0 m/s. Show guidance mode, owner, target revision, requested/applied brake, payload attitude, ground course, AGL, GNSS age and faults. Link health includes sequence gaps, age, RSSI/SNR, board sessions, lease and heartbeat. Correct the wheel plot's old180/360 deg/s alert bounds:10000 RPM produces60000 deg/s, not a body-rate-scale value.</p>
+<p>The current <code>parse_packet</code> initializes entries to0 and returns a <code>present</code> set. Every renderer, exporter and derived calculation must respect that set. Write empty fields for absent or stale data. Remove gateway behavior that makes old optional fields appear current. Preserve a verbatim receive log with reception timestamps.</p>
+<p>To enforce data isolation, the flight GCS entrypoint must not import or instantiate DummyDataStudio, Simulator or Replay. Flight firmware contains no replay adapter or coordinate-default branch. HIL runs in a separate executable with actuator power isolated; TEST records use a separate output path. LIVE mode requires a real serial transport and never falls back to simulation after a connection error. Verify that unplugged serial cannot produce new flight CSV positions.</p>
+<h2 id="11-calibration-and-verification-campaign">11. Calibration and verification campaign</h2>
+<h3 id="111-field-calibration-and-storage">11.1 Field calibration and storage</h3>
+<table>
+<thead>
+<tr>
+<th>Task / priority</th>
+<th>Procedure / stored result</th>
+<th>Acceptance evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gyro A</td>
+<td>Stationary, thermally settled samples; store mean bias in rad/s, variance, temperature and duration</td>
+<td>Reject motion; repeat with wheel off/on; no universal bias constant</td>
+</tr>
+<tr>
+<td>Accelerometer A</td>
+<td>Six supported orientations; fit offsets/scales and, if justified, a cross-axis matrix; store mounting transform separately</td>
+<td>Check gravity norm and direction in every pose; preserve gravity in physical data</td>
+</tr>
+<tr>
+<td>Magnetometer B/A if used</td>
+<td>Rotate the assembled payload; fit <code>m_cal=S(m_raw-b)</code>; test wheel/servo states</td>
+<td>Validate heading and residual field with an independent reference; a bench-only fit is insufficient</td>
+</tr>
+<tr>
+<td>Barometer pad A</td>
+<td>Three sensors vented and stationary, away from hand heat; average at least5 s D; store p0, ambient T, variance and time</td>
+<td>Check pad zero and interboard offsets; qualify600/950 m pressure ramps</td>
+</tr>
+<tr>
+<td>INA260 A</td>
+<td>I²C0x40; verify0xFE=0x5449 and0xFF device bits=0x2270 (mask low revision nibble). Reset by0x00←0x8000; poll reset completion with deadline. Write0x00←0x6527:16 averages,1.1 ms voltage/current conversions,continuous both; read back. Write0x06←0x0000 (no wired ALERT). Poll0x06 CVRF bit3; individually read0x01 signed current,0x02 unsigned voltage,0x03 unsigned power,MSB first. Scale1.25 mA,1.25 mV,10 mW per LSB.</td>
+<td>Nominal conversion cycle35.2 ms D=16×(1.1+1.1),poll50 Hz,publish latest valid sample20 Hz with original timestamp; no FIFO. Check math-overflow bit2; bracket the register reads with status and discard/retry if another conversion completed mid-read. Finite bus timeout and shared recovery; identity/config/reference-load test rather than invented self-test. No calibration register; calibrate externally. Reset/startup deadline10 ms D to qualify.</td>
+</tr>
+<tr>
+<td>GNSS A</td>
+<td>Surveyed reference with known frame/quality; stationary and walking captures</td>
+<td>Measure position distribution, epoch rate and dropouts; do not force output to the reference coordinate</td>
+</tr>
+<tr>
+<td>Servo A</td>
+<td>Measure pulse→angle→line travel/tension; identify signs, lid limits and current</td>
+<td>No endstop stall; repeatable trim and adequate mechanical margin; store per-unit maps</td>
+</tr>
+<tr>
+<td>Hall/ESC A</td>
+<td>Guarded rig, known magnets, external tachometer, arm/stop/signal-loss tests</td>
+<td>Correct RPM and deg/s; no automatic throttle calibration; rotor contained</td>
+</tr>
+</tbody>
+</table>
+<p>Calibration records contain board/sensor ID, version, units, coefficients, reference instrument/date, temperature, quality metrics and CRC. Copy them to PC/SD and the appropriate MCU store: qualified Teensy EEPROM/AT24C32 or P4 NVS. Keep instrument calibration, pad zero and attitude display datum distinct. Reject in-flight barometer zeroing because it would destroy the600 m reference.</p>
+<h3 id="112-verification-gates">11.2 Verification gates</h3>
+<p><strong>Tests actually run in this session are listed separately in <a href="VERIFICATION.md">VERIFICATION.md</a>.</strong> The following hardware tests are proposed;none is marked passed without a team result.</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Method and pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T-PINS</td>
+<td>Power-off continuity against ICD; check logic voltages, pull-ups, backfeeding and CS idle states; scope all GNSS listeners at both bauds</td>
+</tr>
+<tr>
+<td>T-BOOT</td>
+<td>Cold/soft resets of each real board; no sweep/throttle; correct journal restore and RF silence; record P4 revision/options</td>
+</tr>
+<tr>
+<td>T-SENSOR</td>
+<td>Read identities/configuration, sample counters and physical units; run supported self-tests; inject disconnects and stuck devices; reject0xFF</td>
+</tr>
+<tr>
+<td>T-GNSS</td>
+<td>Record commands/ACKs/readbacks; measure1/5/10 Hz epochs, UART overflows, constellation trials, reboot and backup retention</td>
+</tr>
+<tr>
+<td>T-NAV</td>
+<td>Reject checksum errors, RMC V, q0/DR, malformed coordinates, NaN, stale GSA, mixed/duplicate epochs, future timestamps and replay/default origins</td>
+</tr>
+<tr>
+<td>T-BARO</td>
+<td>Pressure ramps at glide and drogue rates; physical opening must meet600±10 m including every error and delay</td>
+</tr>
+<tr>
+<td>T-EVENT</td>
+<td>Descending950 m crossing, ascent inhibit, reset below threshold and reset before/during/after10 s exposure; no extra reopening</td>
+</tr>
+<tr>
+<td>T-INHIBIT</td>
+<td>Lift, hover and attached-drone descent without release confirmation; no bay/petri/steering; test delayed/lost confirmation</td>
+</tr>
+<tr>
+<td>T-FSM</td>
+<td>Actual drone profile with transient pressure/shock; correct states0–7, launch clock, pad datum and reset recovery</td>
+</tr>
+<tr>
+<td>T-LINK</td>
+<td>Unplug MAIN, BACKUP and raw GNSS separately; inject CRC/sequence/one-way failures; verify authority and local P4 operation</td>
+</tr>
+<tr>
+<td>T-TARGET</td>
+<td>Partial, repeated, old-session and out-of-area updates; int32 bounds; atomic commit and correct P4 echo</td>
+</tr>
+<tr>
+<td>T-RF</td>
+<td>Capture actual RF CSV/CR/cadence, byte lengths and command slots; test TX ON/OFF, authorised channel switch, power/range and90-minute cutoff</td>
+</tr>
+<tr>
+<td>T-RESET</td>
+<td>Reset at each phase and journal/ACK boundary, including89:59; corrupt one/both slots; no cutoff override or unsafe rollback</td>
+</tr>
+<tr>
+<td>T-LOG</td>
+<td>Disconnect RF; fill/remove/slow SD; force flash timeout; control continues and records retain CRC/source/sample time</td>
+</tr>
+<tr>
+<td>T-POWER</td>
+<td>Actual combined-load endurance for2 h pad plus flight; scope rails at loads; test overshoot, wheel startup, connectors and retention</td>
+</tr>
+<tr>
+<td>T-HALL/T-WHEEL</td>
+<td>Tachometer/PPR agreement, stuck/noisy input, stop response, balance and rotor containment</td>
+</tr>
+<tr>
+<td>T-TIMING</td>
+<td>Capture sample/parse/planner/PWM under full load; verify §8.5 targets, progress watchdog and deadline margins</td>
+</tr>
+<tr>
+<td>T-GCS/T-ISOLATE</td>
+<td>Real serial→plots→judges CSV; missing data stays missing; simulation/replay cannot reach outputs or the flight file</td>
+</tr>
+<tr>
+<td>T-GLIDE/T-GUIDE</td>
+<td>Authorised repeated drops: inflation,1–3 m/s sink, brake sign/response, safe authority, wind observability and independently measured landing error</td>
+</tr>
+<tr>
+<td>T-BEACON</td>
+<td>Measure at least92 dB using the agreed setup, assembled enclosure and representative battery condition</td>
+</tr>
+</tbody>
+</table>
+<p>Ground walk/car tests qualify GNSS mapping, ages, waypoints and command flow with <strong>actuators mechanically disconnected</strong>. They do not identify parafoil brake response or wind penetration. HIL exercises the FSM/control in a separate bench executable. Compare expected and actual events, including failure cases.</p>
+<p>For drops,log each command and its observed effect with sample/actuator timestamps;measure landing point with an independent reference and report radial error,crosswind/alongwind error,sink,wind,canopy identity,mass,target revision and all faults. Use several independent drops;report the actual count and empirical dispersion. Do not claim CEP95 from a few drops or tune and evaluate on the same single trajectory. A no-GNSS degradation test must prove stable canopy behavior,not precision landing without navigation.</p>
+<h2 id="12-hardware-changes-kept-outside-the-main-design">12. Hardware changes kept outside the main design</h2>
+<p>No new pin,component or board is assumed in the design above. These are conditional changes if a strict requirement cannot be met. Costs below are <strong>planning estimates (D/U),not supplier quotes</strong>;availability in the three-day window is unknown.</p>
+<table>
+<thead>
+<tr>
+<th>Priority / condition</th>
+<th>Change</th>
+<th>Estimated cost / effort / retest</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A if beacon fails</td>
+<td>Beacon meeting92 dB with proper drive/power</td>
+<td>₹200–1500 estimate; hours; repeat acoustic and power tests</td>
+</tr>
+<tr>
+<td>A if positive release verification is mandatory</td>
+<td>Release interlock and wiring with debounce/failure analysis</td>
+<td>₹50–500 estimate plus mounting; hours; revise ICD and repeat release tests</td>
+</tr>
+<tr>
+<td>A if existing buck fails</td>
+<td>Qualified steering supply/protection</td>
+<td>₹300–2000 estimate; hours; load, thermal and overshoot tests</td>
+</tr>
+<tr>
+<td>B</td>
+<td>Servo-rail voltage/current measurement with3.3 V-compatible interface</td>
+<td>₹100–1500 estimate; wire and calibrate; still may miss fast dips</td>
+</tr>
+<tr>
+<td>B</td>
+<td>Independent beacon/radio takeover path</td>
+<td>₹500–5000+ estimate; days of integration; no immediate full-redundancy claim</td>
+</tr>
+<tr>
+<td>C</td>
+<td>Canopy heading, airspeed, rangefinder and physical deployment feedback</td>
+<td>Part-dependent, not quoted; new identification and flight campaign</td>
+</tr>
+</tbody>
+</table>
+<p>Adjusting the already owned adjustable buck and removing stale software pin assignments are configuration tasks,not new hardware assumptions. Do not spend the remaining time adding an untested navigation sensor simply to make an estimator appear complete.</p>
+<h2 id="13-priority-list-for-the-next-three-days">13. Priority list for the next three days</h2>
+<h3 id="a-must-do-before-launch">A — must do before launch</h3>
+<p><strong>28 October:</strong> freeze the pins, radio protocol and two-stage descent sequence. Identify the actual canopy, ESC, Hall sensor and buck. Set the steering rail to7.4–8.0 V. Run board bring-up, identity/readbacks and pulse checks. Resolve release confirmation, petri crossing direction and beacon compliance. Start endurance testing early.</p>
+<p><strong>29 October:</strong> implement the smallest multi-board port: live GNSS validity, local P4 events,600 m bay,950 m petri deadline, progress watchdogs, hard TX cutoff, truthful CSV and atomic target update. Flash matching MAIN/GS/GCS versions. Test pressure ramps, resets, link loss, invalid commands and SD failures before connecting packed mechanisms.</p>
+<p><strong>30 October:</strong> rehearse with the actual battery, camera, radio, servo loads and deployment mechanics. Use authorised drops to measure inflation, sink, steering sign and latency. If steering is unqualified, retain proven stable trim and report precision landing as undemonstrated. Close mandatory descent/beacon failures before clearance. Freeze the tested builds, hashes, cards and CSV schema.</p>
+<h3 id="b-should-do-if-time-allows-after-a-passes">B — should do if time allows after A passes</h3>
+<p>Qualify tagged IMU FIFO, wind circle fitting, limited energy holding, turn-rate PI, better landing prediction, ambient temperature profiling, motor-on compass calibration and matching-protocol AGNSS assistance. Add them only when measured benefit justifies the complexity.</p>
+<h3 id="c-future">C — future</h3>
+<p>Develop an observable augmented EKF/UKF, optimized terminal trajectories, airspeed/canopy heading measurements, range-assisted flare, independent backup telemetry, release feedback and a statistically supported landing campaign.</p>
+<h2 id="14-launch-day-checklist">14. Launch-day checklist</h2>
+<ul>
+<li>[ ] Record actual canopy/mass/rigging and secondary mechanism; confirm <strong>drogue immediately, ram-air600±10 m</strong>.</li>
+<li>[ ] Inspect fasteners,battery retention,connectors,antenna clearances and correct physical board revisions.</li>
+<li>[ ] Measure battery and steering/logic rails under a brief representative load;steering never exceeds8.4 V.</li>
+<li>[ ] Verify safe pulse positions with unloaded mechanisms,then pack/secure them;no automatic sweep on boot.</li>
+<li>[ ] Boot the exact frozen MAIN/BACKUP/P4/camera/GS/GCS versions;record build IDs and reset reasons.</li>
+<li>[ ] Confirm RF is silent before command and only authorised slot/channel/power will be used;camera Wi-Fi/BT remains off.</li>
+<li>[ ] Confirm L89 real coherent fix,actual update rate,quality/age and all three listener counters;no overflows.</li>
+<li>[ ] Capture pad p0/ambientT and stationary calibration;compare three barometers;lock the datum against in-flight changes.</li>
+<li>[ ] Verify DS3231 trustworthy time,mission epoch,event journal,new-mission status and non-resettable90-minute deadline.</li>
+<li>[ ] Set target26.717535N,84.301543E or the authorised adjustment;read <strong>P4's applied target/revision</strong> back.</li>
+<li>[ ] Confirm active release-confirmation procedure and its latency relative to950 m;do not confuse ARM with RELEASE.</li>
+<li>[ ] Confirm SD/flash capacity and write health;GCS judges'filename/header/plots/raw receive log ready.</li>
+<li>[ ] Start telemetry by command;verify actual RF CSV at≥1Hz and ACK channel;TX_OFF test completed earlier.</li>
+<li>[ ] Verify cameraREC acknowledgment and storage;beacon acoustic test and wheel/Hall guarded checks already passed.</li>
+<li>[ ] Arm mission only after readiness flags and physical mechanism checks;record operator actions.</li>
+<li>[ ] During lift/release:watch state,AGL,release latch,petri deadline,600 mbay event,GNSSage and supply/fault indicators.</li>
+<li>[ ] After landing: stop the wheel, activate the beacon, obtain recovery clearance, shut down RF and copy the received CSV to USB immediately.</li>
+<li>[ ] Preserve original logs and cards;record actual landing point,target revision,wind and anomalies before tuning anything.</li>
+</ul>
+<h2 id="15-open-questions-only-the-team-can-close">15. Open questions only the team can close</h2>
+<ol>
+<li>Which <strong>ram-air</strong> flight article is packed:7-cell0.40 m² or11-cell0.71 m²? The clarification confirmed two parachutes,not the ram-air area/cell count.</li>
+<li>Is950 m petri opening explicitly on <strong>descent</strong>,and how soon can release confirmation arrive? Does “above boot” mean the pad boot point even after a reset?</li>
+<li>What is the measured bay-command-to-physical-opening latency,and is the drogue retained without fouling the ram-air canopy?</li>
+<li>Are B26CLM the actual two servos,and what are each servo's safe pulse endpoints,line travel,working tension and loaded current?</li>
+<li>What are the exact ESC,Hall sensor and adjustable buck models,ESC protocol/arm/stop behavior,magnet count and qualified rotor speed?</li>
+<li>Is the GNSS J7 backup cell physically fitted and maintaining the correct voltage? Is any external antenna connected,changing the internal antenna selection?</li>
+<li>Are there independent release/deployment sensors or rail measurements omitted from the current files? No such connections are assumed here.</li>
+<li>Which hardware tests have actually run since the brief's “compiled,not run” status? Provide raw traces/results before marking any matrix row passed.</li>
+<li>Has the organiser accepted the accelerometer CSV expansion, empty invalid fields and short command alias, and specified the92 dB measurement setup?</li>
+<li>Can the team demonstrate stable1–3 m/s secondary descent and mechanical wheel stabilization with this flight article? Simulation and requested RPM do not close those requirements.</li>
+</ol></article></main>
+<footer><span>CAN-7USAT-025 · REVIEW 01</span><a href="../index.html#library">Research library ↑</a></footer></body></html>
