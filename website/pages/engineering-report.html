@@ -16,7 +16,7 @@
 <li><strong>U:</strong> unresolved, unavailable or unverified. No flight-ready claim attaches to a U item.</li>
 </ul>
 <p>All thresholds and timing budgets below that are not expressly R/H/V are <strong>D starting values</strong>. Hardware test results are not available in this session. This is an architecture and reference-code handoff, not a certified or fully compiled firmware image.</p>
-<p>Controlling local sources: <a href="../source/VRITRA_CanSat_025_Handover_2026-10-28/01_PROJECT_BRIEF_AND_PARTS.md">current brief</a>, <a href="../source/VRITRA_CanSat_025_Handover_2026-10-28/02_competition_documents/IN-SPACe_CAN-7USAT_Mission_Requirements_and_Guidelines_IN-SPACe.CAN.MR.CG.01.pdf">official guidelines</a>, <a href="../source/VRITRA_CanSat_025_Handover_2026-10-28/02_competition_documents/CAN7USAT_Team_Frequency_Assignments_19-10-2026_(OFFICIAL_for_team_025).pdf">19 October radio assignment</a>, <a href="../source/VRITRA_CanSat_025_Handover_2026-10-28/03_kicad_current_boards">current boards</a>, and <a href="../source/VRITRA_CanSat_025_Handover_2026-10-28/05_code/vritra-gcs-master_(CURRENT_repo)">supplied repository</a>. Historical prompts and previous AI answers are evidence of decisions, not datasheets.</p>
+<p>Controlling local sources: <a href="https://github.com/itsmeabirmohanta/Sujal/tree/main/source/VRITRA_CanSat_025_Handover_2026-10-28/01_PROJECT_BRIEF_AND_PARTS.md">current brief</a>, <a href="https://github.com/itsmeabirmohanta/Sujal/tree/main/source/VRITRA_CanSat_025_Handover_2026-10-28/02_competition_documents/IN-SPACe_CAN-7USAT_Mission_Requirements_and_Guidelines_IN-SPACe.CAN.MR.CG.01.pdf">official guidelines</a>, <a href="https://github.com/itsmeabirmohanta/Sujal/tree/main/source/VRITRA_CanSat_025_Handover_2026-10-28/02_competition_documents/CAN7USAT_Team_Frequency_Assignments_19-10-2026_(OFFICIAL_for_team_025).pdf">19 October radio assignment</a>, <a href="https://github.com/itsmeabirmohanta/Sujal/tree/main/source/VRITRA_CanSat_025_Handover_2026-10-28/03_kicad_current_boards">current boards</a>, and <a href="https://github.com/itsmeabirmohanta/Sujal/tree/main/source/VRITRA_CanSat_025_Handover_2026-10-28/05_code/vritra-gcs-master_(CURRENT_repo)">supplied repository</a>. Historical prompts and previous AI answers are evidence of decisions, not datasheets.</p>
 <h3 id="11-launch-critical-findings">1.1 Launch-critical findings</h3>
 <table>
 <thead>
@@ -76,7 +76,7 @@
 </table>
 <p>The <a href="https://wiki.seeedstudio.com/Grove-Buzzer/">Seeed buzzer specification</a> supports the rating discrepancy; the <a href="https://www.agf-rc.com/agfrc-coreless-mini-servo-b26clm-p1669135.html">AGFRC B26CLM specification</a> supports its supply limit. The other findings are from the supplied files, with exact code pointers in §10.</p>
 <h2 id="2-requirements-and-verification">2. Requirements and verification</h2>
-<p>The complete working matrix is <a href="requirements.csv">requirements.csv</a>. These requirements allocate functions to the actual hardware, not an imagined redundant computer.</p>
+<p>The complete working matrix is <a href="../pages/requirements-matrix.html">requirements.csv</a>. These requirements allocate functions to the actual hardware, not an imagined redundant computer.</p>
 <table>
 <thead>
 <tr>
@@ -376,7 +376,7 @@
 </tr>
 </tbody>
 </table>
-<p>The version2 maximum92-byte wire frame takes7.99 ms at115200 8N1 (D:92×10/115200), or16.0% occupancy at20 Hz. The electrical inventory reserves96 bytes/8.34 ms per frame, leaving framing margin. See <a href="ICD_WIRE_FORMATS.md">the byte-level ICD</a> for the exact schema and version boundary. P4's single outward link has <strong>one producer queue</strong>, because two independent Serial objects must not drive GPIO54. Use a TX-disabled RX-only port for BACKUP and another for GNSS. The P4 has enough hardware UART controllers; see <a href="https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32p4/api-reference/peripherals/uart.html">Espressif's P4 UART reference</a>.</p>
+<p>The version2 maximum92-byte wire frame takes7.99 ms at115200 8N1 (D:92×10/115200), or16.0% occupancy at20 Hz. The electrical inventory reserves96 bytes/8.34 ms per frame, leaving framing margin. See <a href="../pages/wire-formats-icd.html">the byte-level ICD</a> for the exact schema and version boundary. P4's single outward link has <strong>one producer queue</strong>, because two independent Serial objects must not drive GPIO54. Use a TX-disabled RX-only port for BACKUP and another for GNSS. The P4 has enough hardware UART controllers; see <a href="https://docs.espressif.com/projects/esp-idf/en/v5.5/esp32p4/api-reference/peripherals/uart.html">Espressif's P4 UART reference</a>.</p>
 <p>CRC detects corruption; it does not authenticate commands. A mission nonce, transaction sequence and physical phase interlocks prevent accidental stale/repeated operation but are not cryptographic spoofing protection. Do not describe this as secure authentication.</p>
 <h2 id="4-l89ha-boot-configuration-real-fixes-and-fastest-practical-startup">4. L89HA: boot configuration, real fixes and fastest practical startup</h2>
 <h3 id="41-what-the-evidence-supports">4.1 What the evidence supports</h3>
@@ -1005,7 +1005,7 @@ radio.setRfSwitchTable(SW_PINS, SW_TABLE); // reapply after begin/reset
 <p>StartP4FreeRTOS with control tasks on one core to reduce shared-state complexity;put parsing/log output on the other. Respect the configured <code>configMAX_PRIORITIES</code>;the numbers above assume a compatible configuration and need adjustment if the chosen core differs. IRQ handlers only capture timestamps/counters/set flags. Use task-watchdog registration plus a progress mask,not oneunconditionalglobalfeed. Idle task starvation indicates a scheduling fault.</p>
 <p>Proposed acceptance:criticalCPU utilization&lt;50%,criticaldeadline misses0 in a2 h pad+flight workload test,remainingRAM≥25%,noUARToverflows,stack high-water margin≥25%(allD). These margins do not prove bounded SD/NVS latency. Bench under simultaneouscamera,radio,flash,servos and injected device failures.</p>
 <h3 id="72-typed-pipeline-code-at-every-boundary">7.2 Typed pipeline: code at every boundary</h3>
-<p>The linked <a href="reference_code/README.md">reference code</a> contains host-checked guards, parser, controller, events, frame/log codecs, journal selection, estimator, planner and scheduling examples. <a href="IMPLEMENTATION_STATUS.md">Integration boundaries</a> distinguish these from unimplemented platform adapters. The following integration blocks specify the remaining stages. They are <strong>API sketches</strong>,not independently buildable complete board programs.</p>
+<p>The linked <a href="../pages/reference-code-index.html">reference code</a> contains host-checked guards, parser, controller, events, frame/log codecs, journal selection, estimator, planner and scheduling examples. <a href="../pages/implementation-status.html">Integration boundaries</a> distinguish these from unimplemented platform adapters. The following integration blocks specify the remaining stages. They are <strong>API sketches</strong>,not independently buildable complete board programs.</p>
 <pre><code class="language-cpp">// 1 acquisition -&gt; timestamp; at sensor rate, no fabricated &quot;new&quot; sample.
 if (driver.ready(now)) {
     RawImu raw;
@@ -1312,7 +1312,7 @@ if (nextRadioDeadline(now) &amp;&amp; rfPermit &amp;&amp; !cutoffLatched)
 <p>No fallback fabricates position,wind,gyro spin,voltage,current or camera success. Estimated values have explicit source/validity/uncertainty;mandatory GNSS fields remain receiver-derived and blank when invalid. An estimator prediction may support a short tested degraded policy,but must not be transmitted as a new GNSS observation or used indefinitely to chase a target.</p>
 <h2 id="10-code-organization-and-ground-station-migration">10. Code organization and ground-station migration</h2>
 <h3 id="101-modules-and-existing-code-disposition">10.1 Modules and existing-code disposition</h3>
-<p>Use one shared protocol/types library and three board applications. The supplied repository remains a provenance snapshot; the reference modules and integration contract live in this handoff. See <a href="IMPLEMENTATION_STATUS.md">module status</a> before adopting any code. The research prompt requests architecture and key blocks, not proof of a flashed/flight-qualified image.</p>
+<p>Use one shared protocol/types library and three board applications. The supplied repository remains a provenance snapshot; the reference modules and integration contract live in this handoff. See <a href="../pages/implementation-status.html">module status</a> before adopting any code. The research prompt requests architecture and key blocks, not proof of a flashed/flight-qualified image.</p>
 <pre><code class="language-text">firmware/shared/{Units,Validity,Protocol,CRC,Calibration,JournalSchema,TelemetrySchema}.h
 firmware/main/{PinsMain,SensorDrivers,LiveGnss,RadioService,Camera,Clock,Journal,Telemetry,LogQueue,Main}.cpp
 firmware/backup/{PinsBackup,BaroEnv,LiveGnss,BackupAuthority,SdLogger,Backup}.cpp
@@ -1525,7 +1525,7 @@ tests/offline/{nmea,epochs,radio_budget,protocol_crc,fsm_resets,controllers,tele
 </table>
 <p>Calibration records contain board/sensor ID, version, units, coefficients, reference instrument/date, temperature, quality metrics and CRC. Copy them to PC/SD and the appropriate MCU store: qualified Teensy EEPROM/AT24C32 or P4 NVS. Keep instrument calibration, pad zero and attitude display datum distinct. Reject in-flight barometer zeroing because it would destroy the600 m reference.</p>
 <h3 id="112-verification-gates">11.2 Verification gates</h3>
-<p><strong>Tests actually run in this session are listed separately in <a href="VERIFICATION.md">VERIFICATION.md</a>.</strong> The following hardware tests are proposed;none is marked passed without a team result.</p>
+<p><strong>Tests actually run in this session are listed separately in <a href="../pages/verification-results.html">VERIFICATION.md</a>.</strong> The following hardware tests are proposed;none is marked passed without a team result.</p>
 <table>
 <thead>
 <tr>

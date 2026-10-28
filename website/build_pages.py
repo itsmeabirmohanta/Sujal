@@ -9,6 +9,7 @@ import markdown
 ROOT = Path(__file__).resolve().parent.parent
 OUT = Path(__file__).resolve().parent / "pages"
 GITHUB_ROOT = "https://github.com/itsmeabirmohanta/Sujal/blob/main"
+GITHUB_TREE = "https://github.com/itsmeabirmohanta/Sujal/tree/main"
 
 DOCUMENTS = [
     ("Engineering report", "VRITRA_ENGINEERING_REPORT.md", "Canonical design", "read"),
@@ -62,6 +63,71 @@ def render_content(path):
     return markdown.markdown(raw, extensions=["extra", "sane_lists", "toc"]), raw
 
 
+def rewrite_routes(body):
+    slugs = {
+        relative: re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+        for title, relative, _, _ in DOCUMENTS
+    }
+
+    def replace(match):
+        href = html.unescape(match.group(1))
+        clean = href.split("#", 1)[0]
+        anchor = f"#{href.split('#', 1)[1]}" if "#" in href else ""
+        key = clean[3:] if clean.startswith("../") else clean
+        if key in slugs:
+            return f'href="../pages/{slugs[key]}.html{anchor}"'
+        if clean.startswith("../source/"):
+            return f'href="{GITHUB_TREE}/{clean[3:]}{anchor}"'
+        return match.group(0)
+
+    return re.sub(r'href="([^"]+)"', replace, body)
+
+
+def checklist_content(path):
+    raw = path.read_text(encoding="utf-8")
+    intro = []
+    groups = []
+    current = None
+    for line in raw.splitlines():
+        if line.startswith("## "):
+            continue
+        if line.startswith("- [ ] "):
+            if current is None:
+                current = {"title": "Launch sequence", "items": []}
+                groups.append(current)
+            current["items"].append(line[6:].strip())
+        elif line.startswith("# ") or line.startswith("Generated from"):
+            intro.append(line)
+        elif line.startswith("### "):
+            current = {"title": line[4:].strip(), "items": []}
+            groups.append(current)
+        elif line.strip() and not line.startswith("- [x]"):
+            intro.append(line)
+    parts = ['<div class="checklist-toolbar"><div><strong id="check-progress">0 / 0 complete</strong><span>Saved on this browser</span></div><button id="reset-checklist" type="button">Reset checklist</button></div>']
+    total = sum(len(group["items"]) for group in groups)
+    for group_index, group in enumerate(groups):
+        parts.append(f'<section class="checklist-group"><h2>{html.escape(group["title"])}</h2><div class="checklist-items">')
+        for item_index, item in enumerate(group["items"]):
+            item_id = f"launch-{group_index}-{item_index}"
+            parts.append(
+                f'<label class="check-item" for="{item_id}"><input id="{item_id}" type="checkbox" data-check-id="{item_id}"><span class="check-box"></span><span>{markdown.markdown(item).removeprefix("<p>").removesuffix("</p>")}</span></label>'
+            )
+        parts.append("</div></section>")
+    script = f"""<script>
+const key="vritra-launch-checklist-v1";
+const boxes=[...document.querySelectorAll("[data-check-id]")];
+const progress=document.querySelector("#check-progress");
+const saved=JSON.parse(localStorage.getItem(key)||"{{}}");
+boxes.forEach(box=>box.checked=Boolean(saved[box.dataset.checkId]));
+function update(){{const state={{}};boxes.forEach(box=>state[box.dataset.checkId]=box.checked);localStorage.setItem(key,JSON.stringify(state));const done=boxes.filter(box=>box.checked).length;progress.textContent=`${{done}} / {total} complete`;}}
+boxes.forEach(box=>box.addEventListener("change",update));
+document.querySelector("#reset-checklist").addEventListener("click",()=>{{boxes.forEach(box=>box.checked=false);update();}});
+update();
+</script>"""
+    intro_html = rewrite_routes(markdown.markdown("\n\n".join(intro[:2])))
+    return intro_html + "".join(parts) + script
+
+
 def page(title, kind, body, original):
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -77,6 +143,10 @@ def main():
     for title, relative, status, category in DOCUMENTS:
         source = source_path(relative)
         body, raw = render_content(source)
+        if title == "Launch-day checklist":
+            body = checklist_content(source)
+        else:
+            body = rewrite_routes(body)
         slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
         output = OUT / f"{slug}.html"
         original_path = f"deliverables/{relative}" if not relative.startswith("../") else relative[3:]
