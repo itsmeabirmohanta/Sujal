@@ -12,3 +12,6 @@
 /VRITRA_CanSat_025_Handover_2026-10-28.zip
 /research/__pycache__/
 /.venv/
+
+# Local Netlify folder
+.netlify

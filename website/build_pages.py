@@ -8,6 +8,7 @@ import markdown
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = Path(__file__).resolve().parent / "pages"
+GITHUB_ROOT = "https://github.com/itsmeabirmohanta/Sujal/blob/main"
 
 DOCUMENTS = [
     ("Engineering report", "VRITRA_ENGINEERING_REPORT.md", "Canonical design", "read"),
@@ -78,7 +79,8 @@ def main():
         body, raw = render_content(source)
         slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
         output = OUT / f"{slug}.html"
-        original = f"../../deliverables/{relative}" if not relative.startswith("../") else f"../../{relative[3:]}"
+        original_path = f"deliverables/{relative}" if not relative.startswith("../") else relative[3:]
+        original = f"{GITHUB_ROOT}/{original_path}"
         output.write_text(page(title, status, body, original), encoding="utf-8")
         plain = re.sub(r"\s+", " ", raw).strip()
         index.append({"title": title, "page": f"pages/{slug}.html", "category": category, "status": status, "text": plain})
